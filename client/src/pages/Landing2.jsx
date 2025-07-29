@@ -107,12 +107,12 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="flex h-auto bg-gray-950 text-white">
+    <div className="flex h-screen bg-gray-900 text-white">
       {/* Sidebar */}
-      <div className="w-64 bg-[#090e1a] p-6 flex flex-col">
+      <div className="w-64 bg-gray-800 p-6 flex flex-col">
         {/* Logo */}
         <div className="flex items-center gap-3 mb-8">
-          <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+          <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
             <span className="text-white font-bold">✦</span>
           </div>
           <span className="text-xl font-semibold">HR Manager</span>
@@ -128,7 +128,7 @@ const Dashboard = () => {
                 href="#"
                 className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                   item.active 
-                    ? 'bg-blue-500 text-white' 
+                    ? 'bg-purple-600 text-white' 
                     : 'text-gray-300 hover:bg-gray-700'
                 }`}
               >
@@ -265,6 +265,114 @@ const Dashboard = () => {
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* Charts Section */}
+          <div className="grid grid-cols-2 gap-6 mb-8">
+            {/* Performance Chart */}
+            <div className="bg-gray-800 p-6 rounded-xl">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-semibold">Employees Performance</h3>
+                <select className="px-3 py-1 bg-gray-700 border border-gray-600 rounded text-sm">
+                  <option>Weekly</option>
+                  <option>Monthly</option>
+                </select>
+              </div>
+              
+              {/* Simple Bar Chart */}
+              <div className="h-64 flex items-end justify-between gap-2">
+                {performanceData.map((item, index) => (
+                  <div key={index} className="flex-1 flex flex-col items-center">
+                    <div 
+                      className="w-full bg-purple-600 rounded-t transition-all duration-300 hover:bg-purple-500"
+                      style={{ height: `${(item.value / 75) * 100}%` }}
+                    ></div>
+                    <span className="text-xs text-gray-400 mt-2">{item.date}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Performance Details */}
+              <div className="mt-6 p-4 bg-gray-700 rounded-lg">
+                <div className="text-sm text-gray-300 mb-2">June 6, 2024</div>
+                <div className="space-y-1">
+                  <div className="flex justify-between text-sm">
+                    <span>UI/UX Team</span>
+                    <span>58%</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Mobile Design</span>
+                    <span>65%</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Marketing Team</span>
+                    <span>49%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Attendance Chart */}
+            <div className="bg-gray-800 p-6 rounded-xl">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-semibold">Employee Attendance</h3>
+                <div className="px-3 py-1 bg-gray-700 border border-gray-600 rounded text-sm">
+                  4 June 2024
+                </div>
+              </div>
+
+              {/* Donut Chart Placeholder */}
+              <div className="flex items-center justify-center mb-6">
+                <div className="relative w-48 h-48">
+                  <div className="absolute inset-0 rounded-full border-8 border-purple-600"></div>
+                  <div className="absolute inset-4 rounded-full border-8 border-yellow-400"></div>
+                  <div className="absolute inset-8 rounded-full border-8 border-green-400"></div>
+                  <div className="absolute inset-12 rounded-full border-8 border-gray-600"></div>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold">12600</div>
+                      <div className="text-sm text-gray-400">Total Employee</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Attendance Stats */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-purple-600 rounded-full"></div>
+                  <div>
+                    <div className="text-sm text-gray-400">Present</div>
+                    <div className="font-semibold">12562</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
+                  <div>
+                    <div className="text-sm text-gray-400">On Leave</div>
+                    <div className="font-semibold">10</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-green-400 rounded-full"></div>
+                  <div>
+                    <div className="text-sm text-gray-400">On Holiday</div>
+                    <div className="font-semibold">25</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-gray-600 rounded-full"></div>
+                  <div>
+                    <div className="text-sm text-gray-400">Absent</div>
+                    <div className="font-semibold">4</div>
+                  </div>
+                </div>
+              </div>
+
+              <button className="w-full mt-6 px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors">
+                View Full Details
+              </button>
+            </div>
           </div>
 
           {/* Employees Table */}
