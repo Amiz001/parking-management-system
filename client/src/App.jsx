@@ -1,13 +1,15 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Landing from "./pages/Landing";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import allRoutes from "./routes";
 
 function App() {
   return (
-    <BrowserRouter>
+    <Router>
       <Routes>
-        <Route path="/" element={<Landing />} />
+        {allRoutes.map((route, index) => (
+          <Route key={index} path={route.path} element={route.element} />
+        ))}
       </Routes>
-    </BrowserRouter>
+    </Router>
   );
 }
 
