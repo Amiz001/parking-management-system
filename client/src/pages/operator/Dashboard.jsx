@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from "react";
 import {
   Search, CalendarCheck, Settings, MoreHorizontal, Bell, Sun, Moon,
-  ChartColumnBig, HeartHandshake, LogOut, Car, Bookmark, Wrench, LayoutGrid
+  ChartColumnBig, HeartHandshake, LogOut, Car, Bookmark, Wrench, LayoutGrid,Plus,Wallet,
+  Truck,
+  BarChart3,
+  Bike,
 } from "lucide-react";
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 const sidebarItems = [
@@ -11,6 +15,7 @@ const sidebarItems = [
     { icon: CalendarCheck, label: 'Online Booking', path: "/operator/onlinebooking"},
     { icon: HeartHandshake, label: 'Memebership', path: "/operator/membershipplan"},
     { icon: HeartHandshake, label: 'Online Booking', path: "/operator/OnlineBookingPage"},
+    { icon: Wallet, label: 'Physical Payment ', path: "/operator/Physicalpayment"},
    // { icon: FileText, label: 'Report' },
   ];
 
@@ -21,11 +26,11 @@ const sidebarItems = [
   ];
 
 
-// ---------- ParkingSpot ----------
-const ParkingSpot = ({ spot, onClick }) => {
-  const navigate = useNavigate();
-  const baseClasses =
-    "relative w-25 h-25 rounded-xl border-2 cursor-pointer transition-all duration-300 flex flex-col items-center justify-center text-sm font-medium hover:scale-105 hover:shadow-lg transform";
+  // ---------- ParkingSpot ----------
+  const ParkingSpot = ({ spot, onClick }) => {
+    const navigate = useNavigate();
+    const baseClasses =
+      "relative w-25 h-25 rounded-xl border-2 cursor-pointer transition-all duration-300 flex flex-col items-center justify-center text-sm font-medium hover:scale-105 hover:shadow-lg transform";
 
  const getSpotClasses = () => {
     switch (spot.status) {
@@ -79,6 +84,7 @@ const ParkingSpot = ({ spot, onClick }) => {
         {getStatusIcon()}
         <span className="text-xs text-gray-500">{spot.slotId}</span>
         <span className="text-xs font-medium">{spot.status}</span>
+        <span className="text-xs font-medium">{spot.zone}</span>
       </div>
       </div>  
     </div>
@@ -119,19 +125,16 @@ const StatsGrid = ({ stats }) => (
   </div>
 );
 
+
 // ---------- ParkingLayout ----------
 const ParkingLayout = ({ spots }) => {
   const handleSpotClick = (spot) => console.log("Spot clicked:", spot);
-
+  
   return (
     <div className="bg-gradient-to-b from-[#151821] to-[#242938] light:bg-gradient-to-b light:from-white light:to-white light:shadow-lg light:backdrop-blur-sm rounded-xl p-6">
-      <div className="flex space-x-3 justify-between mb-6">
+      <div className="flex items-center space-x-3 mb-6">
         <LayoutGrid className="w-5 h-5 text-white-600" />
         <h2 className="text-2xl font-bold text-white-900">Parking Layout</h2>
-        <select className="px-3 py-1 bg-gray-700 border border-gray-700 light:bg-gray-50 light:border-gray-200 rounded text-sm">
-          <option>4Wheel A Zone</option>
-          <option>4Wheel B Zone</option>
-        </select>
       </div>
 
       {/* Legend */}
@@ -169,26 +172,13 @@ const Dashboard = () => {
   const [spots, setSpots] = useState([]);
   const [stats, setStats] = useState(null);
 
+
   const fetchSpots = async () => {
     try {
       const response = await fetch("http://localhost:5000/slots");
       const data = await response.json();
       setSpots(data.slots);
 
-      // 2️⃣ Update the slot status to "occupied"
-    if (formData.slotId) {
-      const slotResponse = await fetch(
-        `http://localhost:5000/slots/${formData.slotId}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ status: "occupied" }),
-        }
-      );
-
-      if (!slotResponse.ok) throw new Error("Failed to update slot status");
-      console.log(`Slot ${formData.slotId} is now occupied`);
-    }
       setStats({
         totalSpots: data.slots.length,
         availableSpots: data.slots.filter((s) => s.status === "available").length,
@@ -199,7 +189,7 @@ const Dashboard = () => {
       console.error("Error fetching spots:", error);
     }
   };
-
+ 
   useEffect(() => { fetchSpots(); }, []);
     
   return (
@@ -289,8 +279,8 @@ const Dashboard = () => {
             <div>
               <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
             </div>
-            <div className="flex items-center gap-4">
-              <button className="px-6 py-2 bg-gradient-to-l from-blue-500 to-indigo-600 text-white rounded-lg hover:bg-blue-600 transition-colors">
+             <div className="flex items-center gap-4">
+             <button className="px-6 py-2 bg-gradient-to-l from-blue-500 to-indigo-600 text-white rounded-lg hover:bg-blue-600 transition-colors">
                 4Wheel
               </button>
               <button className="px-6 py-2 bg-gradient-to-l from-blue-500 to-indigo-600 text-white rounded-lg hover:bg-blue-600 transition-colors">

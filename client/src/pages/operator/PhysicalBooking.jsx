@@ -22,6 +22,7 @@ import {
   BanknoteArrowDown,
   HeartHandshake,
   LogOut,
+  Wallet,
 } from 'lucide-react';
 
 const Dashboard = () => {
@@ -76,7 +77,7 @@ const Dashboard = () => {
     { icon: CalendarCheck , label: 'Physical Booking', active: true, path: "/operator/physicalbooking" },
     { icon: CalendarCheck, label: 'Online Booking', path: "/operator/onlinebooking"},
     { icon: HeartHandshake, label: 'Memebership', path: "/operator/membershipplan"},
-   // { icon: FileText, label: 'Report' },
+    { icon: Wallet, label: 'Physical Payment ', path: "/operator/Physicalpayment"},
   ];
 
   const bottomItems = [
@@ -234,14 +235,10 @@ const handleUpdate = async (id) => {
           <div className="bg-gradient-to-b from-[#151821] to-[#242938]  light:bg-gradient-to-b light:from-white light:to-white light:shadow-lg light:backdrop-blur-sm rounded-xl p-6">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-semibold">Customers</h3>
-              <select className="px-3 py-1 bg-gray-700 border border-gray-700 light:bg-gray-50 light:border-gray-200 rounded text-sm">
-                <option>A Zone</option>
-                <option>B Zone</option>
-              </select>
               <button 
                 onClick={handleDownload}
                 className="px-6 py-2 bg-gradient-to-l from-blue-500 to-indigo-600 text-white rounded-lg hover:bg-blue-600 transition-colors">
-                Download
+                Export Data
                </button>
             </div>
 
@@ -256,7 +253,7 @@ const handleUpdate = async (id) => {
                     <th className="text-left py-3 px-4 text-gray-400 light:text-gray-700 font-medium">Exit Date</th>
                     <th className="text-left py-3 px-4 text-gray-400 light:text-gray-700 font-medium">Exit Time</th>
                     <th className="text-left py-3 px-4 text-gray-400 light:text-gray-700 font-medium">Amount</th>
-                    <th className="text-left py-3 px-4 text-gray-400 light:text-gray-700 font-medium">Payment</th>
+                    <th className="text-left py-3 px-4 text-gray-400 light:text-gray-700 font-medium">Paid Status</th>
                     <th className="text-left py-3 px-4 text-gray-400 light:text-gray-700 font-medium">Actions</th>
                   </tr>
                 </thead>
@@ -277,32 +274,18 @@ const handleUpdate = async (id) => {
                     </td>
                     <td className="py-4 px-4 text-gray-300 light:text-gray-600">{booking.exitTime}</td>
                     <td className="py-4 px-4 text-gray-300 light:text-gray-600">Rs. {booking.amount}</td>
-                    {/*<td className="py-4 px-4">
-                      <span className="flex items-center gap-2">
-                        <div
-                          className={`w-2 h-2 rounded-full ${
-                            booking.status === "Verified" ? "bg-green-400" : "bg-red-400"
-                          }`}
-                        ></div>
-                        <span
-                          className={`${
-                            booking.status === "Verified"
-                              ? "text-green-400"
-                              : "text-red-400"
+                    <td className="py-4 px-4">
+                        <button
+                          onClick={() => navigate(`/operator/physicalpayform/${booking._id}`)}
+                          className={`px-3 py-1 rounded ${
+                            booking.paidStatus === "Paid"
+                              ? "bg-green-500 text-white hover:bg-green-600"
+                              : "bg-red-500 text-white hover:bg-red-600"
                           }`}
                         >
-                          {booking.status}
-                        </span>
-                      </span>
-                    </td>*/}
-                    <td className="py-4 px-4">
-                       <button
-                      onClick={() => navigate(`/operator/updatebookingPhysical/${booking._id}`)}
-                      className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
-                    >
-                      Payment
-                    </button>
-                    </td>
+                          Not Paid
+                        </button>
+                      </td>
                     <td className="py-3 px-4 flex gap-2">
                     <button
                       onClick={() => navigate(`/operator/updatebookingPhysical/${booking._id}`)}

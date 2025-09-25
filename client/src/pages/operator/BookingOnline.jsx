@@ -1,14 +1,19 @@
 import { useState, useEffect } from "react";
 import { Calendar, Clock, Car, CreditCard, MapPin } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 export default function BookingForm() {
+ const location = useLocation();   
+ const initialSlotId = location.state?.slotId || "";
+ const today = "2025-09-25";
+ 
+
   const [formData, setFormData] = useState({
-    slotId: "",
+    slotId: initialSlotId, 
     vehicleNumber: "",
-    entryDate: "",
+    entryDate: today,   // 👈 set default as today
     entryTime: "",
-    exitDate: "",
+    exitDate: today,    // 👈 set default as today
     exitTime: "",
     amount: "",
   });
@@ -16,6 +21,7 @@ export default function BookingForm() {
   const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
   const navigate = useNavigate();
+
 
   // 🔹 Rate per hour (can be changed)
   const RATE_PER_HOUR = 100;
@@ -58,6 +64,7 @@ export default function BookingForm() {
     }
   };
 
+
   const validateForm = () => {
     const newErrors = {};
 
@@ -89,34 +96,9 @@ export default function BookingForm() {
     return Object.keys(newErrors).length === 0;
   };
 
-  /*const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (!validateForm()) return;
-
-    try {
-      const response = await fetch("http://localhost:5000/physicalbookings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-
-      });
-
-      if (!response.ok) throw new Error("Failed to save booking");
-
-      const data = await response.json();
-      console.log("Booking saved:", data);
-
-    
-      setSubmitted(true);
-    } catch (error) {
-      console.error("Error submitting booking:", error);
-      alert("Something went wrong. Please try again.");
-    }
-  };*/
-
-  const handleSubmit = async (e) => {
-  e.preventDefault();
+  
+const handleSubmit = async (e) => {
+e.preventDefault();
 
   if (!validateForm()) return;
 
@@ -133,7 +115,7 @@ export default function BookingForm() {
     const data = await response.json();
     console.log("Booking saved:", data);
 
-    // 2️⃣ Update the slot status to "occupied"
+    /*// 2️⃣ Update the slot status to "occupied"
     if (formData.slotId) {
       const slotResponse = await fetch(
         `http://localhost:5000/slots/${formData.slotId}`,
@@ -146,7 +128,7 @@ export default function BookingForm() {
 
       if (!slotResponse.ok) throw new Error("Failed to update slot status");
       console.log(`Slot ${formData.slotId} is now occupied`);
-    }
+    }*/
 
     // 3️⃣ Show confirmation
     setSubmitted(true);
@@ -257,6 +239,8 @@ export default function BookingForm() {
                   value={formData.entryDate}
                   onChange={handleInputChange}
                   className="w-full border px-3 py-2 rounded-lg"
+                  min={today}   // ⛔ disables past dates
+
                 />
                 {errors.entryDate && (
                   <p className="text-red-500 text-sm">{errors.entryDate}</p>
@@ -287,6 +271,9 @@ export default function BookingForm() {
                   value={formData.exitDate}
                   onChange={handleInputChange}
                   className="w-full border px-3 py-2 rounded-lg"
+                  min={today}   // ⛔ disables past dates
+                  
+                
                 />
                 {errors.exitDate && (
                   <p className="text-red-500 text-sm">{errors.exitDate}</p>

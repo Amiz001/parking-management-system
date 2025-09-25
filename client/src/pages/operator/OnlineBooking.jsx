@@ -76,6 +76,7 @@ const Dashboard = () => {
     { icon: CalendarCheck , label: 'Physical Booking', path: "/operator/physicalbooking" },
     { icon: CalendarCheck, label: 'Online Booking', active: true, path: "/operator/onlinebooking"},
     { icon: HeartHandshake, label: 'Memebership', path: "/operator/membershipplan"},
+    { icon: HeartHandshake, label: 'Physical Payment ', path: "/operator/Physicalpayment"},
    // { icon: FileText, label: 'Report' },
   ];
 
@@ -236,13 +237,12 @@ const handleUpdate = async (id) => {
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-semibold">Customers</h3>
               <select className="px-3 py-1 bg-gray-700 border border-gray-700 light:bg-gray-50 light:border-gray-200 rounded text-sm">
-                <option>A Zone</option>
-                <option>B Zone</option>
+                
               </select>
               <button 
                 onClick={handleDownload}
                 className="px-6 py-2 bg-gradient-to-l from-blue-500 to-indigo-600 text-white rounded-lg hover:bg-blue-600 transition-colors">
-                Download
+                Export Data
                </button>
             </div>
 

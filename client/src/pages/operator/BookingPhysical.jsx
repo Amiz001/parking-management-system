@@ -5,13 +5,15 @@ import { useNavigate, useLocation } from "react-router-dom";
 export default function BookingForm() {
  const location = useLocation();   
  const initialSlotId = location.state?.slotId || "";
+const today = "2025-09-25";
+ 
 
   const [formData, setFormData] = useState({
-    slotId: initialSlotId, // prefill the slot ID from navigation
+    slotId: initialSlotId, 
     vehicleNumber: "",
-    entryDate: "",
+    entryDate: today,   // 👈 set default as today
     entryTime: "",
-    exitDate: "",
+    exitDate: today,    // 👈 set default as today
     exitTime: "",
     amount: "",
   });
@@ -19,11 +21,6 @@ export default function BookingForm() {
   const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
   const navigate = useNavigate();
-  const today = new Date().toISOString().split("T")[0];
-  const now = new Date();
-  const currentTime = now.toTimeString().slice(0, 5); // "HH:MM"
-
-  
 
 
   // 🔹 Rate per hour (can be changed)
@@ -99,34 +96,9 @@ export default function BookingForm() {
     return Object.keys(newErrors).length === 0;
   };
 
-  /*const handleSubmit = async (e) => {
-    e.preventDefault();
 
-    if (!validateForm()) return;
-
-    try {
-      const response = await fetch("http://localhost:5000/physicalbookings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-
-      });
-
-      if (!response.ok) throw new Error("Failed to save booking");
-
-      const data = await response.json();
-      console.log("Booking saved:", data);
-
-    
-      setSubmitted(true);
-    } catch (error) {
-      console.error("Error submitting booking:", error);
-      alert("Something went wrong. Please try again.");
-    }
-  };*/
-
-  const handleSubmit = async (e) => {
-  e.preventDefault();
+const handleSubmit = async (e) => {
+e.preventDefault();
 
   if (!validateForm()) return;
 
@@ -267,8 +239,8 @@ export default function BookingForm() {
                   value={formData.entryDate}
                   onChange={handleInputChange}
                   className="w-full border px-3 py-2 rounded-lg"
-                  min={today} // disable previous dates
-                  max={today} // disables future dates
+                  min={today}   // ⛔ disables past dates
+                  max={today}   // ⛔ disables future dates
                 />
                 {errors.entryDate && (
                   <p className="text-red-500 text-sm">{errors.entryDate}</p>
@@ -282,8 +254,6 @@ export default function BookingForm() {
                   value={formData.entryTime}
                   onChange={handleInputChange}
                   className="w-full border px-3 py-2 rounded-lg"
-                  min={formData.entryDate === today ? currentTime : "00:00"}
-                  max={formData.entryDate === today ? currentTime : "23:59"} // disables future times if today
                 />
                 {errors.entryTime && (
                   <p className="text-red-500 text-sm">{errors.entryTime}</p>
@@ -301,8 +271,9 @@ export default function BookingForm() {
                   value={formData.exitDate}
                   onChange={handleInputChange}
                   className="w-full border px-3 py-2 rounded-lg"
-                  min={formData.entryDate || today} // exit can't be before entry
-                  max={formData.entryDate || today} // exit can't be after entry
+                  min={today}   // ⛔ disables past dates
+                  max={today}   // ⛔ disables future dates
+                
                 />
                 {errors.exitDate && (
                   <p className="text-red-500 text-sm">{errors.exitDate}</p>
@@ -316,7 +287,6 @@ export default function BookingForm() {
                   value={formData.exitTime}
                   onChange={handleInputChange}
                   className="w-full border px-3 py-2 rounded-lg"
-                  min={formData.entryDate === today ? formData.entryTime || currentTime : formData.entryTime || "00:00"}
                 />
                 {errors.exitTime && (
                   <p className="text-red-500 text-sm">{errors.exitTime}</p>
