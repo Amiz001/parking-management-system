@@ -4,14 +4,23 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 const getUsers = async (req, res) => {
+<<<<<<< HEAD
   try {
     const users = await Users.find();
 
     if (!users) {
+=======
+
+  try{
+    const users = await Users.find();
+
+  if (!users) {
+>>>>>>> d60c115ef0dc9e7934436a11d7c217d87ca67d1f
       return res.status(404).json({ message: "Not found" });
     }
 
     res.json(users);
+<<<<<<< HEAD
   } catch (err) {
     res.status(500).json({ message: "Server error!" });
   }
@@ -84,11 +93,40 @@ const addUser = async (req, res) => {
     const result = await user.save();
 
     if (!result) {
+=======
+
+  } catch (err) {
+    res.status(500).json({ message: "Server error!" });
+  }
+}
+
+const getUserById = () => {}
+
+const addUser = async (req, res) => {
+
+  try{
+
+    const {name, email, role, password, profilePhoto} = req.body;
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = new Users({
+      name, 
+      email,
+      role,
+      password: hashedPassword,
+      profilePhoto
+    })
+
+    const result = user.save();
+
+  if (!result) {
+>>>>>>> d60c115ef0dc9e7934436a11d7c217d87ca67d1f
       return res.status(404).json({ message: "Failed!" });
     }
 
     res.status(201).json({
       message: "Added successfully",
+<<<<<<< HEAD
       user: result,
     });
   } catch (err) {
@@ -100,11 +138,27 @@ const updateUser = async (req, res) => {
   try {
     const userId = req.params.id;
     const { name, email, role } = req.body;
+=======
+      user: result
+    });
+
+  } catch (err) {
+    res.status(500).json({ message: "Server error!" });
+  }
+}
+
+const updateUser = async (req, res) => {
+  try {
+
+    const userId = req.params.id;
+    const {name, email, role} = req.body;
+>>>>>>> d60c115ef0dc9e7934436a11d7c217d87ca67d1f
 
     const updatedUser = await Users.findByIdAndUpdate(
       userId,
       { name, email, role },
       { new: true }
+<<<<<<< HEAD
     );
 
     if (!updatedUser) {
@@ -134,6 +188,37 @@ const deleteUser = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+=======
+    )
+
+    if(!updatedUser){
+      res.status(404).json({message: "Update failed!"});
+    }
+
+    res.status(202).json({message: "Updated successfully!", user: updatedUser});
+
+  } catch(err){
+    res.status(500).json({message: err.message})
+  }
+}
+
+const deleteUser = async (req, res) => {
+
+  try{
+    const userId = req.params.id;
+
+  const deletedUser = await Users.findByIdAndDelete(userId);
+
+  if(!deletedUser){
+    res.status(404).json({message: "Deletion failed!"});
+  }
+
+  res.json({message: "Deleted successfully!", user: deletedUser});
+  } catch(err){
+    res.status(500).json({ message: err.message });
+  }
+}
+>>>>>>> d60c115ef0dc9e7934436a11d7c217d87ca67d1f
 
 const validateUser = async (req, res) => {
   try {
@@ -150,6 +235,7 @@ const validateUser = async (req, res) => {
       return res.status(401).json({ message: "Invalid Credentials!" });
     }
 
+<<<<<<< HEAD
     /*const token = jwt.sign(
       {
         id: user._id,
@@ -162,6 +248,11 @@ const validateUser = async (req, res) => {
         expiresIn: "2h",
       }
     );*/
+=======
+    const token = jwt.sign({ id: user._id, email: user.email, role: user.role, profilePhoto: user.profilePhoto }, process.env.JWT_SECRET, {
+      expiresIn: "2h",
+    });
+>>>>>>> d60c115ef0dc9e7934436a11d7c217d87ca67d1f
 
     res.json({
       message: "User Found!",
@@ -179,14 +270,22 @@ const validateUser = async (req, res) => {
 
 const registerUser = async (req, res) => {
   try {
+<<<<<<< HEAD
     const { name, email, password } = req.body;
+=======
+    const { name , email, password } = req.body;
+>>>>>>> d60c115ef0dc9e7934436a11d7c217d87ca67d1f
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = new Users({
       name,
       email,
+<<<<<<< HEAD
       password: hashedPassword,
+=======
+      password: hashedPassword
+>>>>>>> d60c115ef0dc9e7934436a11d7c217d87ca67d1f
     });
 
     const result = await user.save();
@@ -196,12 +295,18 @@ const registerUser = async (req, res) => {
     }
 
     res.json({ message: "Registration successful!", user });
+<<<<<<< HEAD
     navigate("/login");
+=======
+    navigate('/login');
+
+>>>>>>> d60c115ef0dc9e7934436a11d7c217d87ca67d1f
   } catch (err) {
     res.status(500).json({ message: "Server error!" });
   }
 };
 
+<<<<<<< HEAD
 module.exports = {
   getUsers,
   getUserById,
@@ -213,3 +318,6 @@ module.exports = {
   validateUser,
   registerUser,
 };
+=======
+module.exports = { getUsers, getUserById, addUser, updateUser, deleteUser, validateUser, registerUser };
+>>>>>>> d60c115ef0dc9e7934436a11d7c217d87ca67d1f
