@@ -1,6 +1,6 @@
 const Zone = require('../models/zones');
 
-// Helper: get next available zone letter
+// get next available zone letter
 const getNextZoneLetter = (existingZones, prefix) => {
   const letters = existingZones
     .map(z => z.zoneId.replace(prefix, ''))
@@ -34,19 +34,19 @@ const addZone = async (req, res) => {
     // Get all existing zones for this park type
     const existingZones = await Zone.find({ parkType });
 
-    // Auto-generate zoneId if not provided
+    // Auto-generate zoneId
     const prefix = parkType === '4wheel' ? '4W' : parkType === '3wheel' ? '3W' : '2W';
     if (!zoneId || !zoneId.trim()) {
       const nextLetter = getNextZoneLetter(existingZones, prefix);
       zoneId = `${prefix}${nextLetter}`;
     }
 
-    // Auto-generate zoneName if not provided
+    // Auto-generate zoneName
     if (!zoneName || !zoneName.trim()) {
       zoneName = `Zone ${zoneId.slice(-1)}`; // '4WA' -> 'Zone A'
     }
 
-    // Validation: unique zoneId in this park
+    // checking duplicate zoneids
     const duplicate = existingZones.find(z => z.zoneId === zoneId);
     if (duplicate) {
       return res.status(400).json({ message: `Zone ID "${zoneId}" already exists in ${parkType} park` });
@@ -116,9 +116,9 @@ const deleteZone = async (req, res) => {
   return res.status(200).json({ message: "Zone successfully deleted" });
 };
 
-// Get next available zoneId and zoneName (without creating zone)
+// Get next available zoneId and zoneName
 const getNextZoneDetails = async (req, res) => {
-  const { parkType } = req.params; // e.g. "4wheel"
+  const { parkType } = req.params; //
 
   try {
     const existingZones = await Zone.find({ parkType });
