@@ -5,9 +5,6 @@ import { toast, ToastContainer } from "react-toastify";
 import Axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-// Note: Framer Motion is not available in this environment, so I'll create custom CSS animations
-// In a real project, you would import: import { motion } from 'framer-motion';
-
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -39,7 +36,9 @@ export default function Login() {
         }
       );
 
-      toast.success("Login successfull!", { containerId: "login-toast" });
+      if (response.data) {
+        toast.success("Login successfull!", { containerId: "login-toast" });
+      }
 
       switch (response.data.user.role) {
         case "user":
@@ -103,7 +102,13 @@ export default function Login() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-950 via-indigo-950 to-black p-4 flex items-center justify-center" style={{backgroundImage: `linear-gradient(rgba(20, 33, 61, 0.8), rgba(0,0,0, 0.7)), url(${slides[current].image})`, backgroundSize: "cover"}}>
+    <div
+      className="min-h-screen bg-gradient-to-b from-blue-950 via-indigo-950 to-black p-4 flex items-center justify-center"
+      style={{
+        backgroundImage: `linear-gradient(rgba(20, 33, 61, 0.8), rgba(0,0,0, 0.7)), url(${slides[current].image})`,
+        backgroundSize: "cover",
+      }}
+    >
       <ToastContainer
         containerId="login-toast"
         position="top-center"
@@ -215,7 +220,10 @@ export default function Login() {
                 style={{ animationDelay: "0.8s" }}
               >
                 <span className="text-gray-600">Don't have an account? </span>
-                <button onClick={() => navigate('/register')} className="text-gray-900 font-medium hover:underline transition-all">
+                <button
+                  onClick={() => navigate("/register")}
+                  className="text-gray-900 font-medium hover:underline transition-all"
+                >
                   Sign Up
                 </button>
               </div>
@@ -225,23 +233,43 @@ export default function Login() {
           {/* Right Panel - slider */}
           <div className="relative bg-gray-900 p-8 lg:p-12 h-full flex flex-col justify-center items-center overflow-hidden">
             <div className="relative mb-8 animate-float">
-              <div className="relative w-80 h-80 rounded-3xl border border-blue-500/30 flex items-center justify-center" style={{backgroundImage: `url(${slides[current].image})`, backgroundSize: "cover"}}></div>
+              <div
+                className="relative w-80 h-80 rounded-3xl border border-blue-500/30 flex items-center justify-center"
+                style={{
+                  backgroundImage: `url(${slides[current].image})`,
+                  backgroundSize: "cover",
+                }}
+              ></div>
             </div>
 
             <div
               className="text-center text-white animate-fade-in-up"
               style={{ animationDelay: "1s" }}
             >
-              <h2 className="text-2xl font-bold mb-4">{slides[current].title}</h2>
+              <h2 className="text-2xl font-bold mb-4">
+                {slides[current].title}
+              </h2>
               <p className="text-gray-300 mb-8 max-w-sm">
                 {slides[current].subTitle}
               </p>
 
               {/* Progress Dots */}
               <div className="flex justify-center space-x-2">
-                <div className={`w-2 h-2 rounded-full ${current == 0 ? "bg-white" : "bg-white/30"}`}></div>
-                <div className={`w-2 h-2 rounded-full ${current == 1 ? "bg-white" : "bg-white/30"}`}></div>
-                <div className={`w-2 h-2 rounded-full ${current == 2 ? "bg-white" : "bg-white/30"}`}></div>
+                <div
+                  className={`w-2 h-2 rounded-full ${
+                    current == 0 ? "bg-white" : "bg-white/30"
+                  }`}
+                ></div>
+                <div
+                  className={`w-2 h-2 rounded-full ${
+                    current == 1 ? "bg-white" : "bg-white/30"
+                  }`}
+                ></div>
+                <div
+                  className={`w-2 h-2 rounded-full ${
+                    current == 2 ? "bg-white" : "bg-white/30"
+                  }`}
+                ></div>
               </div>
             </div>
           </div>

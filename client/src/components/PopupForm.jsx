@@ -7,7 +7,6 @@ const UserFormModal = ({ status, mode, selectedUser, onClose, refresh }) => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    phone: "",
     role: "",
     password: "",
     profilePhoto: "",
@@ -28,7 +27,7 @@ const UserFormModal = ({ status, mode, selectedUser, onClose, refresh }) => {
       setFormData({
         name: "",
         email: "",
-        role: "",
+        role: "user",
         password: "",
         profilePhoto: "",
       });
@@ -44,6 +43,30 @@ const UserFormModal = ({ status, mode, selectedUser, onClose, refresh }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!formData.name || !formData.password || !formData.email) {
+      toast.error("Please fill all fields!");
+      return;
+    }
+
+    const isValidName = /^[A-Za-z\s'.-]{1,30}$/.test(formData.name);
+    const isValidEmail = /\S+@\S+\.\S+/.test(formData.email);
+    const isValidPassword = /^(?=.*[0-9]).{8,}$/.test(formData.password);
+
+    if (!isValidPassword) {
+      toast.error("Invalid password format");
+      return;
+    }
+
+    if (!isValidEmail) {
+      toast.error("Invalid email address");
+      return;
+    }
+
+    if (!isValidName) {
+      toast.error("Invalid name");
+      return;
+    }
 
     try {
       if (mode === "Update") {
@@ -64,6 +87,10 @@ const UserFormModal = ({ status, mode, selectedUser, onClose, refresh }) => {
         if (response.data.message == "Added successfully") {
           toast.success("User added successfully");
         }
+
+        if (response.data.message == "User already exists!") {
+          toast.error("User already exists");
+        }
       }
 
       onClose();
@@ -80,6 +107,7 @@ const UserFormModal = ({ status, mode, selectedUser, onClose, refresh }) => {
         status ? "visible" : "hidden"
       }`}
     >
+
       <div className="bg-[#151821] light:from-white light:to-gray-50 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto custom-scroll">
         {/* Header */}
         <div className="relative p-6 border-b border-gray-700 light:border-gray-200">
@@ -142,7 +170,7 @@ const UserFormModal = ({ status, mode, selectedUser, onClose, refresh }) => {
               <input
                 type="password"
                 value={formData.password}
-                placeholder="*********"
+                placeholder="At least 8 characters including numbers"
                 onChange={(e) => handleInputChange("password", e.target.value)}
                 className="w-full bg-[#212634] light:bg-white border border-gray-700 light:border-gray-300 rounded-lg px-4 py-3 text-white light:text-gray-900 placeholder-gray-400 light:placeholder-gray-400 focus:outline-none focus:border-blue-500"
               />
@@ -158,6 +186,7 @@ const UserFormModal = ({ status, mode, selectedUser, onClose, refresh }) => {
               {roles.map((role) => (
                 <button
                   key={role}
+                  value={formData.role}
                   onClick={() => handleInputChange("role", role)}
                   className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
                     formData.role === role

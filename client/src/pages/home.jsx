@@ -40,7 +40,7 @@ export default function ParkingLandingPage() {
   return (
     <div className="bg-white">
       {/* Header */}
-      <header className="bg-gray-900 text-white h-50">
+      <header className="bg-gray-900 text-white h-100">
         <div className="absolute z-0 -top-200 w-screen h-300 bg-[radial-gradient(circle_at_center,_rgba(79,70,229,0.6),_rgba(59,130,246,0.4),_transparent_50%)]"></div>
         <div className="relative z-5 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
@@ -61,35 +61,14 @@ export default function ParkingLandingPage() {
                 Get Started
               </button>
             </div>
-            <button 
-              className="md:hidden"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            >
-              {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </button>
           </div>
         </div>
       </header>
 
-      {/* Mobile Menu */}
-      {mobileMenuOpen && (
-        <div className="md:hidden bg-gray-900 text-white px-4 py-4">
-          <nav className="flex flex-col space-y-4">
-            <a href="#" className="hover:text-purple-400">Solutions</a>
-            <a href="#" className="hover:text-purple-400">Pricing</a>
-            <a href="#" className="hover:text-purple-400">Resources</a>
-            <a href="#" className="hover:text-purple-400">About</a>
-            <button className="bg-purple-600 hover:bg-purple-700 px-6 py-2 rounded-lg font-medium w-full mt-4">
-              Get Started
-            </button>
-          </nav>
-        </div>
-      )}
-
       {/* Hero Section */}
       <section className="bg-gray-900 text-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="-mt-40 grid lg:grid-cols-2 gap-12 items-center">
+          <div className="-mt-57 mb-27 grid lg:grid-cols-2 gap-12 items-center">
             <div>
               <h1 className="text-5xl lg:text-6xl font-bold leading-tight mb-6">
                 Redefining How{' '}
@@ -107,7 +86,7 @@ export default function ParkingLandingPage() {
             </div>
             <div className="relative">
               <div className=" rounded-2xl p-8 transform rotate-3 hover:rotate-0 transition-transform duration-300">
-                <img src="/parking.png"></img>
+                  <img src='/images/car2.png' className="w-600 ml-20 mb-5"></img>
               </div>
             </div>
             
@@ -115,7 +94,7 @@ export default function ParkingLandingPage() {
         </div>
       </section>
 
-      {/* Partner Logos */}
+      {/* Partner Logos 
       <section className="py-12 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-6 gap-8 items-center opacity-60">
@@ -127,7 +106,7 @@ export default function ParkingLandingPage() {
             ))}
           </div>
         </div>
-      </section>
+      </section>*/}
 
       {/* Stats Section */}
       <section className="py-20 bg-white">
@@ -142,13 +121,13 @@ export default function ParkingLandingPage() {
                 businesses, our smart parking management 
                 solutions help drive business results.
               </p>
-              <button className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3 rounded-lg font-medium transition-colors">
+              <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-lg font-medium transition-colors">
                 View Case Studies
               </button>
             </div>
             <div className="grid grid-cols-2 gap-6">
               <div className="text-center p-6 bg-purple-50 rounded-xl">
-                <div className="text-3xl font-bold text-purple-600 mb-2">24k+</div>
+                <div className="text-3xl font-bold text-indigo-600 mb-2">24k+</div>
                 <div className="text-gray-600">Daily Reservations</div>
               </div>
               <div className="text-center p-6 bg-blue-50 rounded-xl">
@@ -211,9 +190,9 @@ export default function ParkingLandingPage() {
             </div>
 
             {/* Pro Plan - Featured */}
-            <div className="bg-gray-900 text-white rounded-2xl p-8 border-2 border-purple-500 relative">
+            <div className="bg-gray-900 text-white rounded-2xl p-8 border-2 border-indigo-500 relative">
               <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                <span className="bg-purple-500 text-white px-4 py-1 rounded-full text-sm font-medium">
+                <span className="bg-indigo-500 text-white px-4 py-1 rounded-full text-sm font-medium">
                   Most Popular
                 </span>
               </div>
@@ -221,7 +200,7 @@ export default function ParkingLandingPage() {
               <div className="text-4xl font-bold mb-6">
                 $9<span className="text-lg font-normal text-gray-300">/month</span>
               </div>
-              <button className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-lg font-medium mb-6 transition-colors">
+              <button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-lg font-medium mb-6 transition-colors">
                 Get started
               </button>
               <ul className="space-y-3 text-gray-300">
@@ -262,7 +241,7 @@ export default function ParkingLandingPage() {
               <div className="text-4xl font-bold text-gray-900 mb-6">
                 $19<span className="text-lg font-normal text-gray-600">/month</span>
               </div>
-              <button className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-lg font-medium mb-6 transition-colors">
+              <button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-lg font-medium mb-6 transition-colors">
                 Get started
               </button>
               <ul className="space-y-3 text-gray-600">
@@ -314,21 +293,21 @@ export default function ParkingLandingPage() {
                 businesses grow and thrive in today's fast-paced 
                 environment.
               </p>
-              <button className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3 rounded-lg font-medium transition-colors">
+              <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-lg font-medium transition-colors">
                 Learn More
               </button>
             </div>
             <div className="space-y-4">
               <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-purple-50 transition-colors cursor-pointer">
                 <div className="flex items-center space-x-4">
-                  <MapPin className="h-6 w-6 text-purple-600" />
+                  <MapPin className="h-6 w-6 text-indigo-600" />
                   <span className="font-medium">Smart Sensor Installation</span>
                 </div>
                 <ChevronRight className="h-5 w-5 text-gray-400" />
               </div>
               <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-purple-50 transition-colors cursor-pointer">
                 <div className="flex items-center space-x-4">
-                  <Shield className="h-6 w-6 text-purple-600" />
+                  <Shield className="h-6 w-6 text-indigo-600" />
                   <span className="font-medium">API Integration</span>
                 </div>
                 <ChevronDown className="h-5 w-5 text-gray-400" />
@@ -339,16 +318,16 @@ export default function ParkingLandingPage() {
                   enabling real-time data sync and automated operations.
                 </p>
               </div>
-              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-purple-50 transition-colors cursor-pointer">
+              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-indigo-50 transition-colors cursor-pointer">
                 <div className="flex items-center space-x-4">
-                  <Users className="h-6 w-6 text-purple-600" />
+                  <Users className="h-6 w-6 text-indigo-600" />
                   <span className="font-medium">Mobile App Development</span>
                 </div>
                 <ChevronRight className="h-5 w-5 text-gray-400" />
               </div>
-              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-purple-50 transition-colors cursor-pointer">
+              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-indigo-50 transition-colors cursor-pointer">
                 <div className="flex items-center space-x-4">
-                  <Clock className="h-6 w-6 text-purple-600" />
+                  <Clock className="h-6 w-6 text-indigo-600" />
                   <span className="font-medium">Custom Analytics Dashboard</span>
                 </div>
                 <ChevronRight className="h-5 w-5 text-gray-400" />
@@ -363,7 +342,7 @@ export default function ParkingLandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
-              <button className="bg-purple-600 text-white px-4 py-2 rounded-full text-sm mb-6">
+              <button className="bg-indigo-600 text-white px-4 py-2 rounded-full text-sm mb-6">
                 Why Satisfied Customers
               </button>
               <h2 className="text-4xl font-bold mb-8">
@@ -374,7 +353,7 @@ export default function ParkingLandingPage() {
                 streamline their parking operations, reduce costs, and 
                 improve customer satisfaction.
               </p>
-              <div className="w-16 h-1 bg-purple-600 rounded"></div>
+              <div className="w-16 h-1 bg-indigo-600 rounded"></div>
             </div>
             <div className="space-y-6">
               {[
@@ -399,13 +378,13 @@ export default function ParkingLandingPage() {
               ].map((testimonial, index) => (
                 <div key={index} className="bg-gray-800 rounded-xl p-6">
                   <div className="flex items-start space-x-4">
-                    <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center">
+                    <div className="w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center">
                       <Users className="h-6 w-6 text-white" />
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center space-x-2 mb-2">
                         <h4 className="font-bold">{testimonial.name}</h4>
-                        <span className="text-purple-400">•</span>
+                        <span className="text-indigo-400">•</span>
                         <span className="text-gray-400 text-sm">{testimonial.role}</span>
                       </div>
                       <p className="text-gray-300 mb-3">{testimonial.content}</p>
@@ -454,7 +433,7 @@ export default function ParkingLandingPage() {
           <div className="grid lg:grid-cols-2 gap-8 items-center">
             <div>
               <h2 className="text-4xl font-bold mb-4">
-                Innovate. <span className="text-purple-400">Deliver</span>. Grow.
+                Innovate. <span className="text-indigo-400">Deliver</span>. Grow.
               </h2>
               <p className="text-gray-300 mb-6">
                 Transform your parking operations with our smart management 
@@ -466,19 +445,19 @@ export default function ParkingLandingPage() {
               <div>
                 <h4 className="font-bold mb-4">Pages</h4>
                 <ul className="space-y-2 text-gray-300">
-                  <li><a href="#" className="hover:text-purple-400 transition-colors">Home</a></li>
-                  <li><a href="#" className="hover:text-purple-400 transition-colors">About</a></li>
-                  <li><a href="#" className="hover:text-purple-400 transition-colors">Solutions</a></li>
-                  <li><a href="#" className="hover:text-purple-400 transition-colors">Pricing</a></li>
+                  <li><a href="#" className="hover:text-indigo-400 transition-colors">Home</a></li>
+                  <li><a href="#" className="hover:text-indigo-400 transition-colors">About</a></li>
+                  <li><a href="#" className="hover:text-indigo-400 transition-colors">Solutions</a></li>
+                  <li><a href="#" className="hover:text-indigo-400 transition-colors">Pricing</a></li>
                 </ul>
               </div>
               <div>
                 <h4 className="font-bold mb-4">Other Pages</h4>
                 <ul className="space-y-2 text-gray-300">
-                  <li><a href="#" className="hover:text-purple-400 transition-colors">Terms and Conditions</a></li>
-                  <li><a href="#" className="hover:text-purple-400 transition-colors">Privacy Policy</a></li>
-                  <li><a href="#" className="hover:text-purple-400 transition-colors">Support</a></li>
-                  <li><a href="#" className="hover:text-purple-400 transition-colors">Contact</a></li>
+                  <li><a href="#" className="hover:text-indigo-400 transition-colors">Terms and Conditions</a></li>
+                  <li><a href="#" className="hover:text-indigo-400 transition-colors">Privacy Policy</a></li>
+                  <li><a href="#" className="hover:text-indigo-400 transition-colors">Support</a></li>
+                  <li><a href="#" className="hover:text-indigo-400 transition-colors">Contact</a></li>
                 </ul>
               </div>
             </div>
