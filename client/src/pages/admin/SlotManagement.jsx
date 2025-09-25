@@ -260,8 +260,6 @@ const SlotManagement = () => {
     fetchSlotsFromServer();
   }, []);
 
-<<<<<<< HEAD
-=======
   /*slot filter
   const filterSlots = () => {
     const selectedSlots = slots.filter(
@@ -271,7 +269,6 @@ const SlotManagement = () => {
     setCurrentSlots(selectedSlots);
   }*/
 
->>>>>>> d01adaf6e2068ee44084d21d35bc93902436922f
   // slot filter
   useEffect(() => {
     if (!slots || slots.length === 0) {
