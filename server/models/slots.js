@@ -1,8 +1,8 @@
-// server/models/Slots.js
+
 const mongoose = require('mongoose');
 
 const SlotSchema = new mongoose.Schema({
-  slotId: { type: String, required: true, unique: true, index: true }, // e.g., 4W001
+  slotId: { type: String, required: true, unique: true, index: true }, 
   type: { type: String, enum: ['4wheel', '3wheel', '2wheel'], required: true },
   status: { type: String, enum: ['available', 'disabled', 'emergency', 'occupied'], default: 'available' },
   zone: { type: String, enum: ['Zone A', 'Zone B'], required: true },
