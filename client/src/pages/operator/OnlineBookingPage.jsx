@@ -63,7 +63,7 @@ const ParkingSpot = ({ spot }) => {
       className={getSpotClasses()}
       onClick={() =>
         spot.status === "available" &&
-        navigate(`/operator/bookingPhysical/`)
+        navigate(`/operator/bookingOnline`)
       }
     >
       <div className="flex flex-col items-center space-y-1">
@@ -75,7 +75,6 @@ const ParkingSpot = ({ spot }) => {
         {/* Spot Details */}
         <span className="text-base font-bold">{spot.name || spot.slotId}</span>
         <span className="text-xs">{spot.vehicleType}</span>
-        <span className="text-xs">{spot.zone}</span>
       </div>
     </div>
   );

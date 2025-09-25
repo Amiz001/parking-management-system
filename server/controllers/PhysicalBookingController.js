@@ -1,4 +1,4 @@
-// server/controllers/physicalBookingController.js
+// server/controllers/PhysicalBookingController.js
 const Slot = require("../models/slots");  // ✅ Import the Slot model
 
 const PhysicalBooking = require("../models/PhysicalBookingModel");
@@ -18,7 +18,7 @@ const getAllBookings = async (req, res, next) => {
   return res.status(200).json({ bookings });
 };
 
-// ✅ Add a new booking
+/* ✅ Add a new booking
 const addBookings = async (req, res, next) => {
   const { slotId, vehicleNumber, entryDate, entryTime, exitDate, exitTime, amount } = req.body;
   let booking;
@@ -44,14 +44,14 @@ const addBookings = async (req, res, next) => {
   }
 
   return res.status(201).json({ booking });
-};
+};*/
 
-/*const addBookings = async (req, res, next) => {
+// ✅ Add a new booking
+const addBookings = async (req, res, next) => {
   const { slotId, vehicleNumber, entryDate, entryTime, exitDate, exitTime, amount } = req.body;
   let booking;
 
   try {
-    // 1️⃣ Create the booking
     booking = new PhysicalBooking({
       slotId,
       vehicleNumber,
@@ -64,25 +64,23 @@ const addBookings = async (req, res, next) => {
 
     await booking.save();
 
-    // 2️⃣ Update the slot status to "occupied"
-    if (slotId) {
-      const slot = await Slot.findByIdAndUpdate(
-        slotId,
-        { status: "occupied" },
-        { new: true }
-      );
-
-      if (!slot) {
-        return res.status(404).json({ message: `Slot ${slotId} not found` });
-      }
-    }
+    // ✅ After booking, update slot status to "occupied"
+    await Slot.findOneAndUpdate(
+      { slotId: slotId },          // find slot by slotId
+      { status: "occupied" },      // set to occupied
+      { new: true }
+    );
 
   } catch (error) {
     return res.status(500).json({ message: "Unable to add booking", error: error.message });
   }
 
+  if (!booking) {
+    return res.status(500).json({ message: "Unable to add booking" });
+  }
+
   return res.status(201).json({ booking });
-};*/
+};
 
 
 // ✅ Get booking by ID
@@ -152,6 +150,13 @@ const deleteBookings = async (req, res, next) => {
   if (!booking) {
     return res.status(404).json({ message: "Unable to delete booking" });
   }
+
+  // Update the slot status to "available" using the slotId from the deleted booking
+    await Slot.findOneAndUpdate(
+      { slotId: booking.slotId },
+      { status: "available" },
+      { new: true }
+    );
 
   return res.status(200).json({ message: "Successfully deleted booking" });
 };

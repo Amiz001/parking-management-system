@@ -1,4 +1,4 @@
-const express = require("express");
+/*const express = require("express");
 const router = express.Router();
 
 const PhysicalBookingController = require("../controllers/PhysicalBookingController");
@@ -10,5 +10,5 @@ router.get("/:id", PhysicalBookingController.getById);     // GET by ID
 //router.put("/:id",PhysicalBookingController.updateBookings);  // Update 
 //router.delete("/:id",PhysicalBookingController.deleteBookings);  //Delete
 
-module.exports = router;
+module.exports = router;*/
 

@@ -267,14 +267,14 @@ const SlotManagement = () => {
     fetchSlotsFromServer();
   }, []);
 
-  //slot filter
+  /*slot filter
   const filterSlots = () => {
     const selectedSlots = slots.filter(
       (slot) => slot.park === selectedPark && slot.zone === selectedZone
     );
 
     setCurrentSlots(selectedSlots);
-  }
+  }*/
 
   // slot filter
   useEffect(() => {

@@ -1,4 +1,4 @@
-// server/controllers/physicalBookingController.js
+/*// server/controllers/physicalBookingController.js
 const PhysicalBooking = require("../models/PhysicalBookingModel");
 
 // ✅ Get all bookings
@@ -68,7 +68,7 @@ const getById = async (req, res, next) => {
 // ✅ Update booking
 const updateBookings = async (req, res) => {
   const id = req.params.id;
-  const { slotId, vehicleNumber, entryDate, entryTime, exitDate, exitTime, amount } = req.body;
+  const { slotId, vehicleNumber, customerName, cusPhoneNumber, entryDate, entryTime, exitDate, exitTime, amount } = req.body;
 
   // ✅ Combine date + time into full Date objects
   const entryDateTime = entryDate && entryTime ? new Date(`${entryDate}T${entryTime}`) : null;
@@ -124,4 +124,4 @@ exports.getAllBookings = getAllBookings;
 exports.addBookings = addBookings;
 exports.getById = getById;
 exports.updateBookings = updateBookings;
-exports.deleteBookings = deleteBookings;
+exports.deleteBookings = deleteBookings;*/

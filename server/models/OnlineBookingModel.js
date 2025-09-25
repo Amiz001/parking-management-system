@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+/*const mongoose = require('mongoose');
 
 const physicalBookingSchema = new mongoose.Schema({
   bookingId: { type: String, required: true, unique: true },    
@@ -13,4 +13,4 @@ const physicalBookingSchema = new mongoose.Schema({
   amount: { type: Number, required: true },
 }, { timestamps: true });
 
-module.exports = mongoose.model('PhysicalBooking', physicalBookingSchema);
+module.exports = mongoose.model('PhysicalBooking', physicalBookingSchema);*/
