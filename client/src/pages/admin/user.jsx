@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from "react";
 import PopupForm from "../../components/PopupForm";
+import DeleteRequestsForm from "../../components/DeleteRequests";
+import { formatDate } from "../../utils/formatDate";
+
 import { useClickOutside } from "../../hooks/useClickOutside";
 import Axios from "axios";
 import { toast } from "react-toastify";
@@ -7,6 +10,7 @@ import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import jsPDF from "jspdf";
 import AutoTable from "jspdf-autotable";
+import { jwtDecode } from "jwt-decode";
 
 import { FaFilePdf, FaFileExcel } from "react-icons/fa";
 import {
@@ -30,6 +34,7 @@ import {
   Plus,
   Trash,
   SquarePen,
+  UserRoundX,
 } from "lucide-react";
 
 const Dashboard = () => {
@@ -40,6 +45,7 @@ const Dashboard = () => {
   const [filteredUsers, setFilteredUsers] = useState([]);
 
   const [isOpen, setIsOpen] = useState(false);
+  const [isReqOpen, setIsReqOpen] = useState(false);
   const [mode, setMode] = useState("Add");
   const [selectedUser, setSelectedUser] = useState(null);
   const [menuIndex, setMenuIndex] = useState(null);
@@ -333,7 +339,7 @@ const Dashboard = () => {
               </p>
             </div>
             <div className="flex items-center gap-4">
-              <select
+              {/*<select
                 value={selectedPeriod}
                 onChange={(e) => setSelectedPeriod(e.target.value)}
                 className="px-4 py-2 bg-[#151821] light:bg-white border border-gray-900 light:border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -353,7 +359,25 @@ const Dashboard = () => {
                 <option>Silver</option>
                 <option>Gold</option>
                 <option>Platinum</option>
-              </select>
+              </select>*/}
+              <div>
+                <button
+                  className="px-4 py-2 bg-[#151821] text-white light:text-black light:bg-white border border-gray-900 light:border-gray-200 light: rounded-lg hover:bg-gray-800 cursor-pointer flex gap-3 items-center overflow-hidden"
+                  onClick={() => setIsReqOpen(true)}
+                >
+                  Delete requests{" "}
+                  <div className="px-[7px] py-[1px] font-bold rounded-full bg-red-700 text-white text-sm">
+                    0
+                  </div>{" "}
+                  {/*<UserRoundX size={17} color={"red"} /> */}
+                </button>
+              </div>
+
+              <DeleteRequestsForm
+                status={isReqOpen}
+                onClose={() => setIsReqOpen(false)}
+              />
+
               <button
                 ref={downloadMenuRef}
                 className={`flex gap-3 items-center px-4 py-2 bg-gradient-to-l from-blue-500 to-indigo-600 text-white rounded-lg hover:bg-blue-600 transition-colors cursor-pointer ${
@@ -417,9 +441,6 @@ const Dashboard = () => {
                       Email
                     </th>
                     <th className="text-left py-3 px-4 text-gray-400 light:text-gray-700 font-medium">
-                      Phone
-                    </th>
-                    <th className="text-left py-3 px-4 text-gray-400 light:text-gray-700 font-medium">
                       membership
                     </th>
                     <th className="text-left py-3 px-4 text-gray-400 light:text-gray-700 font-medium">
@@ -462,9 +483,6 @@ const Dashboard = () => {
                         {user.email}
                       </td>
                       <td className="py-4 px-4 text-gray-300 light:text-gray-600">
-                        {user.phone}
-                      </td>
-                      <td className="py-4 px-4 text-gray-300 light:text-gray-600">
                         {user.membership}
                       </td>
                       <td className="py-4 px-4 text-gray-300 light:text-gray-600">
@@ -491,7 +509,7 @@ const Dashboard = () => {
                         </span>
                       </td>
                       <td className="py-4 px-4 text-gray-300 light:text-gray-600">
-                        {user.createdAt}
+                        {formatDate(user.createdAt)}
                       </td>
                       <td className="py-4 px-4 text-gray-300 light:text-gray-600">
                         <Ellipsis onClick={() => setMenuIndex(index)} />

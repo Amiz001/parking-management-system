@@ -21,12 +21,22 @@ export default function Login() {
       return;
     }
 
-    const isValidName = /^[A-Za-z\s'.-]{1,30}$/;
+    const isValidName = /^[A-Za-z\s'.-]{1,30}$/.test(name);
     const isValidEmail = /\S+@\S+\.\S+/.test(email);
     const isValidPassword = /^(?=.*[0-9]).{5,}$/.test(password);
 
-    if (!isValidPassword || !isValidEmail || !isValidName) {
-      toast.error("Invalid inputs", { containerId: "login-toast" });
+    if (!isValidPassword) {
+      toast.error("Invalid password format", { containerId: "login-toast" });
+      return;
+    }
+
+    if (!isValidEmail) {
+      toast.error("Invalid email address", { containerId: "login-toast" });
+      return;
+    }
+
+    if (!isValidName) {
+      toast.error("Invalid name", { containerId: "login-toast" });
       return;
     }
 
@@ -40,13 +50,16 @@ export default function Login() {
         }
       );
 
-      toast.success("Registration successfull!", { containerId: "login-toast" });
+      toast.success("Registration successfull!", {
+        containerId: "login-toast",
+      });
       navigate("/login");
-      
     } catch (err) {
       if (
         err.response &&
-        (err.response.status === 401 || err.response.status === 404 || error.response.status == 400)
+        (err.response.status === 401 ||
+          err.response.status === 404 ||
+          error.response.status == 400)
       ) {
         toast.error("Registration failed!", {
           containerId: "login-toast",
@@ -89,17 +102,23 @@ export default function Login() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-950 via-indigo-950 to-black p-4 flex items-center justify-center" style={{backgroundImage: `linear-gradient(rgba(20, 33, 61, 0.8), rgba(0,0,0, 0.7)), url(${slides[current].image})`, backgroundSize: "cover"}}>
+    <div
+      className="min-h-screen bg-gradient-to-b from-blue-950 via-indigo-950 to-black p-4 flex items-center justify-center"
+      style={{
+        backgroundImage: `linear-gradient(rgba(20, 33, 61, 0.8), rgba(0,0,0, 0.7)), url(${slides[current].image})`,
+        backgroundSize: "cover",
+      }}
+    >
       <ToastContainer
         containerId="login-toast"
         position="top-center"
         autoClose={3000}
         closeOnClick
         style={{
-          top: "100px",
-          left: "550px",
-          height: "20px",
-          width: "80px",
+          top: "70px",
+          left: "570px",
+          height: "10px",
+          width: "60px",
         }}
         theme="light"
       />
@@ -124,12 +143,13 @@ export default function Login() {
               <h1 className="text-3xl font-bold text-gray-900 mb-3">
                 Register Now!
               </h1>
-              <p className="text-gray-600">Please enter following in details below</p>
+              <p className="text-gray-600">
+                Please enter following in details below
+              </p>
             </div>
 
             {/* Login Form */}
             <div className="space-y-6">
-
               {/* Name Field */}
               <div
                 className="animate-slide-up"
@@ -203,7 +223,10 @@ export default function Login() {
                 style={{ animationDelay: "0.8s" }}
               >
                 <span className="text-gray-600">Don't have an account? </span>
-                <button onClick={() => navigate('/login')} className="text-gray-900 font-medium hover:underline transition-all">
+                <button
+                  onClick={() => navigate("/login")}
+                  className="text-gray-900 font-medium hover:underline transition-all"
+                >
                   Sign in
                 </button>
               </div>
@@ -213,23 +236,43 @@ export default function Login() {
           {/* Right Panel - slider */}
           <div className="relative bg-gray-900 p-8 lg:p-12 h-full flex flex-col justify-center items-center overflow-hidden">
             <div className="relative mb-8 animate-float">
-              <div className="relative w-80 h-80 rounded-3xl border border-blue-500/30 flex items-center justify-center" style={{backgroundImage: `url(${slides[current].image})`, backgroundSize: "cover"}}></div>
+              <div
+                className="relative w-80 h-80 rounded-3xl border border-blue-500/30 flex items-center justify-center"
+                style={{
+                  backgroundImage: `url(${slides[current].image})`,
+                  backgroundSize: "cover",
+                }}
+              ></div>
             </div>
 
             <div
               className="text-center text-white animate-fade-in-up"
               style={{ animationDelay: "1s" }}
             >
-              <h2 className="text-2xl font-bold mb-4">{slides[current].title}</h2>
+              <h2 className="text-2xl font-bold mb-4">
+                {slides[current].title}
+              </h2>
               <p className="text-gray-300 mb-8 max-w-sm">
                 {slides[current].subTitle}
               </p>
 
               {/* Progress Dots */}
               <div className="flex justify-center space-x-2">
-                <div className={`w-2 h-2 rounded-full ${current == 0 ? "bg-white" : "bg-white/30"}`}></div>
-                <div className={`w-2 h-2 rounded-full ${current == 1 ? "bg-white" : "bg-white/30"}`}></div>
-                <div className={`w-2 h-2 rounded-full ${current == 2 ? "bg-white" : "bg-white/30"}`}></div>
+                <div
+                  className={`w-2 h-2 rounded-full ${
+                    current == 0 ? "bg-white" : "bg-white/30"
+                  }`}
+                ></div>
+                <div
+                  className={`w-2 h-2 rounded-full ${
+                    current == 1 ? "bg-white" : "bg-white/30"
+                  }`}
+                ></div>
+                <div
+                  className={`w-2 h-2 rounded-full ${
+                    current == 2 ? "bg-white" : "bg-white/30"
+                  }`}
+                ></div>
               </div>
             </div>
           </div>
