@@ -12,12 +12,7 @@
   "dependencies": {
     "@hookform/resolvers": "^5.1.1",
     "@tailwindcss/vite": "^4.1.11",
-<<<<<<< HEAD
-    "axios": "^1.10.0",
     "file-saver": "^2.0.5",
-=======
-    "axios": "^1.12.2",
->>>>>>> 42ac412b1a2656f44cb2574d7a5a4b1f1e758197
     "framer-motion": "^12.23.6",
     "install": "^0.13.0",
     "jspdf": "^3.0.3",
