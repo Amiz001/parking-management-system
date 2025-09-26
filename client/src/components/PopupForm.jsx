@@ -108,7 +108,7 @@ const UserFormModal = ({ status, mode, selectedUser, onClose, refresh }) => {
       }`}
     >
 
-      <div className="bg-[#151821] light:from-white light:to-gray-50 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto custom-scroll">
+      <div className="bg-[#151821] light:bg-gradient-to-b light:from-white light:to-gray-50 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto custom-scroll">
         {/* Header */}
         <div className="relative p-6 border-b border-gray-700 light:border-gray-200">
           <div className="flex justify-center mb-4">

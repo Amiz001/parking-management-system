@@ -1,6 +1,7 @@
 import React, { useState,  useEffect } from 'react';
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import {toast} from 'react-toastify'
 
 //import * as XLSX from "xlsx";
 //import { saveAs } from "file-saver";
@@ -104,6 +105,7 @@ const handleDelete = async (id) => {
   try {
     await axios.delete(`${URL}/${id}`); // must match your backend route
     setBookings(bookings.filter((b) => b._id !== id));
+    toast.success("Deleted successfully!")
   } catch (err) {
     console.error("Delete error:", err.response?.data || err.message);
   }

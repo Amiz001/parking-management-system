@@ -21,8 +21,9 @@ const sidebarItems = [
 
 
   const bottomItems = [
-    { icon: Settings, label: 'Settings' },
-    { icon: LogOut, label: 'Logout' },
+    { icon: Settings, link:"/", label: "Settings" },
+    // { icon: HelpCircle, label: 'Help & Support' },
+    { icon: LogOut, link:"/", label: "Logout" },
   ];
 
 
@@ -191,6 +192,7 @@ const Dashboard = () => {
   };
  
   useEffect(() => { fetchSpots(); }, []);
+  const navigate2 = useNavigate();
     
   return (
     <div className={`flex h-auto bg-gray-950 text-white light:text-black light:bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 ${lightMode ? "light" : "dark"}`}>
@@ -229,8 +231,8 @@ const Dashboard = () => {
           <a href="#" className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 light:text-black hover:bg-gray-700 light:hover:bg-gray-100 transition-colors">
             <Settings size={20} /> <span>Settings</span>
           </a>
-          <a href="#" className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 light:text-black hover:bg-gray-700 light:hover:bg-gray-100 transition-colors">
-            <LogOut size={20} /> <span>Logout</span>
+          <a className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 light:text-black hover:bg-gray-700 light:hover:bg-gray-100 transition-colors">
+            <LogOut size={20}  /> <span onClick={() => navigate2('/')}>Logout</span>
           </a>
         </div>
 

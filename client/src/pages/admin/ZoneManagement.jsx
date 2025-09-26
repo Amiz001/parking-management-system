@@ -18,6 +18,7 @@ import {
   Plus, Edit3, Trash2, Bike, Truck, Power, PowerOff,
 } from 'lucide-react';
 import axios from 'axios';
+import {toast} from 'react-toastify';
 
 const URL = "http://localhost:5000/zones";
 
@@ -207,6 +208,7 @@ const ZoneManagement = () => {
     setEditingZone(zone);
     setFormData({ zoneId: zone.zoneId || '', name: zone.name, slots: zone.slots, parkType, status: zone.status });
     setShowModal(true);
+    toast.success("Slot updated successfully!");
   };
 
   const handleDelete = async (zoneId, parkType) => {
@@ -214,6 +216,7 @@ const ZoneManagement = () => {
     try {
       await axios.delete(`${URL}/${zoneId}`);
       setParks(prev => ({ ...prev, [parkType]: prev[parkType].filter(z => z.id !== zoneId) }));
+      toast.success("Slot deleted successfully!");
     } catch (err) {
       console.error('Failed to delete zone:', err);
     }

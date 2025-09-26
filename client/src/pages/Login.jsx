@@ -45,13 +45,13 @@ export default function Login() {
           navigate("/");
           break;
         case "admin":
-          navigate("/admin/users");
+          navigate("/admin/dashboard");
           break;
         case "operator":
-          navigate("/admin/users");
+          navigate("/operator/dashboard");
           break;
         case "customer support":
-          navigate("/admin/users");
+          navigate("/customersupport/dashboard");
           break;
         default:
           navigate("/login");

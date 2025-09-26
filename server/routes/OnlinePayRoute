@@ -1,0 +1,13 @@
+// routes/OnlinePayRoute.js
+const express = require('express');
+const router = express.Router();
+const OnlinePayModel = require("../models/OnlinePayModel");
+const OnlinePayController = require("../controllers/OnlinePayController");
+
+// POST /online-payment/create
+router.post("/",OnlinePayController.createPayment);
+
+// POST /online-payment/update-status
+router.put("/:id",OnlinePayController.updatePaymentStatus);
+
+module.exports = router;

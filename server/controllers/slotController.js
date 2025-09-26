@@ -94,7 +94,7 @@ const deleteSlot = async (req, res, next) => {
     return res.status(200).json({ message: "Slot successfully deleted" });
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ message: "Slot is occupieed, cannot delete" });
+    return res.status(500).json({ message: "Slot is occupied, cannot delete" });
   }
 };
 

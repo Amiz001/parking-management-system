@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import {toast} from 'react-toastify';
+
 import {
   Search,
   Users,
@@ -137,9 +139,10 @@ const SlotManagement = () => {
   ];
 
   const bottomItems = [
-    { icon: Settings, label: "Settings" },
-    { icon: LogOut, label: "Logout" },
-  ];
+      { icon: Settings, link:"/", label: "Settings" },
+      // { icon: HelpCircle, label: 'Help & Support' },
+      { icon: LogOut, link:"/", label: "Logout" },
+    ];
 
 
   const navigate = useNavigate();
@@ -586,7 +589,7 @@ const SlotManagement = () => {
           {bottomItems.map((item, index) => (
             <a
               key={index}
-              href="#"
+              onClick={() => navigate(item.link)}
               className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 light:text-black hover:bg-gray-700 light:hover:bg-gray-100 transition-colors"
             >
               <item.icon size={20} />
