@@ -18,6 +18,6 @@ const complaintSchema = new mongoose.Schema({
 });
 
 module.exports = mongoose.model("Complaint", complaintSchema); 
-// Create a Mongoose model named "Complaint" based on the complaintSchema  
+// Create a Mongoose model named "Complaint" based on the complaintSchema
 // This model is used to interact with the 'complaints' collection in MongoDB
 // Export it so it can be imported in controllers or other parts of the application

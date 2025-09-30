@@ -7,7 +7,7 @@ import ComplaintForm from "../pages/customerSupport/ComplaintForm";        // Co
 import RefundForm from "../pages/customerSupport/RefundForm";              // Refund form page component
 import Ticket from "../pages/customerSupport/Ticket";                      // Ticket page component
 import CustomerDashboard from "../pages/customerSupport/CustomerDashboard";// Main dashboard component
-import Customer from "../pages/customerSupport/Customer";
+import CustomerDashboard from "../pages/customerSupport/CustomerDashboard";
 
 // Defining an array of route objects for React Router
 // Each object has a 'path' (the URL) and an 'element' (the React component to render)
@@ -17,7 +17,6 @@ const customerSupportRoutes = [
   { path: "/customersupport/feedback", element: <FeedbackForm /> },       // Feedback page route
   { path: "/customersupport/complaint", element: <ComplaintForm /> },     // Complaint page route
   { path: "/customersupport/ticket", element: <Ticket /> },               // Ticket page route
-  { path: "/customersupport/customer", element: <Customer /> }, 
 ];
 
 // Exporting the routes array so it can be imported and used in the main router setup

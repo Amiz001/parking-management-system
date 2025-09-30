@@ -17,7 +17,6 @@ const customerSupportRoutes = [
   { path: "/customersupport/feedback", element: <FeedbackForm /> },       // Feedback page route
   { path: "/customersupport/complaint", element: <ComplaintForm /> },     // Complaint page route
   { path: "/customersupport/ticket", element: <Ticket /> },               // Ticket page route
-  { path: "/customersupport/customer", element: <Customer /> }, 
 ];
 
 // Exporting the routes array so it can be imported and used in the main router setup
