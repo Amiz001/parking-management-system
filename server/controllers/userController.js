@@ -17,7 +17,21 @@ const getUsers = async (req, res) => {
   }
 };
 
-const getUserById = () => {};
+const getUserById = async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    const user = await Users.findById(id);
+
+    if (!user) {
+      return res.status(404).json({ message: "Not found" });
+    }
+
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ message: "Server error!" });
+  }
+};
 
 const getDeleteRequests = async (req, res) => {
   try {
@@ -150,26 +164,27 @@ const validateUser = async (req, res) => {
       return res.status(401).json({ message: "Invalid Credentials!" });
     }
 
-    /*const token = jwt.sign(
+    const token = jwt.sign(
       {
         id: user._id,
+        name: user.name,
         email: user.email,
         role: user.role,
-        profilePhoto: user.profilePhoto,
+        //profilePhoto: user.profilePhoto,
       },
       process.env.JWT_SECRET,
       {
         expiresIn: "2h",
       }
-    );*/
+    );
 
     res.json({
       message: "User Found!",
+      token,
       user: {
         name: user.name,
         email: user.email,
         role: user.role,
-        profilePhoto: user.profilePhoto,
       },
     });
   } catch (err) {

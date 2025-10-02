@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { Car, MapPin, Clock, Shield, Users, ChevronRight, ChevronDown, Star, Menu, X } from 'lucide-react';
 import Logo from '../assets/parkbay.png'
+import {useNavigate} from 'react-router-dom'
 
 export default function ParkingLandingPage() {
   const [openFaq, setOpenFaq] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
   const toggleFaq = (index) => {
     setOpenFaq(openFaq === index ? null : index);
@@ -49,15 +51,15 @@ export default function ParkingLandingPage() {
                 <img src={Logo} className="w-30"></img>
               </div>
               <nav className="hidden md:flex space-x-8">
-                <a href="#" className="hover:text-blue-400 transition-colors">Solutions</a>
-                <a href="#" className="hover:text-blue-400 transition-colors">Pricing</a>
-                <a href="#" className="hover:text-blue-400 transition-colors">Resources</a>
+                <a  className="hover:text-blue-400 transition-colors" onClick={() => navigate('/operator/onlinebookingPage')}>Booking</a>
+                <a  className="hover:text-blue-400 transition-colors" onClick={() => navigate('/membership-pack')}>Pricing</a>
+                <a  className="hover:text-blue-400 transition-colors" onClick={() => navigate('/customersupport/feedback')}>Feedback</a>
                 <a href="#" className="hover:text-blue-400 transition-colors">About</a>
               </nav>
             </div>
             <div className="hidden md:flex items-center space-x-4">
-              <button className="text-white hover:text-blue-400 transition-colors cursor-pointer mr-10 text-lg">Log In</button>
-              <button className="bg-gradient-to-r from-indigo-600 to-blue-500 px-6 py-2 rounded-lg font-medium transition-colors">
+              <button className="text-white hover:text-blue-400 transition-colors cursor-pointer mr-10 text-lg" onClick={() => navigate('/login')}>Log In</button>
+              <button onClick={() => navigate('/register')} className="bg-gradient-to-r from-indigo-600 to-blue-500 px-6 py-2 rounded-lg font-medium transition-colors">
                 Get Started
               </button>
             </div>
@@ -79,7 +81,7 @@ export default function ParkingLandingPage() {
                 AI-Powered Smart Parking with Real-Time Availability, 
                 Making Your Business Operations Faster And More Efficient.
               </p>
-              <button className="bg-indigo-600 hover:bg-indigo-700 px-8 py-4 rounded-lg font-medium text-lg transition-colors inline-flex items-center space-x-2">
+              <button onClick={() => navigate('/register')} className="bg-indigo-600 hover:bg-indigo-700 px-8 py-4 rounded-lg font-medium text-lg transition-colors inline-flex items-center space-x-2">
                 <span>Get Started</span>
                 <ChevronRight className="h-5 w-5" />
               </button>
@@ -147,12 +149,12 @@ export default function ParkingLandingPage() {
         </div>
       </section>
 
-      {/* Pricing Section */}
+      {/* Pricing Section 
       <section className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-4xl font-bold text-center text-gray-900 mb-16">Our Pricing</h2>
           <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {/* Free Plan */}
+            
             <div className="bg-white rounded-2xl p-8 border-2 border-gray-200">
               <h3 className="text-2xl font-bold text-gray-900 mb-2">Free</h3>
               <div className="text-4xl font-bold text-gray-900 mb-6">
@@ -189,7 +191,7 @@ export default function ParkingLandingPage() {
               </ul>
             </div>
 
-            {/* Pro Plan - Featured */}
+            
             <div className="bg-gray-900 text-white rounded-2xl p-8 border-2 border-indigo-500 relative">
               <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                 <span className="bg-indigo-500 text-white px-4 py-1 rounded-full text-sm font-medium">
@@ -235,7 +237,7 @@ export default function ParkingLandingPage() {
               </ul>
             </div>
 
-            {/* Business Plan */}
+            
             <div className="bg-white rounded-2xl p-8 border-2 border-gray-200">
               <h3 className="text-2xl font-bold text-gray-900 mb-2">Business</h3>
               <div className="text-4xl font-bold text-gray-900 mb-6">
@@ -277,7 +279,7 @@ export default function ParkingLandingPage() {
             </div>
           </div>
         </div>
-      </section>
+      </section>*/}
 
       {/* Services Section */}
       <section className="py-20 bg-white">

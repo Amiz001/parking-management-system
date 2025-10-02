@@ -36,22 +36,28 @@ export default function Login() {
         }
       );
 
-      if (response.data) {
-        toast.success("Login successfull!", { containerId: "login-toast" });
+      if (!response.data || !response.data.token) {
+        toast.error("Login failed! No token received.", {
+          containerId: "login-toast",
+        });
+        return;
       }
+
+      localStorage.setItem("token", response.data.token);
+      toast.success("Login successful!", { containerId: "login-toast" });
 
       switch (response.data.user.role) {
         case "user":
-          navigate("/");
+          navigate("/profile");
           break;
         case "admin":
-          navigate("/admin/users");
+          navigate("/admin/dashboard");
           break;
         case "operator":
-          navigate("/admin/users");
+          navigate("/operator/dashboard");
           break;
         case "customer support":
-          navigate("/admin/users");
+          navigate("/customersupport/dashboard");
           break;
         default:
           navigate("/login");

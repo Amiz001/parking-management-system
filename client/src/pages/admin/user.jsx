@@ -11,6 +11,7 @@ import { saveAs } from "file-saver";
 import jsPDF from "jspdf";
 import AutoTable from "jspdf-autotable";
 import { jwtDecode } from "jwt-decode";
+import {useNavigate} from 'react-router-dom';
 
 import { FaFilePdf, FaFileExcel } from "react-icons/fa";
 import {
@@ -52,6 +53,7 @@ const Dashboard = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useClickOutside(() => setMenuIndex(null));
   const downloadMenuRef = useClickOutside(() => setMenuOpen(false));
+  const navigate = useNavigate();
 
   const sidebarItems = [
     { icon: ChartColumnBig, label: "Dashboard" },
@@ -67,9 +69,9 @@ const Dashboard = () => {
   ];
 
   const bottomItems = [
-    { icon: Settings, label: "Settings" },
+    { icon: Settings, link:"/", label: "Settings" },
     // { icon: HelpCircle, label: 'Help & Support' },
-    { icon: LogOut, label: "Logout" },
+    { icon: LogOut, link:"/", label: "Logout" },
   ];
 
   const fetchUsers = async () => {
@@ -191,7 +193,7 @@ const Dashboard = () => {
       }`}
     >
       {/* Sidebar */}
-      <div className="w-64 bg-[#151821] p-6 flex flex-col light:bg-white light:shadow-lg light:backdrop-blur-sm">
+      <div className="sticky top-0  h-screen w-64 bg-[#151821] p-6 flex flex-col light:bg-white light:shadow-lg light:backdrop-blur-sm">
         <div className="flex items-center gap-3 mb-8">
           <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
             <span className="text-white font-bold">✦</span>
@@ -250,7 +252,7 @@ const Dashboard = () => {
           {bottomItems.map((item, index) => (
             <a
               key={index}
-              href="#"
+              onClick={() => navigate(item.link)}
               className={`flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 light:text-black hover:bg-gray-700 light:hover:bg-gray-100 transition-colors ${
                 item.active
                   ? "bg-gradient-to-l from-blue-500 to-indigo-600 text-white"
