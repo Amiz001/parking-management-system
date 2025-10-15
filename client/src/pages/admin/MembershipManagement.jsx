@@ -14,6 +14,7 @@ import {
   ChartColumnBig,
   Car,
   Megaphone,
+  Download,
   BanknoteArrowDown,
   HeartHandshake,
   LogOut,
@@ -47,6 +48,9 @@ const MembershipManagement = () => {
     features: ''
   });
 
+  const [userMemberships, setUserMemberships] = useState([]);
+  const [loadingUserMemberships, setLoadingUserMemberships] = useState(true);
+
 
   useEffect(() => {
     const fetchPlans = async () => {
@@ -63,6 +67,19 @@ const MembershipManagement = () => {
   }, []);
 
 
+  useEffect(()=>{
+    const fetchUserMemberships = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/user-memberships');
+        setUserMemberships(response.data);
+        setLoadingUserMemberships(false);
+      }catch(error){
+        console.error('Error fetching user memberships: ',error);
+        setLoadingUserMemberships(false);
+      }
+    };
+    fetchUserMemberships();
+  },[]);
 
   const sidebarItems = [
     { icon: ChartColumnBig, label: 'Dashboard' },
@@ -178,6 +195,15 @@ const confirmDelete = async () => {
   };
 
   const confirmInsert = async () => {
+    if (!insertForm.name || !insertForm.price || !insertForm.description || !insertForm.features) {
+    alert("All fields are required!");
+    return;
+  }
+
+  if (isNaN(insertForm.price)) {
+    alert("Price must be a number!");
+    return;
+  }
     try {
       const newPlan = {
         ...insertForm,
@@ -197,6 +223,82 @@ const confirmDelete = async () => {
     setShowInsertModal(false);
     setInsertForm({ name: '', price: '', description: '', features: '' });
   };
+
+  const [showLimitModal, setShowLimitModal] = useState(false);
+
+const handleAddPlanClick = () => {
+  if (membershipPlans.length >= 3) {
+    setShowLimitModal(true);
+    return;
+  }
+  setShowInsertModal(true);
+};
+
+
+const exportData = () => {
+  if ((!membershipPlans || membershipPlans.length === 0) &&
+      (!userMemberships || userMemberships.length === 0)) {
+    alert("No data to export!");
+    return;
+  }
+
+  let csv = "";
+
+  // Export Membership Plans
+  if (membershipPlans.length > 0) {
+    csv += "Membership Plans\n";
+    const membershipData = membershipPlans.map(plan => ({
+      ID: plan._id,
+      Name: plan.name,
+      Price: plan.price,
+      Description: plan.description,
+      Features: Array.isArray(plan.features) ? plan.features.join(", ") : plan.features
+    }));
+    csv += Object.keys(membershipData[0]).join(",") + "\n"; // headers
+    csv += membershipData.map(row => Object.values(row).join(",")).join("\n");
+    csv += "\n\n"; // space between tables
+  }
+
+
+const formatDate = (date) => {
+  if (!date) return "-";
+  const d = new Date(date);
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`; // 2025-10-08
+};
+
+
+
+
+  // Export User Memberships
+  if (userMemberships.length > 0) {
+    csv += "User Memberships\n";
+    const userData = userMemberships.map(u => ({
+      ID: u._id,
+      User: u.userId?.name + " (" + u.userId?.email + ")",
+      Membership: u.membershipId?.name + " - LKR " + u.membershipId?.price,
+      Vehicle: u.vehicle_num,
+      StartDate: `"${formatDate(u.startDate)}"`, 
+      EndDate: `"${formatDate(u.endDate)}"`,
+      Status: u.status
+    }));
+    csv += Object.keys(userData[0]).join(",") + "\n"; // headers
+    csv += userData.map(row => Object.values(row).join(",")).join("\n");
+  }
+
+  // Download CSV
+  const blob = new Blob([csv], { type: "text/csv" });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "membership_export.csv";
+  a.click();
+  window.URL.revokeObjectURL(url);
+};
+
+
 
   return (
     <div className={`flex h-auto bg-gray-950 text-white light:text-black light:bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 ${lightMode ? "light" : "dark"}`}>
@@ -308,6 +410,7 @@ const confirmDelete = async () => {
               <h1 className="text-3xl font-bold mb-2">Membership Plans</h1>
               <p className="text-gray-400 light:text-gray-600">Manage and track all membership plans and subscribers here.</p>
             </div>
+            
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2 px-4 py-2 bg-[#151821] light:bg-white rounded-lg">
                 <Calendar size={16} />
@@ -362,12 +465,22 @@ const confirmDelete = async () => {
           
           <div className="bg-gradient-to-b from-[#151821] to-[#242938] light:bg-gradient-to-b light:from-white light:to-white light:shadow-lg light:backdrop-blur-sm rounded-xl p-6">
             <h3 className="text-xl font-semibold mb-4">Membership Plans</h3>
+            <div className="flex items-center gap-4 ml-auto">
             <button 
-                onClick={() => setShowInsertModal(true)} 
+                onClick={handleAddPlanClick} 
                 className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-800 transition-colors"
               >
                 + Add Plan
               </button>
+              
+              <button
+                onClick={exportData}
+                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:bg-blue-600  text-white px-4 py-2 rounded-xl flex items-center gap-2 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+              >
+                <Download className="w-5 h-5" />
+                Export Data
+              </button>
+            </div>
             
             {loading ? (
               <p>Loading membership plans...</p>
@@ -414,6 +527,54 @@ const confirmDelete = async () => {
               </div>
             )}
           </div>
+          
+          <div className="bg-gradient-to-b from-[#151821] to-[#242938] light:bg-gradient-to-b light:from-white light:to-white light:shadow-lg light:backdrop-blur-sm rounded-xl p-6 mt-8">
+  <h3 className="text-xl font-semibold mb-4">User Memberships</h3>
+
+  {loadingUserMemberships ? (
+    <p>Loading user memberships...</p>
+  ) : (
+    <div className="overflow-x-auto">
+      <table className="w-full">
+        <thead>
+          <tr className="border-b border-gray-400">
+            <th className="text-left py-3 px-4 text-gray-400 light:text-gray-700 font-medium">ID</th>
+            <th className="text-left py-3 px-4 text-gray-400 light:text-gray-700 font-medium">User</th>
+            <th className="text-left py-3 px-4 text-gray-400 light:text-gray-700 font-medium">Membership Plan</th>
+            <th className="text-left py-3 px-4 text-gray-400 light:text-gray-700 font-medium">Vehicle Number</th>
+            <th className="text-left py-3 px-4 text-gray-400 light:text-gray-700 font-medium">Start Date</th>
+            <th className="text-left py-3 px-4 text-gray-400 light:text-gray-700 font-medium">End Date</th>
+            <th className="text-left py-3 px-4 text-gray-400 light:text-gray-700 font-medium">Status</th>
+            <th className="text-left py-3 px-4 text-gray-400 light:text-gray-700 font-medium">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {userMemberships.map((membership, index) => (
+            <tr key={membership._id} className="border-b border-gray-200 hover:bg-gray-700 light:hover:bg-gray-100">
+              <td className="py-4 px-4 text-gray-300 light:text-gray-600">{index + 1}</td>
+              <td className="py-4 px-4">{membership.userId?.name} ({membership.userId?.email})</td>
+              <td className="py-4 px-4">{membership.membershipId?.name} - LKR {membership.membershipId?.price}</td>
+              <td className="py-4 px-4">{membership.vehicle_num}</td>
+              <td className="py-4 px-4">{new Date(membership.startDate).toLocaleDateString()}</td>
+              <td className="py-4 px-4">{membership.endDate ? new Date(membership.endDate).toLocaleDateString() : '-'}</td>
+              <td className="py-4 px-4">{membership.status}</td>
+              <td className="py-4 px-4 flex gap-2">
+                        
+                        <button
+                          onClick={() => handleDeleteClick(plan._id)}
+                          className="px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                        >
+                         Delete
+                        </button>
+                        </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )}
+</div>
+
 
             {/* Insert Modal */}
 {showInsertModal && (
@@ -473,6 +634,30 @@ const confirmDelete = async () => {
     </div>
   </div>
 )}
+
+
+{showLimitModal && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-96">
+      <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
+        Limit Reached
+      </h3>
+      <p className="mb-6 text-gray-700 dark:text-gray-300">
+        You can only add up to 3 membership plans.
+      </p>
+      <div className="flex justify-end">
+        <button 
+          onClick={() => setShowLimitModal(false)} 
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        >
+          OK
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
+
 
           {/* Delete Confirmation Modal */}
           {showDeleteModal && (

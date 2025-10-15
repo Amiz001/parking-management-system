@@ -5,7 +5,7 @@ import { loadStripe } from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js';
 import PaymentForm from '../pages/PaymentForm';
 
-const stripePromise = loadStripe('process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY');
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
 const PaymentPortal = ({ amount, username, vehicleType, quantity, planName, onBack, onClose }) => {
   const [clientSecret, setClientSecret] = useState(null);

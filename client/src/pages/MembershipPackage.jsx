@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from "axios";
 import PlanModal from '../pages/PlanModal';
-import PaymentPortal from '../pages/PaymentPortal';
 import { FaStar, FaCrown, FaGem } from 'react-icons/fa';
 
 const MembershipPackage = () => {
@@ -10,13 +9,15 @@ const MembershipPackage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [isCustomModalOpen, setIsCustomModalOpen] = useState(false);
-  const [isPaymentOpen, setIsPaymentOpen] = useState(false);
-  const [paymentData, setPaymentData] = useState(null);
 
+  // Fetch plans from backend and filter out Free plan
   useEffect(() => {
     axios.get("http://localhost:5000/plan")
       .then((res) => {
-        setPlans(res.data.plans || res.data); // Adjust depending on API response
+        const filteredPlans = (res.data.plans || res.data).filter(
+          plan => plan.name.toLowerCase() !== "free"
+        );
+        setPlans(filteredPlans);
       })
       .catch((err) => {
         console.error("Error fetching plans: ", err);
@@ -28,16 +29,7 @@ const MembershipPackage = () => {
     setIsModalOpen(true);
   };
 
-  const calculateAmount = (groups) => {
-    let total = 0;
-    const pricePerVehicle = { Car: 500, Motorbike: 200, Van: 700, Truck: 1000 };
-    groups.forEach((group) => {
-      total += (pricePerVehicle[group.type] || 0) * group.count;
-    });
-    return total;
-  };
-
-  // Function to determine icon based on plan name
+  // Icon selection based on plan name
   const getIconForPlan = (planName) => {
     switch (planName.toLowerCase()) {
       case "silver":
@@ -113,15 +105,7 @@ const MembershipPackage = () => {
           selectedPlan={selectedPlan}
         />
 
-        {/* Create Custom Package Button */}
-        <div className="max-w-6xl mx-auto text-center mt-12">
-          <button
-            className="w-full bg-blue-500 text-white font-bold py-3 px-8 rounded-xl shadow-lg hover:bg-blue-800 transition duration-300 ease-in-out transform hover:scale-105"
-            onClick={() => setIsCustomModalOpen(true)}
-          >
-            Create Custom Package
-          </button>
-        </div>
+        
       </div>
     </div>
   );

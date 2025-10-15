@@ -7,6 +7,8 @@ const OnlinePayController = require("../controllers/OnlinePayController");
 // POST /online-payment/create
 router.post("/",OnlinePayController.createPayment);
 
+router.get("/",OnlinePayController.getAllPayments);
+
 // POST /online-payment/update-status
 router.put("/:id",OnlinePayController.updatePaymentStatus);
 

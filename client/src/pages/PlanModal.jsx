@@ -37,6 +37,12 @@ const PlanModal = ({ isOpen, onClose, selectedPlan }) => {
         setUsernameError('Username is required.');
         return;
     }
+    const regex = /^(?=.*[A-Za-z])[A-Za-z0-9]+$/;
+
+    if (!regex.test(username)){
+      setUsernameError('Username cannot be numbers or symbols.');
+      return;
+    }
     setUsernameError('');
     setShowPaymentPortal(true);
   };
