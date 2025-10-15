@@ -1,122 +1,118 @@
-import { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useState } from "react";
+import { MapPin } from "lucide-react";
+import { useNavigate, useLocation } from "react-router-dom";
 
 export default function BookingForm() {
-  const { id } = useParams(); 
-  const navigate = useNavigate();
+  const location = useLocation();
+  const initialSlotId = location.state?.slotId || "";
+  const initialZone = location.state?.zone || "";
+
+
+  const today = new Date().toISOString().split("T")[0];
+
 
   const [formData, setFormData] = useState({
-    slotId: "",
-    zone: "",
-    types: "",
-    vehicleNum: "",
-    date: "",
-    entryTime: "",
-    exitTime: ""
-  });
+  slotId: initialSlotId,
+  zone: initialZone,
+  types: "",      
+  vehicleNum: "",  
+  date: today,
+  entryTime: "",
+  exitTime: "",
+});
+
 
   const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
-  const today = new Date().toISOString().split("T")[0];
-
-  useEffect(() => {
-    if (id) {
-      fetch(`http://localhost:5000/bookings/${id}`)
-        .then((res) => res.json())
-        .then((data) => {
-          const booking = data.booking ? data.booking : data;
-
-          setFormData({
-            slotId: booking.slotId || "",
-            zone: booking.zone || "",
-            types: booking.types || "",
-            vehicleNum: booking.vehicleNum || "",
-            date: booking.date ? booking.date.split("T")[0] : "",
-            entryTime: booking.entryTime || "",
-            exitTime: booking.exitTime || "",
-          });
-        })
-        .catch((err) => console.error("Error loading booking:", err));
-    }
-  }, [id]);
-
+  const navigate = useNavigate();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
 
     if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: "" }));
+      setErrors((prev) => ({
+        ...prev,
+        [name]: "",
+      }));
     }
   };
 
-
   const validateForm = () => {
     const newErrors = {};
+
     if (!formData.slotId.trim()) newErrors.slotId = "Slot ID is required";
     if (!formData.zone.trim()) newErrors.zone = "Zone is required";
-    if (!formData.types) newErrors.types = "Type is required";
-    if (!formData.vehicleNum.trim()) newErrors.vehicleNum = "Vehicle number is required";
+    if (!formData.types.trim()) newErrors.types = "Type is required";
+    if (!formData.vehicleNum.trim())
+      newErrors.vehicleNum = "Vehicle number is required";
     if (!formData.date) newErrors.date = "Date is required";
     if (!formData.entryTime) newErrors.entryTime = "Entry time is required";
     if (!formData.exitTime) newErrors.exitTime = "Exit time is required";
 
-    if (formData.entryTime && formData.exitTime && formData.date) {
+    if (formData.date && formData.entryTime && formData.exitTime) {
       const entryDateTime = new Date(`${formData.date}T${formData.entryTime}`);
       const exitDateTime = new Date(`${formData.date}T${formData.exitTime}`);
-      if (exitDateTime <= entryDateTime)
-        newErrors.exitTime = "Exit time must be after entry time";
+      if (exitDateTime <= entryDateTime) {
+        newErrors.exitTime = "Exit must be after entry";
+      }
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (!validateForm()) return;
 
     try {
-      const method = id ? "PUT" : "POST";
-      const url = id
-        ? `http://localhost:5000/bookings/${id}`
-        : "http://localhost:5000/bookings";
-
-      const response = await fetch(url, {
-        method,
+      const response = await fetch("http://localhost:5000/bookings", {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
 
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message || "Booking failed");
+      if (!response.ok) throw new Error("Failed to save booking");
 
+      const data = await response.json();
       console.log("Booking saved:", data);
+
       setSubmitted(true);
     } catch (error) {
       console.error("Error submitting booking:", error);
-      alert(error.message || "Something went wrong.");
+      alert("Something went wrong. Please try again.");
     }
   };
 
   if (submitted) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-blue-50">
-        <div className="bg-white p-8 rounded-xl shadow-lg text-center">
+        <div className="bg-white shadow-xl rounded-xl p-6 max-w-md w-full text-center">
           <h2 className="text-2xl font-bold text-green-600 mb-4">
-            {id ? "Booking Updated!" : "Booking Confirmed!"}
+            Booking Confirmed!
           </h2>
-          <p className="text-gray-600 mb-4">
-            {id
-              ? "Your booking has been successfully updated."
-              : "Your booking has been successfully submitted."}
+          <p className="text-gray-700 mb-4">
+            Your booking has been successfully submitted.
           </p>
+          <div className="text-left text-sm mb-6 bg-gray-100 p-4 rounded-lg">
+            <p><strong>Slot ID:</strong> {formData.slotId}</p>
+            <p><strong>Zone Name:</strong> {formData.zone}</p>
+            <p><strong>Type:</strong> {formData.types}</p>
+            <p><strong>Vehicle Number:</strong> {formData.vehicleNum}</p>
+            <p><strong>Date:</strong> {formData.date}</p>
+            <p><strong>Entry Time:</strong> {formData.entryTime}</p>
+            <p><strong>Exit Time:</strong> {formData.exitTime}</p>
+          </div>
           <button
-            onClick={() => navigate("/operator/physicalBooking")}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg"
+            onClick={() => navigate("/operator/dashboard")}
+            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
           >
-            OK
+            Go to Dashboard
           </button>
         </div>
       </div>
@@ -127,12 +123,14 @@ export default function BookingForm() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4">
       <div className="max-w-2xl mx-auto">
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+          {/* Header */}
           <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-6">
-            <h1 className="text-3xl font-bold text-white">
-              {id ? "Update Booking" : "Create Booking"}
+            <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+              <MapPin className="w-6 h-6" /> Parking Booking Form
             </h1>
           </div>
 
+          {/* Form */}
           <form onSubmit={handleSubmit} className="p-8 space-y-6">
             {/* Slot ID & Zone */}
             <div className="grid grid-cols-2 gap-4">
@@ -146,7 +144,9 @@ export default function BookingForm() {
                   readOnly
                   className="w-full border px-3 py-2 rounded-lg"
                 />
-                {errors.slotId && <p className="text-red-500 text-sm">{errors.slotId}</p>}
+                {errors.slotId && (
+                  <p className="text-red-500 text-sm">{errors.slotId}</p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Zone</label>
@@ -158,7 +158,9 @@ export default function BookingForm() {
                   readOnly
                   className="w-full border px-3 py-2 rounded-lg"
                 />
-                {errors.zone && <p className="text-red-500 text-sm">{errors.zone}</p>}
+                {errors.zone && (
+                  <p className="text-red-500 text-sm">{errors.zone}</p>
+                )}
               </div>
             </div>
 
@@ -175,8 +177,7 @@ export default function BookingForm() {
                 <option value="online">Online</option>
                 <option value="physical">Physical</option>
               </select>
-              {errors.types && <p className="text-red-500 text-sm">{errors.types}</p>}
-            </div>
+              </div>
 
             {/* Vehicle & Date */}
             <div className="grid grid-cols-2 gap-4">
@@ -189,7 +190,9 @@ export default function BookingForm() {
                   onChange={handleInputChange}
                   className="w-full border px-3 py-2 rounded-lg"
                 />
-                {errors.vehicleNum && <p className="text-red-500 text-sm">{errors.vehicleNum}</p>}
+                {errors.vehicleNum && (
+                  <p className="text-red-500 text-sm">{errors.vehicleNum}</p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Date</label>
@@ -202,7 +205,9 @@ export default function BookingForm() {
                   min={today}
                   max={today}
                 />
-                {errors.date && <p className="text-red-500 text-sm">{errors.date}</p>}
+                {errors.date && (
+                  <p className="text-red-500 text-sm">{errors.date}</p>
+                )}
               </div>
             </div>
 
@@ -217,7 +222,9 @@ export default function BookingForm() {
                   onChange={handleInputChange}
                   className="w-full border px-3 py-2 rounded-lg"
                 />
-                {errors.entryTime && <p className="text-red-500 text-sm">{errors.entryTime}</p>}
+                {errors.entryTime && (
+                  <p className="text-red-500 text-sm">{errors.entryTime}</p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Exit Time</label>
@@ -228,7 +235,9 @@ export default function BookingForm() {
                   onChange={handleInputChange}
                   className="w-full border px-3 py-2 rounded-lg"
                 />
-                {errors.exitTime && <p className="text-red-500 text-sm">{errors.exitTime}</p>}
+                {errors.exitTime && (
+                  <p className="text-red-500 text-sm">{errors.exitTime}</p>
+                )}
               </div>
             </div>
 
@@ -236,16 +245,16 @@ export default function BookingForm() {
             <div className="flex gap-4">
               <button
                 type="button"
-                onClick={() => navigate("/operator/physicalBooking")}
-                className="flex-1 bg-gray-200 py-2 rounded-lg"
+                onClick={() => navigate("/operator/dashboard")}
+                className="flex-1 bg-gray-200 py-2 rounded-lg hover:bg-gray-300"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="flex-1 bg-blue-600 text-white py-2 rounded-lg"
+                className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
               >
-                {id ? "Update" : "Book Now"}
+                Book Now
               </button>
             </div>
           </form>
@@ -254,4 +263,3 @@ export default function BookingForm() {
     </div>
   );
 }
-

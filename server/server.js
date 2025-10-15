@@ -57,17 +57,8 @@ app.use('/users', userRoutes);
 app.use('/slots', slotRoutes);
 app.use('/zones', zoneRoutes);
 
- 
-app.use('/api/feedback', feedbackRoutes); 
-app.use('/api/complaint', complaintRoutes); 
-app.use('/api/refund', refundRoutes); 
-app.use('/api/ticket', ticketRoutes); 
 
-app.use('/plan', MembershipRoute);
-app.use('/online-payment', OnlinePayRoute);
-app.use('/user-memberships', User_MembershipRoute);
 
 app.listen(5000, () => {
-    console.log("Server is starting"); 
-}); 
-
+    console.log("Server is starting");
+})
