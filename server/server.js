@@ -10,6 +10,7 @@ app.use(cors());
 const physicalBookingRoutes = require('./routes/PhysicalBookingRoutes');
 const PaymentRoute = require("./routes/PaymentRoute");
 const userRoutes = require('./routes/userRoutes');
+const vehicleRoutes = require('./routes/vehicleRoutes');
 const slotRoutes = require('./routes/slotRoutes');
 const zoneRoutes = require('./routes/zoneRoutes');
 
@@ -26,6 +27,7 @@ app.use('/payment',PaymentRoute);
 app.use('/users', userRoutes);
 app.use('/slots', slotRoutes);
 app.use('/zones', zoneRoutes);
+app.use('/vehicles', vehicleRoutes);
 
  
 app.use('/api/feedback', feedbackRoutes); 

@@ -11,7 +11,7 @@ import { saveAs } from "file-saver";
 import jsPDF from "jspdf";
 import AutoTable from "jspdf-autotable";
 import { jwtDecode } from "jwt-decode";
-import {useNavigate} from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 
 import { FaFilePdf, FaFileExcel } from "react-icons/fa";
 import {
@@ -36,6 +36,8 @@ import {
   Trash,
   SquarePen,
   UserRoundX,
+  LandPlot,
+  House,
 } from "lucide-react";
 
 const Dashboard = () => {
@@ -43,6 +45,7 @@ const Dashboard = () => {
   const [lightMode, setLightMode] = useState(false);
   const [selectedSegment, setSelectedSegment] = useState("All Segment");
   const [users, setUsers] = useState([]);
+  const [currentUser, setCurrentUser] = useState(null);
   const [filteredUsers, setFilteredUsers] = useState([]);
 
   const [isOpen, setIsOpen] = useState(false);
@@ -56,23 +59,60 @@ const Dashboard = () => {
   const navigate = useNavigate();
 
   const sidebarItems = [
-    { icon: ChartColumnBig, label: "Dashboard" },
-    { icon: SquareParking, label: "Slot Management" },
-    { icon: HeartHandshake, label: "Membership plans" },
-    { icon: BanknoteArrowDown, label: "Refund requests" },
-    { icon: Megaphone, label: "Notifications" },
+    { icon: ChartColumnBig, link: "/admin/dashboard", label: "Dashboard" },
+    {
+      icon: SquareParking,
+      link: "/admin/slot-management",
+      label: "Slot Management",
+    },
+    {
+      icon: LandPlot,
+      link: "/admin/zone-management",
+      label: "Zone management",
+    },
+    {
+      icon: HeartHandshake,
+      link: "/admin/membership-management",
+      label: "Membership plans",
+    },
+    {
+      icon: BanknoteArrowDown,
+      link: "/admin/refund",
+      label: "Refund requests",
+    },
   ];
 
   const userItems = [
-    { icon: Users, label: "User Management", active: true },
-    { icon: Car, label: "Vehicles" },
+    {
+      icon: Users,
+      label: "User Management",
+      link: "/admin/users",
+      active: true,
+    },
+    { icon: Car, label: "Vehicles", link: "/admin/vehicles" },
   ];
 
   const bottomItems = [
-    { icon: Settings, link:"/", label: "Settings" },
-    // { icon: HelpCircle, label: 'Help & Support' },
-    { icon: LogOut, link:"/", label: "Logout" },
+    { icon: House, link: "/", label: "Back to home" },
+    { icon: LogOut, link: "/", label: "Logout" },
   ];
+
+  const getCurrentUser = async () => {
+    const token = localStorage.getItem("token");
+    const decoded = jwtDecode(token);
+
+    try {
+      const res = await Axios.get(`http://localhost:5000/users/${decoded.id}`);
+
+      if (!res) {
+        return;
+      }
+
+      setCurrentUser(res.data);
+    } catch (err) {
+      console.log("Something went wrong!");
+    }
+  };
 
   const fetchUsers = async () => {
     try {
@@ -92,6 +132,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     fetchUsers();
+    getCurrentUser();
   }, []);
 
   useEffect(() => {
@@ -165,14 +206,29 @@ const Dashboard = () => {
 
     AutoTable(doc, {
       startY: 20,
-      head: [["Name", "Email", "Role", "Membership", "Joined on", "Status"]],
+      head: [
+        [
+          "First Name",
+          "Last Name",
+          "Email",
+          "Phone",
+          "Role",
+          "Membership",
+          "Joined on",
+          "Status",
+          "ProfilePhoto",
+        ],
+      ],
       body: filteredUsers.map((u) => [
-        u.name,
+        u.fname,
+        u.lname,
         u.email,
+        u.phone,
         u.role,
         u.membership,
         u.createdAt ? new Date(u.createdAt).toLocaleDateString() : "-",
         u.status,
+        u.profilePhoto,
       ]),
       theme: "striped",
       headStyles: { fillColor: [41, 128, 185] },
@@ -184,6 +240,12 @@ const Dashboard = () => {
   const handleDownloadMenu = () => {
     if (menuOpen) setMenuOpen(false);
     else setMenuOpen(true);
+  };
+
+    const handleLogout = () => {
+    localStorage.removeItem("token");
+    setIsLoggedIn(false); 
+    navigate("/");
   };
 
   return (
@@ -198,7 +260,9 @@ const Dashboard = () => {
           <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
             <span className="text-white font-bold">✦</span>
           </div>
-          <span className="text-xl font-semibold">Admin</span>
+          <span className="text-xl font-semibold">
+            {currentUser ? currentUser.role : "Loading..."}
+          </span>
         </div>
 
         {/* Main Menu */}
@@ -210,7 +274,7 @@ const Dashboard = () => {
             {sidebarItems.map((item, index) => (
               <a
                 key={index}
-                href="#"
+                href={item.link}
                 className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                   item.active
                     ? "bg-gradient-to-l from-blue-500 to-indigo-600 text-white"
@@ -233,7 +297,7 @@ const Dashboard = () => {
             {userItems.map((item, index) => (
               <a
                 key={index}
-                href="#"
+                href={item.link}
                 className={`flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 light:text-black hover:bg-gray-700 light:hover:bg-gray-100 transition-colors ${
                   item.active
                     ? "bg-gradient-to-l from-blue-500 to-indigo-600 text-white light:text-white"
@@ -249,33 +313,41 @@ const Dashboard = () => {
 
         {/* Bottom Items */}
         <div className="mt-auto space-y-2">
-          {bottomItems.map((item, index) => (
             <a
-              key={index}
-              onClick={() => navigate(item.link)}
-              className={`flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 light:text-black hover:bg-gray-700 light:hover:bg-gray-100 transition-colors ${
-                item.active
-                  ? "bg-gradient-to-l from-blue-500 to-indigo-600 text-white"
-                  : "text-gray-300 hover:bg-gray-700 light:text-black light:hover:bg-gray-100"
-              }`}
+              href='/'
+              className={`flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 light:text-black hover:bg-gray-700 light:hover:bg-gray-100 transition-colors`}
             >
-              <item.icon size={20} />
-              <span>{item.label}</span>
+              <House size={20} />
+              <span>Back to home</span>
             </a>
-          ))}
+
+            <a
+              onClick={() => handleLogout()}
+              className={`flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 light:text-black hover:bg-gray-700 light:hover:bg-gray-100 transition-colors`}
+            >
+              <LogOut size={20} />
+              <span>Log out</span>
+            </a>
         </div>
 
         {/* User Profile */}
         <div className="mt-6 flex items-center gap-3 p-3 bg-[#222735] light:bg-gray-100 light:shadow-lg light:backdrop-blur-sm border-gray-400 rounded-lg ">
-          <div className="w-10 h-10 bg-blue-500 light:text-white rounded-full flex items-center justify-center">
-            <span className="text-sm font-semibold">AM</span>
+          <div className="w-12 h-8 bg-blue-500 light:text-white flex items-center justify-center overflow-hidden rounded-full">
+            <img
+              src={
+                currentUser ? currentUser.profilePhoto : "/uploads/default.webp"
+              }
+              className="w-full h-full"
+            ></img>
           </div>
           <div className="flex-1">
             <p className="text-sm font-medium light:text-gray-950">
-              Austin Martin
+              {currentUser
+                ? currentUser.fname + " " + currentUser.lname
+                : "Loading..."}
             </p>
             <p className="text-xs text-gray-400 light:text-gray-700">
-              austinm@mail.com
+              {currentUser ? currentUser.email : "Loading..."}
             </p>
           </div>
           <MoreHorizontal
@@ -433,14 +505,22 @@ const Dashboard = () => {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-400">
+                    <th className="text-left py-3 px-4 text-gray-400 light:text-gray-700   font-medium"></th>
                     <th className="text-left py-3 px-4 text-gray-400 light:text-gray-700 font-medium">
                       ID
                     </th>
+
                     <th className="text-left py-3 px-4 text-gray-400 light:text-gray-700   font-medium">
-                      Name
+                      First Name
+                    </th>
+                    <th className="text-left py-3 px-4 text-gray-400 light:text-gray-700   font-medium">
+                      Last Name
                     </th>
                     <th className="text-left py-3 px-4 text-gray-400 light:text-gray-700 font-medium">
                       Email
+                    </th>
+                    <th className="text-left py-3 px-4 text-gray-400 light:text-gray-700 font-medium">
+                      Phone
                     </th>
                     <th className="text-left py-3 px-4 text-gray-400 light:text-gray-700 font-medium">
                       membership
@@ -465,27 +545,33 @@ const Dashboard = () => {
                       key={user._id}
                       className="border-b border-gray-200 hover:bg-gray-700 light:hover:bg-gray-100"
                     >
+                      <td className="py-4 px-4 w-20">
+                        <div className="flex items-center gap-3 w-10 h-10 overflow-hidden">
+                          <img
+                            src={user.profilePhoto}
+                            className="rounded-full w-full h-full"
+                          ></img>
+                          <span className="font-medium"></span>
+                        </div>
+                      </td>
+
                       <td className="py-4 px-4 text-gray-300  light:text-gray-600">
                         US{user._id.slice(0, 3)}
                       </td>
-                      <td className="py-4 px-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 bg-blue-500 light:text-white rounded-full flex items-center justify-center">
-                            <span className="text-xs font-semibold">
-                              {user.name
-                                .split(" ")
-                                .map((n) => n[0])
-                                .join("")}
-                            </span>
-                          </div>
-                          <span className="font-medium">{user.name}</span>
-                        </div>
+                      <td className="py-4 px-4 text-gray-300 light:text-gray-600">
+                        {user.fname}
+                      </td>
+                      <td className="py-4 px-4 text-gray-300 light:text-gray-600">
+                        {user.lname}
                       </td>
                       <td className="py-4 px-4 text-gray-300 light:text-gray-600">
                         {user.email}
                       </td>
                       <td className="py-4 px-4 text-gray-300 light:text-gray-600">
-                        {user.membership}
+                        {user.phone}
+                      </td>
+                      <td className="py-4 px-4 text-gray-300 light:text-gray-600">
+                        {user.membership.name}
                       </td>
                       <td className="py-4 px-4 text-gray-300 light:text-gray-600">
                         {user.role}
@@ -553,6 +639,7 @@ const Dashboard = () => {
             selectedUser={selectedUser}
             onClose={() => setIsOpen(false)}
             refresh={() => fetchUsers()}
+            token={localStorage.getItem("token")}
           />
         </main>
       </div>

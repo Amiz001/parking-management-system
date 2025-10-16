@@ -1,38 +1,76 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { X } from "lucide-react";
 import axios from "axios";
 import { toast } from "react-toastify";
 
-const UserFormModal = ({ status, mode, selectedUser, onClose, refresh }) => {
+const UserFormModal = ({
+  status,
+  mode,
+  selectedUser,
+  onClose,
+  refresh,
+  token,
+}) => {
   const [formData, setFormData] = useState({
-    name: "",
+    fname: "",
+    lname: "",
     email: "",
+    phone: "",
     role: "",
     password: "",
-    profilePhoto: "",
+    profilePhoto: "/uploads/default.jpg",
   });
 
+  const [uploadedUrl, setUploadedUrl] = useState("");
   const roles = ["user", "admin", "operator", "customer support"];
+  const widgetRef = useRef(null);
 
   useEffect(() => {
     if (mode === "Update" && selectedUser) {
       setFormData({
-        name: selectedUser.name || "",
+        fname: selectedUser.fname || "",
+        lname: selectedUser.lname || "",
         email: selectedUser.email || "",
+        phone: selectedUser.phone || "",
         role: selectedUser.role || "",
         password: selectedUser.password || "",
         profilePhoto: selectedUser.profilePhoto || "",
       });
     } else {
       setFormData({
-        name: "",
+        fname: "",
+        lname: "",
         email: "",
-        role: "user",
+        phone: "",
+        role: "",
         password: "",
-        profilePhoto: "",
+        profilePhoto: "/uploads/default.jpg",
       });
     }
   }, [mode, selectedUser]);
+
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://widget.cloudinary.com/v2.0/global/all.js";
+    script.async = true;
+    document.body.appendChild(script);
+
+    script.onload = () => {
+      widgetRef.current = window.cloudinary.createUploadWidget(
+        {
+          cloudName: "dj18evtjj",
+          uploadPreset: "profile_photos",
+          cropping: true,
+          multiple: false,
+        },
+        (error, result) => {
+          if (!error && result && result.event === "success") {
+            handleInputChange("profilePhoto", result.info.secure_url)
+          }
+        }
+      );
+    };
+  }, []);
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({
@@ -44,12 +82,19 @@ const UserFormModal = ({ status, mode, selectedUser, onClose, refresh }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.name || !formData.password || !formData.email) {
+    if (
+      !(formData.fname || formData.lname) ||
+      !formData.password ||
+      !formData.email ||
+      !formData.phone
+    ) {
       toast.error("Please fill all fields!");
       return;
     }
 
-    const isValidName = /^[A-Za-z\s'.-]{1,30}$/.test(formData.name);
+    const isValidFirstName = /^[A-Za-z]{2,}$/.test(formData.firstName);
+    const isValidLastName = /^[A-Za-z]{2,}$/.test(formData.lastName);
+    const isValidPhone = /^[0-9]{10}$/.test(formData.phone);
     const isValidEmail = /\S+@\S+\.\S+/.test(formData.email);
     const isValidPassword = /^(?=.*[0-9]).{8,}$/.test(formData.password);
 
@@ -63,8 +108,18 @@ const UserFormModal = ({ status, mode, selectedUser, onClose, refresh }) => {
       return;
     }
 
-    if (!isValidName) {
-      toast.error("Invalid name");
+    if (!isValidPhone) {
+      toast.error("Invalid phone number");
+      return;
+    }
+
+    if (!isValidFirstName) {
+      toast.error("Invalid First name");
+      return;
+    }
+
+    if (!isValidLastName) {
+      toast.error("Invalid Last name");
       return;
     }
 
@@ -72,7 +127,8 @@ const UserFormModal = ({ status, mode, selectedUser, onClose, refresh }) => {
       if (mode === "Update") {
         const response = await axios.put(
           `http://localhost:5000/users/${selectedUser._id}`,
-          formData
+          formData,
+          { headers: { Authorization: `Bearer ${token}` } }
         );
 
         if (response.data.message == "Updated successfully!") {
@@ -81,7 +137,8 @@ const UserFormModal = ({ status, mode, selectedUser, onClose, refresh }) => {
       } else {
         const response = await axios.post(
           "http://localhost:5000/users/",
-          formData
+          formData,
+          { headers: { Authorization: `Bearer ${token}` } }
         );
 
         if (response.data.message == "Added successfully") {
@@ -107,22 +164,13 @@ const UserFormModal = ({ status, mode, selectedUser, onClose, refresh }) => {
         status ? "visible" : "hidden"
       }`}
     >
-
       <div className="bg-[#151821] light:bg-gradient-to-b light:from-white light:to-gray-50 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto custom-scroll">
         {/* Header */}
         <div className="relative p-6 border-b border-gray-700 light:border-gray-200">
-          <div className="flex justify-center mb-4">
-            <div className="w-16 h-16 bg-gray-700 light:bg-gray-200 rounded-full flex items-center justify-center">
-              <div className="w-12 h-12 bg-gray-600 light:bg-gray-300 rounded-full flex items-center justify-center">
-                <span className="text-white light:text-gray-800 text-lg font-medium">
-                  MR
-                </span>
-              </div>
-            </div>
-          </div>
           <h2 className="text-white light:text-gray-900 text-xl font-semibold text-center">
             {mode == "Add" ? "Add user" : "Update user"}
           </h2>
+
           <button
             onClick={onClose}
             className="absolute top-6 right-6 text-gray-400 hover:text-white light:text-gray-500 light:hover:text-gray-700"
@@ -133,18 +181,57 @@ const UserFormModal = ({ status, mode, selectedUser, onClose, refresh }) => {
 
         {/* Form Content */}
         <div className="p-6 space-y-6">
+          <div className="flex justify-center mb-4">
+
+            {/* Profile Photo */}
+            <div className="flex items-center gap-6 mb-6">
+              <div className="w-24 h-24 bg-gray-700 light:bg-gray-300 rounded-xl overflow-hidden shadow-md">
+                <img
+                  src={mode == 'Update' ? formData.profilePhoto : "/uploads/default.webp" || formData.profilePhoto}
+                  alt="Profile"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="flex flex-col justify-center">
+                <label className="block text-gray-300 light:text-gray-700 text-sm font-medium mb-2">
+                  Profile Photo
+                </label>
+                <button
+                  className="px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-lg text-sm font-medium transition-all shadow-sm"
+                  onClick={() => widgetRef.current && widgetRef.current.open()}
+                >
+                  Upload Profile
+                </button>
+              </div>
+            </div>
+          </div>
           {/* Name Fields */}
-          <div>
-            <label className="block text-gray-300 light:text-gray-700 text-sm font-medium mb-2">
-              NAME
-            </label>
-            <input
-              type="text"
-              value={formData.name}
-              placeholder="Enter name"
-              onChange={(e) => handleInputChange("name", e.target.value)}
-              className="w-full bg-[#212634] light:bg-white border border-gray-700 light:border-gray-300 rounded-lg px-4 py-3 text-white light:text-gray-900 placeholder-gray-400 light:placeholder-gray-400 focus:outline-none focus:border-blue-500"
-            />
+          <div className="flex gap-25">
+            <div>
+              <label className="block text-gray-300 light:text-gray-700 text-sm font-medium mb-2">
+                FIRST NAME
+              </label>
+              <input
+                type="text"
+                value={formData.fname}
+                placeholder="Enter first name"
+                onChange={(e) => handleInputChange("fname", e.target.value)}
+                className="w-[140%] bg-[#212634] light:bg-white border border-gray-700 light:border-gray-300 rounded-lg px-4 py-3 text-white light:text-gray-900 placeholder-gray-400 light:placeholder-gray-400 focus:outline-none focus:border-blue-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-gray-300 light:text-gray-700 text-sm font-medium mb-2">
+                LAST NAME
+              </label>
+              <input
+                type="text"
+                value={formData.lname}
+                placeholder="Enter last name"
+                onChange={(e) => handleInputChange("lname", e.target.value)}
+                className="w-[140%] bg-[#212634] light:bg-white border border-gray-700 light:border-gray-300 rounded-lg px-4 py-3 text-white light:text-gray-900 placeholder-gray-400 light:placeholder-gray-400 focus:outline-none focus:border-blue-500"
+              />
+            </div>
           </div>
 
           {/* Email */}
@@ -157,6 +244,20 @@ const UserFormModal = ({ status, mode, selectedUser, onClose, refresh }) => {
               value={formData.email}
               placeholder="Enter email"
               onChange={(e) => handleInputChange("email", e.target.value)}
+              className="w-full bg-[#212634] light:bg-white border border-gray-700 light:border-gray-300 rounded-lg px-4 py-3 text-white light:text-gray-900 placeholder-gray-400 light:placeholder-gray-400 focus:outline-none focus:border-blue-500"
+            />
+          </div>
+
+          {/* Phone */}
+          <div>
+            <label className="block text-gray-300 light:text-gray-700 text-sm font-medium mb-2">
+              PHONE
+            </label>
+            <input
+              type="phone"
+              value={formData.phone}
+              placeholder="Enter phone"
+              onChange={(e) => handleInputChange("phone", e.target.value)}
               className="w-full bg-[#212634] light:bg-white border border-gray-700 light:border-gray-300 rounded-lg px-4 py-3 text-white light:text-gray-900 placeholder-gray-400 light:placeholder-gray-400 focus:outline-none focus:border-blue-500"
             />
           </div>
