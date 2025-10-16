@@ -40,11 +40,19 @@ app.use('/zones', zoneRoutes);
 app.use('/vehicles', vehicleRoutes);
 >>>>>>> origin/feature/user-management
 
+<<<<<<< HEAD
 app.use("/bookings", bookingRoutes);
 //app.use("/bookings", PhysicalBookingRoutes);
 app.use("/users", userRoutes);
 app.use("/slots", slotRoutes);
 app.use("/zones", zoneRoutes);
+=======
+ 
+app.use('/feedbacks', feedbackRoutes); 
+app.use('/complaints', complaintRoutes); 
+app.use('/refunds', refundRoutes); 
+app.use('/tickets', ticketRoutes); 
+>>>>>>> origin/feature/refund-feedback
 
 app.use('/plan', MembershipRoute);
 app.use('/online-payment', OnlinePayRoute);
