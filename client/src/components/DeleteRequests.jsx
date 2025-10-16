@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Check, X, ArrowLeft, FileText, Clock } from "lucide-react";
 import Axios from "axios";
 import { toast } from "react-toastify";
-import { formatDate } from '../utils/formatDate'
+import { formatDate } from "../utils/formatDate";
 
 export default function DeleteRequests({ status, onClose }) {
   const [selectedUser, setSelectedUser] = useState(null);
@@ -12,43 +12,41 @@ export default function DeleteRequests({ status, onClose }) {
     try {
       const res = await Axios.get("http://localhost:5000/users/delete-req");
 
+      console.log(res.data)
       if (res.data.message === "No delete requests found") {
         setDeleteRequests([]);
         return;
       }
 
-      const filtered = res.data.deleteRequests.filter((d) => {
-        d.status == "pending";
-      })
-
-      setDeleteRequests(filtered);
+      if (res.data.deleteRequests) {
+        const filtered = res.data.deleteRequests.filter((d) => {
+          d.status == "pending";
+        });
+        setDeleteRequests(filtered);
+      }
       fetchDeleteRequests();
-      
     } catch (err) {
       console.error("Error fetching delete requests:", err);
       toast.error("Failed to fetch delete requests");
     }
   };
 
-const updateStatus = async (user, status) => {
-  try {
+  const updateStatus = async (user, status) => {
+    try {
+      const res = await Axios.patch(`http://localhost:5000/users/${user._id}`, {
+        status,
+      });
 
-    const res = await Axios.patch(
-      `http://localhost:5000/users/${user._id}`,
-      { status } 
-    );
-
-    if (res.status === 200 || res.status === 202) {
-      toast.success(`Status updated to "${status}" for ${user.name}`);
-      return res.data; 
-    } else {
-      toast.error("Failed to update status");
+      if (res.status === 200 || res.status === 202) {
+        toast.success(`Status updated to "${status}" for ${user.name}`);
+        return res.data;
+      } else {
+        toast.error("Failed to update status");
+      }
+    } catch (err) {
+      toast.error("Error updating status. Try again!");
     }
-  } catch (err) {
-    toast.error("Error updating status. Try again!");
-  }
-};
-
+  };
 
   useEffect(() => {
     fetchDeleteRequests();
@@ -83,7 +81,7 @@ const updateStatus = async (user, status) => {
                   <div>
                     <p className="font-medium text-lg flex items-center gap-2">
                       <FileText size={18} className="text-indigo-500" />
-                      {req.name}
+                      {req.user.name}
                     </p>
                     <p className="text-sm text-gray-400 flex items-center gap-1 mt-1">
                       <Clock size={14} />
@@ -150,7 +148,7 @@ const updateStatus = async (user, status) => {
                 <X size={18} /> Decline
               </button>
             </div>
-          </>   
+          </>
         )}
       </div>
     </div>

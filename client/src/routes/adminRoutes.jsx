@@ -5,10 +5,11 @@ import SlotManagement from  "../pages/admin/SlotManagement";
 import ZoneManagement from  "../pages/admin/ZoneManagement";
 import MembershipManagement from "../pages/admin/MembershipManagement";
 import MembershipPackage from "../pages/MembershipPackage";
+import ProtectedRoute from "../components/ProtectedRoute"
 
 const AdminRoutes = [
     { path: "/admin/dashboard", element: <Dashboard /> },
-    { path: "/admin/users", element: <User /> },
+    { path: "/admin/users", element: <ProtectedRoute><User /></ProtectedRoute> },
     { path: "/admin/vehicles", element: <Vehicle /> },
     { path: "/admin/slot-management", element: <SlotManagement /> },
     { path: "/admin/zone-management", element: <ZoneManagement /> },

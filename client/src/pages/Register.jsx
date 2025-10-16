@@ -4,11 +4,15 @@ import Logo from "../assets/parkbay.png";
 import { toast, ToastContainer } from "react-toastify";
 import Axios from "axios";
 import { useNavigate } from "react-router-dom";
+import VerificationPopup from "../components/VerificationPopup "
 
 export default function Login() {
-  const [name, setName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  const [showPopup, setShowPopup] = useState(false);
 
   const [showPassword, setShowPassword] = useState(false);
   const [current, setCurrent] = useState(0);
@@ -16,12 +20,14 @@ export default function Login() {
   const navigate = useNavigate();
 
   const handleSubmit = async () => {
-    if (!password || !email || !name) {
+    if (!password || !email || !firstName || !lastName || !phone) {
       toast.error("Please fill all fields!", { containerId: "login-toast" });
       return;
     }
 
-    const isValidName = /^[A-Za-z\s'.-]{1,30}$/.test(name);
+    const isValidFirstName = /^[A-Za-z]{2,}$/.test(firstName);
+    const isValidLastName = /^[A-Za-z]{2,}$/.test(lastName);
+    const isValidPhone = /^[0-9]{10}$/.test(phone);
     const isValidEmail = /\S+@\S+\.\S+/.test(email);
     const isValidPassword = /^(?=.*[0-9]).{5,}$/.test(password);
 
@@ -35,8 +41,18 @@ export default function Login() {
       return;
     }
 
-    if (!isValidName) {
-      toast.error("Invalid name", { containerId: "login-toast" });
+    if (!isValidPhone) {
+      toast.error("Invalid phone number", { containerId: "login-toast" });
+      return;
+    }
+
+    if (!isValidFirstName) {
+      toast.error("Invalid first name", { containerId: "login-toast" });
+      return;
+    }
+
+    if (!isValidLastName) {
+      toast.error("Invalid last name", { containerId: "login-toast" });
       return;
     }
 
@@ -44,22 +60,28 @@ export default function Login() {
       const response = await Axios.post(
         "http://localhost:5000/users/register",
         {
-          name,
+          firstName,
+          lastName,
+          phone,
           email,
           password,
         }
       );
 
-      toast.success("Registration successfull!", {
+      /*
+      toast.success("Registration successful!", {
         containerId: "login-toast",
-      });
-      navigate("/login");
+      }); */
+
+      toast.success("Verification email has been sent!");
+      setShowPopup(true);
     } catch (err) {
+      console.log(err)
       if (
         err.response &&
         (err.response.status === 401 ||
           err.response.status === 404 ||
-          error.response.status == 400)
+          err.response.status == 400)
       ) {
         toast.error("Registration failed!", {
           containerId: "login-toast",
@@ -150,18 +172,32 @@ export default function Login() {
 
             {/* Login Form */}
             <div className="space-y-6">
-              {/* Name Field */}
-              <div
-                className="animate-slide-up"
-                style={{ animationDelay: "0.2s" }}
-              >
-                <input
-                  type="text"
-                  placeholder="Enter name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full px-4 py-4 bg-gray-50 border-0 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all duration-300 placeholder-gray-500"
-                />
+              {/* Name Fields */}
+              <div className="flex gap-20">
+                <div
+                  className="animate-slide-up"
+                  style={{ animationDelay: "0.2s" }}
+                >
+                  <input
+                    type="text"
+                    placeholder="Enter first name"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    className="w-full px-4 py-4 bg-gray-50 border-0 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all duration-300 placeholder-gray-500"
+                  />
+                </div>
+                <div
+                  className="animate-slide-up"
+                  style={{ animationDelay: "0.2s" }}
+                >
+                  <input
+                    type="text"
+                    placeholder="Enter last name"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    className="w-full px-4 py-4 bg-gray-50 border-0 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all duration-300 placeholder-gray-500"
+                  />
+                </div>
               </div>
 
               {/* Email Field */}
@@ -174,6 +210,20 @@ export default function Login() {
                   placeholder="Enter email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  className="w-full px-4 py-4 bg-gray-50 border-0 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all duration-300 placeholder-gray-500"
+                />
+              </div>
+
+              {/* Phone number Field */}
+              <div
+                className="animate-slide-up"
+                style={{ animationDelay: "0.2s" }}
+              >
+                <input
+                  type="email"
+                  placeholder="Enter phone no"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
                   className="w-full px-4 py-4 bg-gray-50 border-0 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all duration-300 placeholder-gray-500"
                 />
               </div>
@@ -230,6 +280,16 @@ export default function Login() {
                   Sign in
                 </button>
               </div>
+            </div>
+
+            {/* Verification popup */}
+            <div className="absolute min-h-screen flex items-center justify-center bg-gray-100">
+              {showPopup && (
+                <VerificationPopup
+                  email= {email}
+                  onClose={() => setShowPopup(false)}
+                />
+              )}
             </div>
           </div>
 

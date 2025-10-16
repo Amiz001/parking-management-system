@@ -38,16 +38,32 @@ import {
   CreditCard as CardIcon,
   Wallet,
   PieChart,
+  Bus,
 } from "lucide-react";
 import Axios from "axios";
+import { useClickOutside } from "../hooks/useClickOutside";
+import { useNavigate } from "react-router-dom";
+import { formatDate } from "../utils/formatDate";
+import EditProfileForm from "../components/EditProfileForm";
+import AddVehicleForm from "../components/AddVehicleForm";
+import PasswordResetForm from "../components/PasswordResetForm";
+import AddDeleteRequest from "../components/AddDeleteRequest";
+import { toast } from "react-toastify";
 
 export default function ProfessionalParkingDashboard() {
   const [activeTab, setActiveTab] = useState("dashboard");
-  const [deleteStatus, setDeleteStatus] = useState("");
+  const [deleteReq, setDeleteReq] = useState(null);
   const [user, setUser] = useState(null);
   const [notifications, setNotifications] = useState(3);
   const [showPassword, setShowPassword] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [showPopup, setShowPopup] = useState(false);
+  const popupRef = useClickOutside(() => setShowPopup(false));
+  const [status, setStatus] = useState(false);
+  const [vehicles, setVehicles] = useState(null);
+  const [mode, setMode] = useState("add");
+  const [selectedVehicle, setSelectedVehicle] = useState(null);
+  const navigate = useNavigate();
 
   const handleDeleteAccount = () => {
     setDeleteStatus("pending");
@@ -67,7 +83,7 @@ export default function ProfessionalParkingDashboard() {
       const decoded = jwtDecode(token);
       const userId = decoded.id;
 
-      console.log(decoded)
+      console.log(decoded);
 
       if (!userId) {
         console.error("No userId in token");
@@ -88,55 +104,91 @@ export default function ProfessionalParkingDashboard() {
     }
   };
 
+  const fetchVehicles = async () => {
+    try {
+      const decoded = jwtDecode(localStorage.getItem("token"));
+
+      const vehicles = await Axios.get("http://localhost:5000/vehicles");
+
+      if (!vehicles.data) {
+        console.log("No vehicles found!");
+        return;
+      }
+
+      const filtered = vehicles.data.filter((v) => v.userId == decoded.id);
+      console.log(filtered);
+      setVehicles(filtered);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const getDeleteRequest = async () => {
+    try {
+      const decoded = jwtDecode(localStorage.getItem("token"));
+
+      const deleteRequest = await Axios.get(
+        `http://localhost:5000/users/delete-req/${decoded.id}`
+      );
+
+      console.log(deleteRequest.data);
+      if (!deleteRequest) {
+        console.log("No Requests found!");
+        return;
+      }
+      setDeleteReq(deleteRequest.data);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const handleCancelDeleteRequest = async () => {
+    try {
+      if(deleteReq){
+        const res = await Axios.delete(`http://localhost:5000/users/delete-req/${deleteReq._id}`);
+
+        if (!res) {
+        toast.error("Delete request deletion failed!");
+        return;
+      }
+      }
+      getDeleteRequest();
+      toast.success("Delete request deleted successfully!");
+    } catch (err) {
+      console.error("Error cancelling delete request:", err);
+      toast.error("Something went wrong while deleting the request!");
+    }
+  };
+
   useEffect(() => {
     fetchUser();
+    fetchVehicles();
+    getDeleteRequest();
   }, []);
+
+  const handleDelete = async (id) => {
+    const res = await Axios.delete(`http://localhost:5000/vehicles/${id}`);
+
+    if (res.data.message === "Deletion failed!") {
+      toast.error("Vehicle deletion failed!");
+      return;
+    }
+
+    toast.success("Vehicle deleted successfully!");
+    fetchVehicles();
+  };
 
   const tabs = [
     { id: "dashboard", label: "Dashboard", icon: Activity },
     { id: "profile", label: "Profile", icon: User },
     { id: "bookings", label: "Parking History", icon: Calendar },
     { id: "vehicles", label: "My Vehicles", icon: Car },
-    { id: "payments", label: "Payments", icon: CreditCard },
-    { id: "favorites", label: "Favorites", icon: Bookmark },
     { id: "settings", label: "Settings", icon: Settings },
   ];
 
   const quickActions = [
     { id: "back", label: "Back to Home", icon: House },
     { id: "logout", label: "Log Out", icon: LogOut },
-  ];
-
-  // Sample data
-  const stats = [
-    {
-      label: "Total Bookings",
-      value: "147",
-      change: "+12%",
-      icon: Calendar,
-      color: "blue",
-    },
-    {
-      label: "Money Spent",
-      value: "$2,340",
-      change: "+8%",
-      icon: DollarSign,
-      color: "green",
-    },
-    {
-      label: "Hours Parked",
-      value: "324h",
-      change: "+15%",
-      icon: Clock,
-      color: "purple",
-    },
-    {
-      label: "Favorite Spots",
-      value: "8",
-      change: "+2",
-      icon: Star,
-      color: "yellow",
-    },
   ];
 
   const recentBookings = [
@@ -172,79 +224,28 @@ export default function ProfessionalParkingDashboard() {
     },
   ];
 
-  const vehicles = [
-    {
-      id: 1,
-      make: "BMW",
-      model: "X3",
-      year: "2022",
-      plate: "ABC-123",
-      color: "Pearl White",
-      isPrimary: true,
-      lastUsed: "Today",
-    },
-    {
-      id: 2,
-      make: "Tesla",
-      model: "Model 3",
-      year: "2023",
-      plate: "XYZ-789",
-      color: "Midnight Black",
-      isPrimary: false,
-      lastUsed: "Yesterday",
-    },
-  ];
+  const handleLogout = () => {
+    navigate("/");
+  };  
 
-  const paymentHistory = [
-    {
-      id: 1,
-      description: "Premium Membership - Monthly",
-      date: "Jan 15, 2025",
-      amount: "$29.99",
-      status: "Paid",
-      method: "Credit Card •••• 4532",
-    },
-    {
-      id: 2,
-      description: "Downtown Plaza Parking",
-      date: "Jan 14, 2025",
-      amount: "$15.50",
-      status: "Paid",
-      method: "Digital Wallet",
-    },
-    {
-      id: 3,
-      description: "Airport Long-term Parking",
-      date: "Jan 12, 2025",
-      amount: "$45.00",
-      status: "Pending",
-      method: "Credit Card •••• 4532",
-    },
-  ];
-
-  const favoriteSpots = [
-    {
-      id: 1,
-      name: "Downtown Plaza",
-      address: "123 Main St",
-      rating: 4.8,
-      price: "$5-15/hr",
-    },
-    {
-      id: 2,
-      name: "Central Mall",
-      address: "456 Oak Ave",
-      rating: 4.6,
-      price: "$4-12/hr",
-    },
-    {
-      id: 3,
-      name: "Office Complex",
-      address: "789 Business Blvd",
-      rating: 4.9,
-      price: "$8-20/hr",
-    },
-  ];
+  const redirectUser = (role) => {
+    switch (role) {
+      case "user":
+        navigate("/");
+        break;
+      case "admin":
+        navigate("/admin/dashboard");
+        break;
+      case "operator":
+        navigate("/operator/dashboard");
+        break;
+      case "customer support":
+        navigate("/customersupport/dashboard");
+        break;
+      default:
+        navigate("/login");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
@@ -252,14 +253,9 @@ export default function ProfessionalParkingDashboard() {
       <div className="bg-white shadow-sm border-b-0">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            {/* Logo */}
             <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center">
-                <Car className="w-6 h-6 text-white" />
-              </div>
               <div>
-                <h1 className="text-xl font-bold text-gray-900">ParkBay</h1>
-                <p className="text-sm text-gray-500">Smart Parking Solutions</p>
+                <h1 className="text-2xl font-bold text-gray-900">ParkBay</h1>
               </div>
             </div>
 
@@ -288,49 +284,74 @@ export default function ProfessionalParkingDashboard() {
                 )}
               </button>
 
-              <div className="flex items-center space-x-3 bg-gray-50 rounded-lg p-2">
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-full flex items-center justify-center text-sm font-bold text-white">
-                  {user ? user.name.slice(0,2) : "Loading..."}
+              <div
+                className="flex items-center space-x-3 bg-gray-50 rounded-lg p-2"
+                onClick={() => setShowPopup(true)}
+              >
+                <div className="w-9 h-9 overflow-hidden rounded-full flex items-center justify-center text-sm font-bold text-white">
+                  <img
+                    src={user ? user.profilePhoto : "/uploads/default.webp"}
+                    className="h-fll w-full"
+                  ></img>
                 </div>
                 <div className="hidden sm:block">
                   <p className="text-sm font-medium text-gray-900">
-                    {user ? user.name.split(" ")[0] : "Loading..."}
+                    {user ? user.fname : "Loading..."}
                   </p>
-                  <p className="text-xs text-gray-500">Premium Member</p>
+                  <p className="text-xs text-gray-500">
+                    {user ? user.membership.name + " Member" : "Loarding ..."}
+                  </p>
                 </div>
                 <ChevronDown className="w-4 h-4 text-gray-500" />
               </div>
             </div>
+
+            {showPopup && (
+              <div
+                className="absolute z-10 right-[9.3%] mt-[9%] w-40 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden z-50"
+                ref={popupRef}
+              >
+                <ul className="text-gray-700 text-sm">
+                  {user && user.role != "user" && (
+                    <li
+                      onClick={() => redirectUser(user.role)}
+                      className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                    >
+                      Dashboard
+                    </li>
+                  )}
+
+                  <li
+                    onClick={() => handleLogout()}
+                    className="px-4 py-2 text-red-600 hover:bg-red-50 cursor-pointer font-medium"
+                  >
+                    Logout
+                  </li>
+                </ul>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
-      <div className="container mx-auto px-6 py-8 max-w-7xl">
+      <div className="container mx-auto px-6 py-8 max-w-7xl min-w-10xl">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Sidebar Navigation */}
           <div className="lg:col-span-1">
             <div className="bg-white shadow-sm rounded-2xl p-6 sticky top-8">
-              {/* Profile Summary */}
               <div className="text-center mb-8">
-                <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-full flex items-center justify-center text-2xl font-bold text-white mx-auto mb-4">
-                  {user ? user.name.slice(0,2) : "Loading..."}
+                <div className="w-20 h-20 overflow-hidden rounded-full flex items-center justify-center text-2xl font-bold text-white mx-auto mb-4">
+                  <img
+                    src={user ? user.profilePhoto : "/uploads/default.webp"}
+                    className="h-fll w-full"
+                  ></img>
                 </div>
                 <h2 className="text-lg font-semibold text-gray-900">
-                  {user ? user.name : "Loading..."}
+                  {user ? user.fname : "Loading..."}
                 </h2>
                 <div className="flex items-center justify-center text-green-600 text-sm mt-1">
                   <CheckCircle className="w-4 h-4 mr-1" />
-                  {user ? (user.membership.charAt(0).toUpperCase() + user.membership.slice(1)) : "Loading..."} Member
-                </div>
-                <div className="mt-3 flex items-center justify-center space-x-4 text-xs text-gray-500">
-                  <div className="flex items-center">
-                    <Award className="w-3 h-3 mr-1" />
-                    Gold Status
-                  </div>
-                  <div className="flex items-center">
-                    <Star className="w-3 h-3 mr-1" />
-                    4.9 Rating
-                  </div>
+                  {user ? user.membership.name + " Member" : "Loarding ..."}
                 </div>
               </div>
 
@@ -355,7 +376,6 @@ export default function ProfessionalParkingDashboard() {
                 })}
               </nav>
 
-              {/* Quick Actions */}
               <div className="border-t pt-4 space-y-2">
                 {quickActions.map((action) => {
                   const IconComponent = action.icon;
@@ -375,15 +395,13 @@ export default function ProfessionalParkingDashboard() {
 
           {/* Main Content */}
           <div className="lg:col-span-3">
-            {/* Dashboard */}
             {activeTab === "dashboard" && (
               <div className="space-y-8">
-                {/* Welcome Banner */}
                 <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-8 text-white">
                   <div className="flex items-center justify-between">
                     <div>
                       <h1 className="text-3xl font-bold mb-2">
-                        Welcome back, Emily! 👋
+                        Welcome back, {user ? user.fname : "Loading..."}! 👋
                       </h1>
                       <p className="text-blue-100 mb-4">
                         Here's what's happening with your parking today
@@ -393,51 +411,8 @@ export default function ProfessionalParkingDashboard() {
                         Book New Spot
                       </button>
                     </div>
-                    <div className="hidden md:block">
-                      <div className="w-24 h-24 bg-white/10 rounded-2xl flex items-center justify-center backdrop-blur-sm">
-                        <Car className="w-12 h-12 text-white" />
-                      </div>
-                    </div>
                   </div>
-                </div>
-
-                {/* Stats Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-                  {stats.map((stat) => {
-                    const IconComponent = stat.icon;
-                    const colorClasses = {
-                      blue: "bg-blue-50 text-blue-600 border-blue-100",
-                      green: "bg-green-50 text-green-600 border-green-100",
-                      purple: "bg-purple-50 text-purple-600 border-purple-100",
-                      yellow: "bg-yellow-50 text-yellow-600 border-yellow-100",
-                    };
-
-                    return (
-                      <div
-                        key={stat.label}
-                        className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow"
-                      >
-                        <div className="flex items-center justify-between mb-4">
-                          <div
-                            className={`w-12 h-12 rounded-xl flex items-center justify-center border ${
-                              colorClasses[stat.color]
-                            }`}
-                          >
-                            <IconComponent className="w-6 h-6" />
-                          </div>
-                          <div className="flex items-center text-green-600 text-sm font-medium">
-                            <TrendingUp className="w-4 h-4 mr-1" />
-                            {stat.change}
-                          </div>
-                        </div>
-                        <h3 className="text-2xl font-bold text-gray-900 mb-1">
-                          {stat.value}
-                        </h3>
-                        <p className="text-gray-600 text-sm">{stat.label}</p>
-                      </div>
-                    );
-                  })}
-                </div>
+                </div>  
 
                 {/* Recent Activity */}
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
@@ -492,7 +467,7 @@ export default function ProfessionalParkingDashboard() {
                 </div>
               </div>
             )}
-            {/* Profile Tab */}
+            {/* Profile */}
             {activeTab === "profile" && (
               <div className="space-y-8">
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
@@ -501,22 +476,43 @@ export default function ProfessionalParkingDashboard() {
                       <h2 className="text-xl font-semibold text-gray-900">
                         Personal Information
                       </h2>
-                      <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2">
+                      <button
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2"
+                        onClick={() => setStatus(true)}
+                      >
                         <Edit className="w-4 h-4" />
                         <span>Edit Profile</span>
                       </button>
                     </div>
                   </div>
 
+                  <EditProfileForm
+                    status={status}
+                    selectedUser={user}
+                    onClose={() => setStatus(false)}
+                    refresh={() => fetchUser()}
+                    token={localStorage.getItem("token")}
+                  />
+
                   <div className="p-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-2">
                         <label className="text-gray-500 text-sm font-medium flex items-center">
                           <User className="w-4 h-4 mr-2" />
-                          Full Name
+                          First Name
                         </label>
                         <div className="bg-gray-50 border border-gray-200 p-4 rounded-xl font-medium text-gray-900">
-                          Emily Johnson
+                          {user ? user.fname : "Loading..."}
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-gray-500 text-sm font-medium flex items-center">
+                          <User className="w-4 h-4 mr-2" />
+                          Last Name
+                        </label>
+                        <div className="bg-gray-50 border border-gray-200 p-4 rounded-xl font-medium text-gray-900">
+                          {user ? user.lname : "Loading..."}
                         </div>
                       </div>
 
@@ -526,7 +522,7 @@ export default function ProfessionalParkingDashboard() {
                           Email Address
                         </label>
                         <div className="bg-gray-50 border border-gray-200 p-4 rounded-xl font-medium text-gray-900">
-                          emily.johnson@example.com
+                          {user ? user.email : "Loading..."}
                         </div>
                       </div>
 
@@ -536,34 +532,33 @@ export default function ProfessionalParkingDashboard() {
                           Phone Number
                         </label>
                         <div className="bg-gray-50 border border-gray-200 p-4 rounded-xl font-medium text-gray-900">
-                          (555) 123-4567
+                          {user ? user.phone : "Loading..."}
                         </div>
                       </div>
 
                       <div className="space-y-2">
                         <label className="text-gray-500 text-sm font-medium flex items-center">
                           <CalendarIcon className="w-4 h-4 mr-2" />
-                          Date of Birth
+                          Role
                         </label>
                         <div className="bg-gray-50 border border-gray-200 p-4 rounded-xl font-medium text-gray-900">
-                          January 15, 1987
+                          {user ? user.role : "Loading..."}
                         </div>
                       </div>
 
-                      <div className="md:col-span-2 space-y-2">
+                      <div className="space-y-2">
                         <label className="text-gray-500 text-sm font-medium flex items-center">
-                          <Navigation className="w-4 h-4 mr-2" />
-                          Address
+                          <CalendarIcon className="w-4 h-4 mr-2" />
+                          Joined on
                         </label>
                         <div className="bg-gray-50 border border-gray-200 p-4 rounded-xl font-medium text-gray-900">
-                          1234 Oak Street, Apartment 4B, Los Angeles, CA 90210
+                          {user ? formatDate(user.createdAt) : "Loading..."}
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Membership Info */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl p-6 border border-yellow-200">
                     <div className="flex items-center space-x-3 mb-4">
@@ -572,9 +567,13 @@ export default function ProfessionalParkingDashboard() {
                       </div>
                       <div>
                         <h3 className="text-lg font-semibold text-gray-900">
-                          Premium Membership
+                          {user
+                            ? user.membership.name + " Membership"
+                            : "Loading..."}
                         </h3>
-                        <p className="text-sm text-gray-600">Gold Status</p>
+                        <p className="text-sm text-gray-600">
+                          {user ? user.membership.price : "Loading..."}
+                        </p>
                       </div>
                     </div>
                     <div className="space-y-2 mb-4">
@@ -593,34 +592,6 @@ export default function ProfessionalParkingDashboard() {
                       Upgrade to Platinum
                     </button>
                   </div>
-
-                  <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                      Preferences
-                    </h3>
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <span className="text-gray-700">
-                          Email Notifications
-                        </span>
-                        <div className="w-11 h-6 bg-blue-600 rounded-full p-1 transition-colors">
-                          <div className="w-4 h-4 bg-white rounded-full translate-x-5 transition-transform"></div>
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-gray-700">SMS Alerts</span>
-                        <div className="w-11 h-6 bg-blue-600 rounded-full p-1 transition-colors">
-                          <div className="w-4 h-4 bg-white rounded-full translate-x-5 transition-transform"></div>
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-gray-700">Location Services</span>
-                        <div className="w-11 h-6 bg-gray-300 rounded-full p-1 transition-colors">
-                          <div className="w-4 h-4 bg-white rounded-full transition-transform"></div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
                 </div>
               </div>
             )}
@@ -632,16 +603,6 @@ export default function ProfessionalParkingDashboard() {
                     <h2 className="text-xl font-semibold text-gray-900">
                       Parking History
                     </h2>
-                    <div className="flex items-center space-x-4">
-                      <button className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                        <Filter className="w-4 h-4" />
-                        <span>Filter</span>
-                      </button>
-                      <button className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                        <Download className="w-4 h-4" />
-                        <span>Export</span>
-                      </button>
-                    </div>
                   </div>
                 </div>
 
@@ -694,11 +655,7 @@ export default function ProfessionalParkingDashboard() {
                                 {booking.status}
                               </span>
                             </div>
-                            {booking.status === "Active" && (
-                              <button className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                                End Session
-                              </button>
-                            )}
+                            
                           </div>
                         </div>
                       </div>
@@ -716,41 +673,173 @@ export default function ProfessionalParkingDashboard() {
                       <h2 className="text-xl font-semibold text-gray-900">
                         My Vehicles
                       </h2>
-                      <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2">
+                      <button
+                        onClick={() => {
+                          setMode("add");
+                          setStatus(true);
+                        }}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2"
+                      >
                         <Plus className="w-4 h-4" />
                         <span>Add Vehicle</span>
                       </button>
                     </div>
+
+                    <AddVehicleForm
+                      status={status}
+                      mode={mode}
+                      userId={user._id}
+                      selectedVehicle={selectedVehicle}
+                      onClose={() => setStatus(false)}
+                      refresh={() => fetchVehicles()}
+                      token={localStorage.getItem("token")}
+                    />
                   </div>
 
                   <div className="p-6">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                      {vehicles.map((vehicle) => (
-                        <div
-                          key={vehicle.id}
-                          className={`border-2 rounded-2xl p-6 transition-all ${
-                            vehicle.isPrimary
-                              ? "border-blue-200 bg-blue-50"
-                              : "border-gray-200 bg-white hover:border-gray-300"
-                          }`}
-                        >
-                          <div className="flex items-start justify-between mb-4">
-                            <div className="flex items-center space-x-3">
-                              <div className="w-14 h-14 bg-gray-100 rounded-2xl flex items-center justify-center">
-                                <Car className="w-8 h-8 text-gray-600" />
+                    <div className="space-y-4">
+                      {vehicles &&
+                        vehicles.map((vehicle) => (
+                          <div
+                            key={vehicle._id}
+                            className="border border-gray-200 rounded-xl p-6 hover:shadow-md transition-shadow"
+                          >
+                            <div className="flex flex-col lg:flex-row lg:items-center justify-between space-y-4 lg:space-y-0">
+                              <div className="flex items-start space-x-4">
+                                <div className="w-14 h-14 bg-blue-50 rounded-xl flex items-center justify-center">
+                                  {vehicle.type == "Car" && (
+                                    <Car className="w-7 h-7 text-blue-600" />
+                                  )}
+                                  {vehicle.type == "Bus" && (
+                                    <Bus className="w-7 h-7 text-blue-600" />
+                                  )}
+                                </div>
+                                <div className="space-y-1">
+                                  <h3 className="font-semibold text-gray-900 text-lg">
+                                    {vehicle.vehicleNo}
+                                  </h3>
+                                  <p className="text-gray-600">
+                                    Type: {vehicle.type}
+                                  </p>
+                                </div>
                               </div>
-                              <div>
-                                <h3 className=""></h3>
+
+                              <div className="flex items-center justify-between lg:flex-col lg:items-end space-x-4 lg:space-x-0 lg:space-y-2">
+                                <div className="text-right">
+                                  <button
+                                    className="px-3 py-1 text-green-600 rounded-lg"
+                                    onClick={() => {
+                                      setMode("update");
+                                      setStatus(true);
+                                      setSelectedVehicle(vehicle);
+                                    }}
+                                  >
+                                    Edit
+                                  </button>
+                                  <button
+                                    className="px-3 py-1 text-red-600 rounded-lg"
+                                    onClick={() => handleDelete(vehicle._id)}
+                                  >
+                                    Delete
+                                  </button>
+                                </div>
                               </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
+                        ))}
                     </div>
                   </div>
                 </div>
               </div>
-            )}{" "}
+            )}
+            {activeTab === "settings" && (
+              <div className="space-y-6">
+                {/* Password Reset */}
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
+                  <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-blue-50 flex items-center justify-center rounded-lg">
+                        <Shield className="text-blue-600 w-5 h-5" />
+                      </div>
+                      <div>
+                        <h2 className="text-lg font-semibold text-gray-900">
+                          Password
+                        </h2>
+                        <p className="text-sm text-gray-500">
+                          Manage your account password
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setStatus(true)}
+                      className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                    >
+                      Reset Password
+                    </button>
+                  </div>
+                </div>
+
+                {/* Delete Account */}
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
+                  <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-red-50 flex items-center justify-center rounded-lg">
+                        <Trash2 className="text-red-600 w-5 h-5" />
+                      </div>
+                      <div>
+                        <h2 className="text-lg font-semibold text-gray-900">
+                          Delete Account
+                        </h2>
+                        <p className="text-sm text-gray-500">
+                          Permanently remove your account and all data
+                        </p>
+                      </div>
+                    </div>
+
+                    {!deleteReq && (
+                      <button
+                        onClick={() => setStatus(true)}
+                        className={`bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2
+                        }`}
+                      >
+                        Request Delete
+                      </button>
+                    )}
+
+                    {deleteReq && (
+                      <div className="flex items-center gap-3">
+                        <span className="px-3 py-1 text-sm bg-yellow-100 text-yellow-700 rounded-full">
+                          Pending
+                        </span>
+                        <button
+                          onClick={() => handleCancelDeleteRequest()}
+                          className={`text-gray-600 hover:text-gray-900 text-sm font-medium transition
+                            
+                          }`}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <PasswordResetForm
+                  status={status}
+                  onClose={() => setStatus(false)}
+                  userId={user._id}
+                  token={localStorage.getItem("token")}
+                />
+
+                <AddDeleteRequest
+                  status={status}
+                  onClose={() => setStatus(false)}
+                  user={user}
+                  token={localStorage.getItem("token")}
+                  refresh={() => getDeleteRequest()}
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>

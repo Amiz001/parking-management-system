@@ -4,12 +4,15 @@ import Logo from "../assets/parkbay.png";
 import { toast, ToastContainer } from "react-toastify";
 import Axios from "axios";
 import { useNavigate } from "react-router-dom";
+import VerificationPopup from "../components/VerificationPopup "
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [current, setCurrent] = useState(0);
+  const [showPopup, setShowPopup] = useState(false);
+  const [user, setUser] = useState(null);
 
   const navigate = useNavigate();
 
@@ -43,25 +46,17 @@ export default function Login() {
         return;
       }
 
+      if (!response.data.user.isVerified) {
+        toast.error("Please verify your account before logged in!");
+        setUser(response.data.user)
+        setShowPopup(true);
+        return;
+      }
+
       localStorage.setItem("token", response.data.token);
       toast.success("Login successful!", { containerId: "login-toast" });
+      navigate('/');
 
-      switch (response.data.user.role) {
-        case "user":
-          navigate("/profile");
-          break;
-        case "admin":
-          navigate("/admin/dashboard");
-          break;
-        case "operator":
-          navigate("/operator/dashboard");
-          break;
-        case "customer support":
-          navigate("/customersupport/dashboard");
-          break;
-        default:
-          navigate("/login");
-      }
     } catch (err) {
       if (
         err.response &&
@@ -128,6 +123,16 @@ export default function Login() {
         }}
         theme="light"
       />
+
+      {/* Verification popup */}
+      <div className="absolute min-h-screen flex items-center justify-center bg-gray-100">
+        {showPopup && user && (
+          <VerificationPopup
+            email={user.email}
+            onClose={() => setShowPopup(false)}
+          />
+        )}
+      </div>
 
       <div className="w-full h-160 max-w-6xl bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl overflow-hidden">
         <div className="grid lg:grid-cols-2 min-h-[600px]">
@@ -201,6 +206,7 @@ export default function Login() {
                 <button
                   type="button"
                   className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
+                  onClick={() => navigate("/reset-password")}
                 >
                   Forget password?
                 </button>
