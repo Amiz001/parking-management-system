@@ -90,6 +90,7 @@ useEffect(() => {
       const updated = bookings.filter((b) => b._id !== id);
       setBookings(updated);
       filterBookings(selectedType, updated);
+      toast.success("Booking delete successfully!");
     } catch (err) {
       console.error("Delete error:", err.response?.data || err.message);
     }
@@ -295,19 +296,34 @@ useEffect(() => {
 
 
                       <td className="py-3 px-4 flex gap-2">
-                        <button
-                          onClick={() => navigate(`/operator/updatebookingPhysical/${b._id}`)}
-                          className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
-                        >
-                          Update
-                        </button>
-                        <button
-                          onClick={() => handleDelete(b._id)}
-                          className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-                        >
-                          Delete
-                        </button>
-                      </td>
+  {b.types === "physical" && (
+    <button
+      onClick={() => navigate(`/operator/updatebookingPhysical/${b._id}`)}
+      className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+    >
+      Update
+    </button>
+  )}
+
+  {b.types === "online" && (
+    <button
+      className="px-3 py-1 bg-gray-400 text-white rounded cursor-not-allowed"
+      disabled
+    >
+      Update
+    </button>
+  )}
+
+  {/* Always show Delete button */}
+  <button
+    onClick={() => handleDelete(b._id)}
+    className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+  >
+    Delete
+  </button>
+</td>
+
+                      
                     </tr>
                   ))}
                 </tbody>
