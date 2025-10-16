@@ -1,0 +1,51 @@
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
+
+const onlineBookPaySchema = new mongoose.Schema({
+  userId: {
+    type: String,
+    required: true,
+  },
+  types: {
+    type: String,
+    required: true,
+  },
+  slotId: {
+    type: String,
+    required: true,
+  },
+  zone: {
+    type: String,
+    required: true,
+  },
+  vehicleNum: {
+    type: String,
+    required: true,
+  },
+  date: {
+    type: String,
+    required: true,
+  },
+  entryTime: {
+    type: String,
+    required: true,
+  },
+  exitTime: {
+    type: String,
+    required: true,
+  },
+  amount: {
+    type: Number,
+    required: true,
+  },
+  stripePaymentId: {
+    type: String,
+    required: true, 
+  },
+  paymentDate: {
+    type: Date,
+    default: Date.now,
+  },
+});
+
+module.exports = mongoose.model("OnlineBookPay", onlineBookPaySchema);

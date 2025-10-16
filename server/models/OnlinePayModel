@@ -4,15 +4,14 @@ const Schema = mongoose.Schema;
 
 const OnlinePaySchema = new Schema(
   {
-    username: { type: String, required: true },
-    
+    username: { type: String, required: true }, 
     vehicleType: { type: String, required: true },
     quantity: { type: Number, required: true },
     amount: { type: Number, required: true },
     paymentMethod: { type: String, required: true },
     date: { type: Date, default: Date.now },
-    stripePaymentId: { type: String }, // Store Stripe payment intent ID
-    status: { type: String, default: 'pending' }, // pending, successful, failed
+    stripePaymentId: { type: String }, 
+    status: { type: String, default: 'pending' }, 
   },
   { timestamps: true }
 );

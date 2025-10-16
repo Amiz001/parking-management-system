@@ -1,0 +1,112 @@
+const PhysicalPay = require("../models/PaymentModel");
+
+// Get all payments
+const getAllPayment = async (req, res) => {
+  try {
+    const pays = await PhysicalPay.find();
+    if (!pays) return res.status(404).json({ message: "No payments found" });
+    return res.status(200).json({ payments: pays });
+  } catch (err) {
+    console.error("Error fetching payments:", err.message);
+    return res.status(500).json({ message: err.message });
+  }
+};
+
+// Add new payment
+const addPayment = async (req, res) => {
+  try {
+    console.log("Received body:", req.body);
+
+    const { slotId, vehicleNumber, entryDate, duration, amount } = req.body;
+
+    if (!slotId || !vehicleNumber || !entryDate || !amount) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    // Prevent duplicate payment for the same slot
+    const existing = await PhysicalPay.findOne({ slotId });
+    if (existing) {
+      return res.status(400).json({ message: "Payment for this slot already exists" });
+    }
+
+    const payment = new PhysicalPay({
+      slotId: slotId.trim(),
+      vehicleNumber: vehicleNumber.trim(),
+      entryDate: new Date(entryDate),
+      duration: duration || "",
+      amount: Number(amount),
+    });
+
+    const savedPayment = await payment.save();
+
+    return res.status(201).json({
+      message: "Payment saved successfully",
+      payment: savedPayment,
+    });
+
+  } catch (err) {
+    console.error("Payment save error:", err);
+    return res.status(500).json({ message: err.message });
+  }
+};
+// Get payment by ID
+const getById = async (req, res) => {
+  try {
+    const pays = await PhysicalPay.findById(req.params.id);
+    if (!pays) return res.status(404).json({ message: "Payment not found" });
+    return res.status(200).json({ pays });
+  } catch (err) {
+    console.error(err.message);
+    return res.status(500).json({ message: err.message });
+  }
+};
+
+// Update payment
+const updatePayment = async (req, res) => {
+  try {
+    const { slotId, vehicleNumber, entryDate, amount, duration } = req.body;
+
+    if (!slotId || !vehicleNumber || !entryDate || !amount) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    const pays = await PhysicalPay.findByIdAndUpdate(
+      req.params.id,
+      {
+        slotId,
+        vehicleNumber,
+        entryDate: new Date(entryDate),
+        amount: Number(amount),
+        duration: duration || "",
+      },
+      { new: true }
+    );
+
+    if (!pays) return res.status(404).json({ message: "Payment not found" });
+
+    return res.status(200).json({ pays });
+  } catch (err) {
+    console.error("Payment update error:", err.message);
+    return res.status(500).json({ message: err.message });
+  }
+};
+
+// Delete payment
+const deletePayment = async (req, res) => {
+  try {
+    const pays = await PhysicalPay.findByIdAndDelete(req.params.id);
+    if (!pays) return res.status(404).json({ message: "Unable to delete payment" });
+    return res.status(200).json({ pays });
+  } catch (err) {
+    console.error(err.message);
+    return res.status(500).json({ message: err.message });
+  }
+};
+
+module.exports = {
+  getAllPayment,
+  addPayment,
+  getById,
+  updatePayment,
+  deletePayment,
+};

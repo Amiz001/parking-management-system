@@ -8,7 +8,12 @@ import { useNavigate } from "react-router-dom";
 
 const sidebarItems = [
   { icon: ChartColumnBig, label: "Dashboard", active: true, path: "/operator/dashboard" },
+<<<<<<< HEAD
   { icon: CalendarCheck, label: "Booking", path: "/operator/physicalbooking" },
+=======
+  { icon: CalendarCheck, label: "Booking", path: "/operator/physicalBooking" },
+  { icon: HeartHandshake, label: "Membership", path: "/operator/membership" },
+>>>>>>> origin/feature/membership-payment
   { icon: Wallet, label: "Payment", path: "/operator/payment" },
 ];
 
@@ -242,6 +247,10 @@ const Dashboard = () => {
   }
 };
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/feature/membership-payment
   return (
     <div
       className={`flex h-auto bg-gray-950 text-white light:text-black light:bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 ${
@@ -256,6 +265,7 @@ const Dashboard = () => {
           </div>
           <span className="text-xl font-semibold">Gate Operator</span>
         </div>
+<<<<<<< HEAD
         <nav className="space-y-2 mb-8">
           {sidebarItems.map((item, index) => (
             <a
@@ -273,6 +283,24 @@ const Dashboard = () => {
           ))}
         </nav>
 
+=======
+        <nav className="space-y-2">
+            {sidebarItems.map((item, index) => (
+              <a
+                key={index}
+                 href={item.path}
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                  item.active 
+                    ? 'bg-gradient-to-l from-blue-500 to-indigo-600 text-white' 
+                    : 'text-gray-300 hover:bg-gray-700 light:text-black light:hover:bg-gray-100'
+                }`}
+              >  
+                <item.icon size={20} />
+                <span>{item.label}</span>
+              </a>
+            ))}
+          </nav>
+>>>>>>> origin/feature/membership-payment
         <div className="mt-auto space-y-2">
           <a
             href="#"

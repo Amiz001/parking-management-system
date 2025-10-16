@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import PaymentPortal from './PaymentPortal';
 
@@ -37,6 +38,12 @@ const PlanModal = ({ isOpen, onClose, selectedPlan }) => {
         setUsernameError('Username is required.');
         return;
     }
+    const regex = /^(?=.*[A-Za-z])[A-Za-z0-9]+$/;
+
+    if (!regex.test(username)){
+      setUsernameError('Username cannot be numbers or symbols.');
+      return;
+    }
     setUsernameError('');
     setShowPaymentPortal(true);
   };
@@ -62,7 +69,7 @@ const PlanModal = ({ isOpen, onClose, selectedPlan }) => {
             <div className="w-full md:w-1/2 space-y-4">
               <h2 className="text-xl font-bold mb-2">Plan: {selectedPlan.name}</h2>
               <div>
-                <label className="block mb-1">Username</label>
+                <label className="block mb-1">UserID</label>
                 <input
                   type="text"
                   className="w-full border p-2 rounded"

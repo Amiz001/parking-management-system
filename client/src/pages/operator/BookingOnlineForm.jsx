@@ -1,15 +1,25 @@
 import { useState } from "react";
 import { MapPin } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
+import axios from 'axios';
+import { Elements } from "@stripe/react-stripe-js";
+import { loadStripe } from "@stripe/stripe-js";
+import OnlineBookPayForm from "../operator/OnlineBookPayForm";
+
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+
+
+
 
 export default function BookingForm() {
   const location = useLocation();
+  const navigate = useNavigate();
   const initialSlotId = location.state?.slotId || "";
   const initialZone = location.state?.zone || "";
-
   const today = new Date().toISOString().split("T")[0];
 
   const [formData, setFormData] = useState({
+<<<<<<< HEAD
   userId: "",
   types: "",     
   slotId: initialSlotId,
@@ -19,101 +29,117 @@ export default function BookingForm() {
   entryTime: "",
   exitTime: "",
 });
+=======
+    userId: "",
+    types: "",     
+    slotId: initialSlotId,
+    zone: initialZone,
+    vehicleNum: "", 
+    date: today,
+    entryTime: "",
+    exitTime: "",
+  });
+>>>>>>> origin/feature/membership-payment
 
   const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
-  const navigate = useNavigate();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-
-    if (errors[name]) {
-      setErrors((prev) => ({
-        ...prev,
-        [name]: "",
-      }));
-    }
+    setFormData(prev => ({ ...prev, [name]: value }));
+    if (errors[name]) setErrors(prev => ({ ...prev, [name]: "" }));
   };
 
   const validateForm = () => {
     const newErrors = {};
-
     if (!formData.userId.trim()) newErrors.userId = "User ID is required";
     if (!formData.types.trim()) newErrors.types = "Type is required";
     if (!formData.slotId.trim()) newErrors.slotId = "Slot ID is required";
     if (!formData.zone.trim()) newErrors.zone = "Zone is required";
-    if (!formData.vehicleNum.trim())
-      newErrors.vehicleNum = "Vehicle number is required";
+    if (!formData.vehicleNum.trim()) newErrors.vehicleNum = "Vehicle number is required";
     if (!formData.date) newErrors.date = "Date is required";
     if (!formData.entryTime) newErrors.entryTime = "Entry time is required";
     if (!formData.exitTime) newErrors.exitTime = "Exit time is required";
-
     if (formData.date && formData.entryTime && formData.exitTime) {
-      const entryDateTime = new Date(`${formData.date}T${formData.entryTime}`);
-      const exitDateTime = new Date(`${formData.date}T${formData.exitTime}`);
-      if (exitDateTime <= entryDateTime) {
-        newErrors.exitTime = "Exit must be after entry";
-      }
+      const entry = new Date(`${formData.date}T${formData.entryTime}`);
+      const exit = new Date(`${formData.date}T${formData.exitTime}`);
+      if (exit <= entry) newErrors.exitTime = "Exit must be after entry";
     }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
+  const calculateAmount = (entryTime, exitTime) => {
+  if (!entryTime || !exitTime) return 0;
+
+  const entry = new Date(`1970-01-01T${entryTime}`);
+  const exit = new Date(`1970-01-01T${exitTime}`);
+
+  const diffMs = exit - entry;
+  if (diffMs <= 0) return 0;
+
+  const diffHours = diffMs / (1000 * 60 * 60); // convert ms to hours
+  const ratePerHour = 100; 
+  return diffHours * ratePerHour;
+};
+
+
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
+  if (!validateForm()) return;
 
-    if (!validateForm()) return;
+  const amount = calculateAmount(formData.entryTime, formData.exitTime);
 
-    try {
-      const response = await fetch("http://localhost:5000/bookings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
+  if (amount <= 0) {
+    alert("Exit time must be after entry time");
+    return;
+  }
 
-      if (!response.ok) throw new Error("Failed to save booking");
+  try {
+    const res = await axios.post("http://localhost:5000/bookings", formData);
+    console.log("Booking saved:", res.data);
+    setSubmitted(true);
 
-      const data = await response.json();
-      console.log("Booking saved:", data);
+    // Save the amount in state or pass it to payment page
+    setFormData(prev => ({ ...prev, amount }));
+  } catch (err) {
+    console.error(err);
+    alert("Failed to save booking.");
+  }
+};
 
-      setSubmitted(true);
-    } catch (error) {
-      console.error("Error submitting booking:", error);
-      alert("Something went wrong. Please try again.");
-    }
-  };
 
   if (submitted) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-blue-50">
         <div className="bg-white shadow-xl rounded-xl p-6 max-w-md w-full text-center">
-          <h2 className="text-2xl font-bold text-green-600 mb-4">
-            Booking Confirmed!
-          </h2>
-          <p className="text-gray-700 mb-4">
-            Your booking has been successfully submitted.
-          </p>
+          <h2 className="text-2xl font-bold text-green-600 mb-4">Booking Confirmed!</h2>
+          <p className="text-gray-700 mb-4">Your booking has been successfully submitted.</p>
           <div className="text-left text-sm mb-6 bg-gray-100 p-4 rounded-lg">
             <p><strong>User ID:</strong> {formData.userId}</p>
             <p><strong>Type:</strong> {formData.types}</p>
             <p><strong>Slot ID:</strong> {formData.slotId}</p>
-            <p><strong>Zone Name:</strong> {formData.zone}</p>
+            <p><strong>Zone:</strong> {formData.zone}</p>
             <p><strong>Vehicle Number:</strong> {formData.vehicleNum}</p>
             <p><strong>Date:</strong> {formData.date}</p>
             <p><strong>Entry Time:</strong> {formData.entryTime}</p>
             <p><strong>Exit Time:</strong> {formData.exitTime}</p>
           </div>
           <button
+<<<<<<< HEAD
             onClick={() => navigate("/operator/onlinebookingPage")}
             className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
           >
             Pay Now
           </button>
+=======
+  onClick={() => navigate("/paymentform", { state: { bookingData: formData, amount: formData.amount } })}
+  className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
+>
+  Pay Now
+</button>
+
+>>>>>>> origin/feature/membership-payment
         </div>
       </div>
     );

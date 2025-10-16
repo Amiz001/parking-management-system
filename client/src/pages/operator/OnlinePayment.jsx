@@ -19,7 +19,7 @@ import {
   LogOut,
 } from 'lucide-react';
 
-const PhysicalPayment = () => {
+const OnlinePayment = () => {
   const [selectedPeriod, setSelectedPeriod] = useState('Monthly');
   const [lightMode, setLightMode] = useState(false);
   const [selectedSegment, setSelectedSegment] = useState('All Segment');
@@ -235,4 +235,4 @@ const PhysicalPayment = () => {
   );
 };
 
-export default PhysicalPayment;
+export default OnlinePayment;

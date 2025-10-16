@@ -1,6 +1,26 @@
 import React, { useState } from 'react';
-import { useStripe, useElements, CardNumberElement, CardExpiryElement, CardCvcElement } from '@stripe/react-stripe-js';
+import {
+  useStripe,
+  useElements,
+  CardNumberElement,
+  CardExpiryElement,
+  CardCvcElement
+} from '@stripe/react-stripe-js';
 import axios from 'axios';
+import { FaLock, FaCreditCard } from 'react-icons/fa';
+
+const CARD_ELEMENT_OPTIONS = {
+  style: {
+    base: {
+      fontSize: '16px',
+      color: '#1a202c',
+      fontFamily: 'sans-serif',
+      '::placeholder': { color: '#a0aec0' },
+      padding: '10px 12px',
+    },
+    invalid: { color: '#fa5a5a' },
+  },
+};
 
 const PaymentForm = ({ clientSecret, paymentId, onBack, username, amount }) => {
   const stripe = useStripe();
@@ -12,7 +32,6 @@ const PaymentForm = ({ clientSecret, paymentId, onBack, username, amount }) => {
     if (!stripe || !elements) return;
 
     setLoading(true);
-
     const cardNumber = elements.getElement(CardNumberElement);
 
     try {
@@ -27,9 +46,7 @@ const PaymentForm = ({ clientSecret, paymentId, onBack, username, amount }) => {
         return;
       }
 
-      // Update DB payment status
-      await axios.post('http://localhost:5000/online-payment', {
-        paymentId,
+      await axios.put(`http://localhost:5000/online-payment/${paymentId}`, {
         status: paymentIntent.status === 'succeeded' ? 'successful' : paymentIntent.status,
       });
 
@@ -47,40 +64,76 @@ const PaymentForm = ({ clientSecret, paymentId, onBack, username, amount }) => {
     setLoading(false);
   };
 
-  const inputStyle = {
-    style: {
-      base: { fontSize: '16px', color: '#32325d', '::placeholder': { color: '#a0aec0' } },
-      invalid: { color: '#fa5a5a' },
-    },
-  };
-
   return (
-    <form onSubmit={handleSubmit} className="p-6 bg-white rounded-2xl shadow-lg max-w-md mx-auto space-y-4">
-      <h2 className="text-xl font-bold mb-2">Enter Card Details</h2>
-
-      <div>
-        <label className="block mb-1 font-medium">Card Number</label>
-        <CardNumberElement options={inputStyle} className="p-3 border rounded w-full" />
-      </div>
-
-      <div className="flex gap-2">
-        <div className="flex-1">
-          <label className="block mb-1 font-medium">Expiry</label>
-          <CardExpiryElement options={inputStyle} className="p-3 border rounded w-full" />
+    <div className="flex justify-center items-center min-h-screen bg-white">
+      <form
+        onSubmit={handleSubmit}
+        className="w-full max-w-md text-center px-6 space-y-6"
+      >
+        {/* Header */}
+        <div>
+          <FaCreditCard className="mx-auto text-blue-600 text-4xl mb-3" />
+          <h2 className="text-2xl font-bold text-gray-800">Secure Payment</h2>
+          <p className="text-gray-500 text-sm mt-1">
+            Complete your payment for{' '}
+            <span className="font-semibold text-blue-600">LKR {amount}</span>
+          </p>
         </div>
-        <div className="flex-1">
-          <label className="block mb-1 font-medium">CVC</label>
-          <CardCvcElement options={inputStyle} className="p-3 border rounded w-full" />
-        </div>
-      </div>
 
-      <button type="submit" disabled={loading} className="w-full py-2 bg-green-600 text-white rounded hover:bg-green-800">
-        {loading ? 'Processing...' : `Pay LKR ${amount}`}
-      </button>
-      <button type="button" onClick={onBack} className="w-full py-2 mt-2 bg-gray-400 text-black rounded hover:bg-gray-600">
-        Back
-      </button>
-    </form>
+        {/* Card Number */}
+        <div className="text-left space-y-2">
+          <label className="block text-sm font-medium text-gray-700">Card Number</label>
+          <div className="border border-gray-300 rounded-lg px-3 py-2 focus-within:border-blue-500">
+            <CardNumberElement options={CARD_ELEMENT_OPTIONS} />
+          </div>
+        </div>
+
+        {/* Expiry and CVC */}
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex-1 text-left space-y-2">
+            <label className="block text-sm font-medium text-gray-700">Expiry Date</label>
+            <div className="border border-gray-300 rounded-lg px-3 py-2 focus-within:border-blue-500">
+              <CardExpiryElement options={CARD_ELEMENT_OPTIONS} />
+            </div>
+          </div>
+
+          <div className="flex-1 text-left space-y-2">
+            <label className="block text-sm font-medium text-gray-700">CVC</label>
+            <div className="border border-gray-300 rounded-lg px-3 py-2 focus-within:border-blue-500">
+              <CardCvcElement options={CARD_ELEMENT_OPTIONS} />
+            </div>
+          </div>
+        </div>
+
+        {/* Buttons */}
+        <div className="pt-4 space-y-3">
+          <button
+            type="submit"
+            disabled={loading}
+            className={`w-full py-3 rounded-lg font-semibold text-white flex items-center justify-center gap-2 transition-all duration-300 ${
+              loading
+                ? 'bg-blue-300 cursor-not-allowed'
+                : 'bg-blue-600 hover:bg-blue-700'
+            }`}
+          >
+            <FaLock className="text-sm" />
+            {loading ? 'Processing...' : `Pay LKR ${amount}`}
+          </button>
+
+          <button
+            type="button"
+            onClick={onBack}
+            className="w-full py-3 rounded-lg bg-gray-100 text-gray-800 font-semibold hover:bg-gray-200 transition-all duration-300"
+          >
+            Back
+          </button>
+        </div>
+
+        <p className="text-xs text-gray-500 text-center pt-3">
+          Your card information is securely processed by Stripe.
+        </p>
+      </form>
+    </div>
   );
 };
 
