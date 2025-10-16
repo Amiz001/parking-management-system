@@ -31,6 +31,7 @@
     "react-router-dom": "^7.7.0",
     "react-toastify": "^11.0.5",
     "recharts": "^3.1.0",
+    "stripe": "^19.1.0",
     "tailwindcss": "^4.1.11",
     "xlsx": "^0.18.5",
     "yup": "^1.6.1"

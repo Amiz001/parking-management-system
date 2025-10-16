@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {toast} from 'react-toastify';
+import { toast } from "react-toastify";
 
 import {
   Search,
@@ -24,6 +24,7 @@ import {
   Download,
   BarChart3,
   Activity,
+  LandPlot,
   Wrench,
 } from "lucide-react";
 import axios from "axios";
@@ -31,10 +32,6 @@ import { useNavigate } from "react-router-dom";
 
 
 const URL = "http://localhost:5000/slots";
-
-/*const fetchHandler = async () => {
-  return await axios.get(URL).then((res) => res.data);
-}*/
 
 const ZoneSelection = ({ parkType, selectedZone, setSelectedZone }) => {
   const [zones, setZones] = useState([]);
@@ -53,13 +50,15 @@ const ZoneSelection = ({ parkType, selectedZone, setSelectedZone }) => {
 
   const fetchZones = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/zones");
+      const res = await axios.get("http://localhost:5000/zones", { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
 
-      const filtered = res.data.zones.filter((z) => z.parkType === mapParkType(parkType));
+      const filtered = res.data.zones.filter(
+        (z) => z.parkType === mapParkType(parkType)
+      );
       setZones(filtered);
 
       if (filtered.length > 0 && !selectedZone) {
-        setSelectedZone(filtered[0].zoneId);
+        setSelectedZone(filtered[0].zoneName);
       }
     } catch (err) {
       console.error("Error fetching zones:", err);
@@ -92,10 +91,11 @@ const ZoneSelection = ({ parkType, selectedZone, setSelectedZone }) => {
             <button
               key={zone._id}
               onClick={() => setSelectedZone(zone.zoneName)}
-              className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 ${selectedZone === zone.zoneName
-                ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg transform scale-105"
-                : "bg-gray-400 light:bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
+              className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
+                selectedZone === zone.zoneName
+                  ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg transform scale-105"
+                  : "bg-gray-400 light:bg-gray-100 text-gray-700 hover:bg-gray-200"
+              }`}
             >
               {zone.zoneName}
             </button>
@@ -107,8 +107,6 @@ const ZoneSelection = ({ parkType, selectedZone, setSelectedZone }) => {
     </div>
   );
 };
-
-
 
 const SlotManagement = () => {
   const [selectedPeriod, setSelectedPeriod] = useState("Monthly");
@@ -124,73 +122,97 @@ const SlotManagement = () => {
   const [filterStatus, setFilterStatus] = useState("all");
   const [slots, setSlots] = useState([]);
   const [currentSlots, setCurrentSlots] = useState([]);
+  const [currentUser, setCurrentUser] = useState(null);
 
   const sidebarItems = [
-    { icon: ChartColumnBig, label: "Dashboard" },
-    { icon: SquareParking, label: "Slot Management", active: true },
-    { icon: HeartHandshake, label: "Membership plans" },
-    { icon: BanknoteArrowDown, label: "Refund requests" },
-    { icon: Megaphone, label: "Notifications" },
-  ];
+  { icon: ChartColumnBig, link: "/admin/dashboard", label: "Dashboard" },
+  {
+    icon: SquareParking,
+    link: "/admin/slot-management",
+    label: "Slot Management",
+  },
+  {
+    icon: LandPlot,
+    link: "/admin/zone-management",
+    label: "Zone management",
+  },
+  {
+    icon: HeartHandshake,
+    link: "/admin/membership-management",
+    label: "Membership plans",
+  },
+  {
+    icon: BanknoteArrowDown,
+    link: "/admin/refund",
+    label: "Refund requests",
+  },
+];
+
+const handleLogout = () => {
+  localStorage.removeItem("token");
+  setIsLoggedIn(false);
+  navigate("/");
+};
+
+const getCurrentUser = async () => {
+  const token = localStorage.getItem("token");
+  const decoded = jwtDecode(token);
+
+  try {
+    const res = await Axios.get(`http://localhost:5000/users/${decoded.id}`);
+
+    if (!res) {
+      return;
+    }
+
+    setCurrentUser(res.data);
+  } catch (err) {
+    console.log("Something went wrong!");
+  }
+};
+
+
 
   const userItems = [
-    { icon: Users, label: "User Management" },
-    { icon: Car, label: "Vehicles" },
-  ];
-
-  const bottomItems = [
-      { icon: Settings, link:"/", label: "Settings" },
-      // { icon: HelpCircle, label: 'Help & Support' },
-      { icon: LogOut, link:"/", label: "Logout" },
-    ];
-
+  {
+    icon: Users,
+    label: "User Management",
+    link: "/admin/users",
+    active: true,
+  },
+  { icon: Car, label: "Vehicles", link: "/admin/vehicles" },
+];
+  const bottomItems = [{ icon: LogOut, link: "/", label: "Logout" }];
 
   const navigate = useNavigate();
 
-  // stats cards
   const statsCards = [
     {
       title: "Available Slots",
       value: currentSlots.filter((slot) => slot.status === "available").length,
-      /*change: "+5% from last week",*/
       positive: true,
     },
     {
       title: "Occupied Slots",
       value: currentSlots.filter((slot) => slot.status === "occupied").length,
-      /*change: "-3% from last week",*/
       positive: false,
     },
     {
       title: "Disabled Slots",
       value: currentSlots.filter((slot) => slot.status === "disabled").length,
-      /*change: "0% (no change)",*/
       positive: true,
     },
     {
       title: "Emergency Slots",
       value: currentSlots.filter((slot) => slot.status === "emergency").length,
-      /*change: "+2% from last week",*/
       positive: false,
     },
   ];
 
   const parks = [
-    {
-      name: "4-Wheeler Park",
-      icon: Car,
-      color: "from-blue-500 to-blue-600",
-    },
-    {
-      name: "3-Wheeler Park",
-      icon: Truck,
-      color: "from-purple-500 to-purple-600",
-    },
-    {
-      name: "2-Wheeler Park",
-      icon: Bike,
-      color: "from-green-500 to-green-600",
-    },
+    { name: "4-Wheeler Park", icon: Car, color: "from-blue-500 to-blue-600" },
+    { name: "3-Wheeler Park", icon: Truck, color: "from-purple-500 to-purple-600" },
+    { name: "2-Wheeler Park", icon: Bike, color: "from-green-500 to-green-600" },
   ];
 
   const getSlotIcon = (type) => {
@@ -224,9 +246,7 @@ const SlotManagement = () => {
   const getSlotSize = (type) => {
     switch (type) {
       case "4wheel":
-        return "w-28 h-24";
       case "3wheel":
-        return "w-28 h-24";
       case "2wheel":
         return "w-28 h-24";
       default:
@@ -234,45 +254,34 @@ const SlotManagement = () => {
     }
   };
 
+  //----------------------fetch slots---------------------------
 
-  //----------------------fetch part---------------------------
+  const fetchSlotsFromServer = async () => {
+    try {
+      const res = await axios.get(URL , { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
+      const data = Array.isArray(res.data) ? res.data : res.data.slots || res.data;
 
-  //slot fetch
+      const formatted = data.map((s) => ({
+        _id: s._id,
+        id: s.slotId || s._id,
+        type: s.type,
+        status: s.status,
+        zone: s.zone,
+        park: s.park,
+        notice: s.notice,
+      }));
+
+      setSlots(formatted);
+    } catch (err) {
+      console.error("Failed to fetch slots:", err);
+    }
+  };
+
   useEffect(() => {
-    const fetchSlotsFromServer = async () => {
-      try {
-        const res = await axios.get('http://localhost:5000/slots'); // or '/slots' if proxy set
-        const data = Array.isArray(res.data) ? res.data : (res.data.slots || res.data);
-
-        const formatted = data.map(s => ({
-          _id: s._id,
-          id: s.slotId || s._id,
-          type: s.type,
-          status: s.status,
-          zone: s.zone,
-          park: s.park,
-          notice: s.notice
-        }));
-
-        setSlots(formatted);
-      } catch (err) {
-        console.error('Failed to fetch slots:', err);
-      }
-    };
-
     fetchSlotsFromServer();
   }, []);
 
-  /*slot filter
-  const filterSlots = () => {
-    const selectedSlots = slots.filter(
-      (slot) => slot.park === selectedPark && slot.zone === selectedZone
-    );
-
-    setCurrentSlots(selectedSlots);
-  }*/
-
-  // slot filter
+  // filter slots by park & zone
   useEffect(() => {
     if (!slots || slots.length === 0) {
       setCurrentSlots([]);
@@ -286,10 +295,8 @@ const SlotManagement = () => {
     setCurrentSlots(selectedSlots);
   }, [slots, selectedPark, selectedZone]);
 
-
   const [newSlot, setNewSlot] = useState({ quantity: 1, bulkAdd: false });
 
-  //no need
   const getVehicleTypeFromPark = (park) => {
     if (park === "4-Wheeler Park") return "4wheel";
     if (park === "3-Wheeler Park") return "3wheel";
@@ -298,157 +305,153 @@ const SlotManagement = () => {
   };
   const currentVehicleType = getVehicleTypeFromPark(selectedPark);
 
-  //search function
   const filteredSlots = currentSlots.filter((slot) => {
-    const matchesSearch = slot.id
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase());
-    const matchesStatus =
-      filterStatus === "all" || slot.status === filterStatus;
+    const matchesSearch = slot.id.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = filterStatus === "all" || slot.status === filterStatus;
     return matchesSearch && matchesStatus;
   });
 
+  //----------------------add slots---------------------------
+const normalizeParkType = (park) => {
+  if (!park) return "";
+  park = park.toLowerCase();
+  if (park.includes("4")) return "4wheel";
+  if (park.includes("3")) return "3wheel";
+  if (park.includes("2")) return "2wheel";
+  return park;
+};
 
-
-  //----------------------add part---------------------------//
-
-  const createSlotOnServer = async (slotObj) => {
+const createSlotOnServer = async (slotObj) => {
+  try {
     const payload = {
       slotId: slotObj.id,
       type: slotObj.type,
       status: slotObj.status,
-      zone: slotObj.zone,
+      zone: slotObj.zoneName || slotObj.zone,
       park: slotObj.park,
-      notice: slotObj.notice
+      notice: slotObj.notice || "",
     };
+    const res = await axios.post(URL, payload , { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
+    toast.success("Successfully added a new slot!");
+    return res.data.slots || res.data.slot|| res.data;
+    
+  } catch (err) {
+    
+    console.error("Error creating slot on server:", err);
+    toast.error("Failed slot adding");
+    throw err;
+  }
+};
 
-    const res = await axios.post(URL, payload);
-    return res.data.slots || res.data;
-  };
+const getZoneTotalSlots = async (parkKey, zoneIdentifier) => {
+  try {
+    const res = await axios.get("http://localhost:5000/zones", { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
+    const zones = Array.isArray(res.data) ? res.data : res.data.zones || [];
+    const normalizedPark = normalizeParkType(parkKey);
 
-
-
-  // to map selectedPark to backend parkType
-  const normalizeParkType = (park) => {
-    if (!park) return "";
-    if (park.toLowerCase().includes("4")) return "4wheel";
-    if (park.toLowerCase().includes("3")) return "3wheel";
-    if (park.toLowerCase().includes("2")) return "2wheel";
-    return park;
-  };
-
-  // fetching zone total slots capacity from backend
-  const getZoneTotalSlots = async (parkKey, zoneIdentifier) => {
-    try {
-      const res = await axios.get("http://localhost:5000/zones");
-      const raw = res.data;
-
-      let zones = [];
-      if (Array.isArray(raw)) zones = raw;
-      else if (Array.isArray(raw.zones)) zones = raw.zones;
-      else if (Array.isArray(raw.zone)) zones = raw.zone;
-
-      const normalizedPark = normalizeParkType(parkKey);
-
-      const z = zones.find(z =>
+    const zone = zones.find(
+      (z) =>
         normalizeParkType(z.parkType) === normalizedPark &&
         (z.zoneId === zoneIdentifier ||
           z.zoneName === zoneIdentifier ||
           z.name === zoneIdentifier ||
           z._id === zoneIdentifier)
-      );
+    );
+    
+    
+    return zone ? zone.totalSlots || zone.slots ||  0 : null;
+    
+  } catch (err) {
+    console.error("Failed to fetch zones:", err);
+    return null;
+  }
+};
 
-      console.log("Zone check:", { selectedPark: parkKey, selectedZone: zoneIdentifier, foundZone: z });
+const handleAddSlot = async () => {
+  if (!selectedPark || !selectedZone || !currentVehicleType) {
+    alert("Please fill required fields!");
+    return;
+  }
 
-      if (!z) return null;
-      return z.totalSlots || z.slots || 0;
-    } catch (err) {
-      console.error("Failed to fetch zones for validation", err);
-      return null;
+  if (newSlot.quantity <= 0) {
+    alert("Please enter vaid quantity!");
+    return;
+  }
+
+  const baseIdMap = { "4wheel": "4W", "3wheel": "3W", "2wheel": "2W" };
+  const baseId = baseIdMap[currentVehicleType];
+
+  // Filter slots by park, zone, type
+  const existingNumbers = slots
+    .filter((s) => s.type === currentVehicleType && s.park === selectedPark && s.zone === selectedZone)
+    .map((s) => parseInt((s.slotId || s.id || "").slice(2)))
+    .filter((n) => !isNaN(n));
+
+  const nextNumber = existingNumbers.length > 0 ? Math.max(...existingNumbers) + 1 : 1;
+  const quantity = newSlot.bulkAdd ? 20 : Math.max(1, parseInt(newSlot.quantity));
+
+  const totalAllowed = await getZoneTotalSlots(selectedPark, selectedZone);
+
+  if (totalAllowed !== null) {
+    const remaining = totalAllowed - existingNumbers.length;
+    if (remaining <= 0) {
+      alert(`Zone full! Allowed: ${totalAllowed}, already has: ${existingNumbers.length}`);
+      return;
     }
-  };
+    if (quantity > remaining) {
+      alert(`Cannot add ${quantity} slots. Only ${remaining} slot(s) remaining in this zone.`);
+      return;
+    }
+  }
 
-  const handleAddSlot = async () => {
-    const baseId = currentVehicleType === "4wheel" ? "4W"
-      : currentVehicleType === "3wheel" ? "3W" : "2W";
+  // Generate new slots
+  const newSlots = [];
+  for (let i = 0; i < quantity; i++) {
+    newSlots.push({
+      id: `${baseId}${String(nextNumber + i).padStart(3, "0")}`,
+      type: currentVehicleType,
+      status: "available",
+      zone: selectedZone,
+      park: selectedPark,
+      notice: "",
+    });
+  }
 
-    const existingNumbers = slots
-      .filter(s => s.type === currentVehicleType && s.park === selectedPark && s.zone === selectedZone)
-      .map(s => parseInt(((s.slotId || s.id || "")).slice(2)))
-      .filter(n => !isNaN(n));
+  try {
+    const results = await Promise.allSettled(newSlots.map(createSlotOnServer));
+    const succeeded = results
+      .filter((r) => r.status === "fulfilled")
+      .map((r) => r.value)
+      .flat();
 
-    const currentCount = existingNumbers.length;
-    const nextNumber = currentCount > 0 ? Math.max(...existingNumbers) + 1 : 1;
-    const quantity = newSlot.bulkAdd ? 20 : Math.max(1, newSlot.quantity);
-
-    //check zone capacity
-    const totalAllowed = await getZoneTotalSlots(selectedPark, selectedZone);
-
-    if (totalAllowed !== null) {
-      const remaining = totalAllowed - currentCount;
-
-      if (remaining <= 0) {
-        alert(`Zone full! Allowed: ${totalAllowed}, already has: ${currentCount}`);
-        return;
-      }
-
-      if (quantity > remaining) {
-        alert(`Cannot add ${quantity} slots. Only ${remaining} slot(s) remaining in this zone.`);
-        return;
-      }
+    if (succeeded.length > 0) {
+      const mapped = succeeded.map((slot) => ({
+        _id: slot._id || slot.id,
+        slotId: slot.slotId || slot.id,
+        id: slot.slotId || slot.id,
+        type: slot.type,
+        status: slot.status,
+        zone: slot.zoneName || slot.zone,
+        park: slot.park,
+        notice: slot.notice || "",
+      }));
+      setSlots((prev) => [...prev, ...mapped]);
     }
 
-    // proceed with adding slots
-    const newSlots = [];
-    for (let i = 0; i < quantity; i++) {
-      newSlots.push({
-        id: `${baseId}${String(nextNumber + i).padStart(3, "0")}`,
-        type: getVehicleTypeFromPark(selectedPark),
-        status: "available",
-        zone: selectedZone,
-        park: selectedPark,
-        notice: "",
-      });
-    }
+    setShowAddSlotModal(false);
+    setNewSlot({ quantity: 1, bulkAdd: false });
 
-    try {
-      const results = await Promise.allSettled(newSlots.map(n => createSlotOnServer(n)));
-      const succeeded = results.filter(r => r.status === "fulfilled").map(r => r.value);
-
-      const mapped = succeeded.map(c => {
-        const slot = c.slots || c;
-        return {
-          _id: slot._id,
-          slotId: slot.slotId || slot.id || slot._id,
-          id: slot.slotId || slot.id || slot._id,
-          type: slot.type,
-          status: slot.status,
-          zone: slot.zone,
-          park: slot.park,
-          notice: slot.notice || "",
-        };
-      });
-
-      if (mapped.length > 0) setSlots(prev => [...prev, ...mapped]);
-
-      await fetchSlotsFromServer();
-
-      setShowAddSlotModal(false);
-      setNewSlot({ quantity: 1, bulkAdd: false });
-
-      const failedCount = results.filter(r => r.status === "rejected").length;
-      if (failedCount > 0) console.warn(`${failedCount} slots failed to add.`);
-    } catch (err) {
-      console.error("Failed to add slots:", err);
-    } finally {
-      setShowAddSlotModal(false);
-      setNewSlot({ quantity: 1, bulkAdd: false });
-    }
-  };
+    const failedCount = results.filter((r) => r.status === "rejected").length;
+    if (failedCount > 0) console.warn(`${failedCount} slots failed to add.`);
+  } catch (err) {
+    console.error("Failed to add slots:", err);
+    setShowAddSlotModal(false);
+    setNewSlot({ quantity: 1, bulkAdd: false });
+  }
+};
 
 
-
-  //----------------------edit part---------------------------//
+  //----------------------edit part---------------------------
 
   const handleEditSlot = (slot) => {
     setEditingSlot({ ...slot });
@@ -462,48 +465,56 @@ const SlotManagement = () => {
       status: slot.status,
       zone: slot.zone,
       park: slot.park,
-      notice: slot.notice
+      notice: slot.notice,
     };
-    const res = await axios.put(`http://localhost:5000/slots/${slot._id}`, payload);
+    const res = await axios.put(`http://localhost:5000/slots/${slot._id}`, payload, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
+     toast.success("Successfully updated!");
     return res.data;
   };
+const handleUpdateSlot = async () => {
+  try {
+    const updated = await updateSlotOnServer(editingSlot);
 
-  const handleUpdateSlot = async () => {
-    try {
-      const updated = await updateSlotOnServer(editingSlot);
-      setSlots(prev => prev.map(s => (s._id === updated._id ? {
-        _id: updated._id,
-        id: updated.slotId || updated._id,
-        type: updated.type,
-        status: updated.status,
-        zone: updated.zone,
-        park: updated.park,
-        notice: updated.notice
-      } : s)));
-      setShowEditSlotModal(false);
-      setEditingSlot(null);
-    } catch (err) {
-      console.error('Failed to update slot:', err);
-    }
+    const updatedSlot = {
+      _id: updated._id,
+      slotId: updated.slotId || updated._id,
+      id: updated.slotId || updated._id,
+      type: updated.type,
+      status: updated.status,
+      zone: updated.zone,
+      park: updated.park,
+      notice: updated.notice,
+    };
 
-  };
+    // Update state immutably
+    setSlots((prev) =>
+      prev.map((s) => (s._id === updatedSlot._id ? updatedSlot : s))
+    );
 
+    // Close modal & reset editing slot
+    setShowEditSlotModal(false);
+    setEditingSlot(null);
+  } catch (err) {
+    toast.error("Failed to upadte slot");
+    console.error("Failed to update slot:", err);
+  }
+};
 
-  //----------------------delete part---------------------------//
-
+//----------------------delete part---------------------------
   const handleDeleteSlot = async (slot) => {
-    if (!window.confirm('Are you sure you want to delete this slot?')) return;
+    if (!window.confirm("Are you sure you want to delete this slot?")) return;
     try {
-      await axios.delete(`http://localhost:5000/slots/${slot._id}`);
-      setSlots(prev => prev.filter(s => s._id !== slot._id));
+      await axios.delete(`http://localhost:5000/slots/${slot._id}`, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
+      setSlots((prev) => prev.filter((s) => s._id !== slot._id));
+       toast.success("Successfully deleted!");
     } catch (err) {
-      console.error('Delete failed', err);
+      const msg = err.response?.data?.message || "Server error occurred!";
+      toast.error(msg);
+      console.error("Delete failed", err);
     }
   };
 
-
-  //----------------------exporting part---------------------------//
-
+  // ------------------------ Export Data ------------------------
   const exportData = () => {
     if (filteredSlots.length === 0) return;
     const csvData = filteredSlots.map((slot) => ({
@@ -514,10 +525,7 @@ const SlotManagement = () => {
       Park: slot.park,
       Notice: slot.notice,
     }));
-    const csv = [
-      Object.keys(csvData[0]).join(","),
-      ...csvData.map((row) => Object.values(row).join(",")),
-    ].join("\n");
+    const csv = [Object.keys(csvData[0]).join(","), ...csvData.map((row) => Object.values(row).join(","))].join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -526,8 +534,9 @@ const SlotManagement = () => {
     a.click();
   };
 
-  //idk
   const selectedParkData = parks.find((p) => p.name === selectedPark);
+
+  // ---------- JSX ----------
 
   return (
     <div
