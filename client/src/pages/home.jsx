@@ -99,7 +99,7 @@ export default function ParkingLandingPage() {
   const handleLogout = () => {
     localStorage.removeItem("token");
     setIsLoggedIn(false); 
-    navigate("/");
+    navigate("/login");
   };
 
   useEffect(() => {

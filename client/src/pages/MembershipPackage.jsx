@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import axios from "axios";
 import PlanModal from '../pages/PlanModal';
 import { FaStar, FaCrown, FaGem } from 'react-icons/fa';
+import { Navigate, useNavigate } from 'react-router-dom';
 
 const MembershipPackage = () => {
   const [membershipPlans, setPlans] = useState([]);
@@ -25,7 +26,13 @@ const MembershipPackage = () => {
   }, []);
 
   const handleChoosePlan = (plan) => {
-    setSelectedPlan(plan);
+
+    const token = localStorage.getItem("token");
+
+    if(!token){
+      navigate('/login');
+    }
+
     setIsModalOpen(true);
   };
 
