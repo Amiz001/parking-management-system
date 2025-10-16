@@ -7,5 +7,7 @@ router.get("/", userMembershipController.getAllUserMemberships);
 router.get("/:id", userMembershipController.getUserMembershipById);
 router.put("/:id", userMembershipController.updateUserMembership);
 router.delete("/:id", userMembershipController.deleteUserMembership);
+router.get("/check", userMembershipController.checkUserPlan);
+
 
 module.exports = router;

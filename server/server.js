@@ -36,8 +36,11 @@ app.use(
 
 
 
-const physicalBookingRoutes = require('./routes/PhysicalBookingRoutes');
-const PaymentRoute = require("./routes/PaymentRoute");
+const onlineBookPayRoutes = require('./routes/onlineBookPayRoutes.js');
+
+
+const bookingRoutes = require('./routes/bookingRoutes');
+const paymentRoutes = require('./routes/PaymentRoute');
 const userRoutes = require('./routes/userRoutes');
 const slotRoutes = require('./routes/slotRoutes');
 const zoneRoutes = require('./routes/zoneRoutes');
@@ -51,11 +54,22 @@ const MembershipRoute = require("./routes/MembershipRoute");
 const OnlinePayRoute = require('./routes/OnlinePayRoute');
 const User_MembershipRoute = require('./routes/User_MembershipRoute');
 
-app.use('/physicalbookings', physicalBookingRoutes);
-app.use('/payment',PaymentRoute);
+app.use('/onlineBookPay',onlineBookPayRoutes);
+app.use('/bookings', bookingRoutes);
+app.use('/payment',paymentRoutes);
 app.use('/users', userRoutes);
 app.use('/slots', slotRoutes);
 app.use('/zones', zoneRoutes);
+
+
+app.use('/api/feedback', feedbackRoutes);
+app.use('/api/complaint', complaintRoutes);
+app.use('/api/refund', refundRoutes);
+app.use('/api/ticket', ticketRoutes);
+
+app.use('/plan', MembershipRoute)
+app.use('/online-payment', OnlinePayRoute);
+app.use('/user-membership', User_MembershipRoute);
 
 
 

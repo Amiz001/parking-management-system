@@ -8,9 +8,9 @@ const MembershipPackage = () => {
   const [membershipPlans, setPlans] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(null);
-  const [isCustomModalOpen, setIsCustomModalOpen] = useState(false);
+  
 
-  // Fetch plans from backend and filter out Free plan
+  
   useEffect(() => {
     axios.get("http://localhost:5000/plan")
       .then((res) => {
@@ -29,7 +29,7 @@ const MembershipPackage = () => {
     setIsModalOpen(true);
   };
 
-  // Icon selection based on plan name
+  
   const getIconForPlan = (planName) => {
     switch (planName.toLowerCase()) {
       case "silver":

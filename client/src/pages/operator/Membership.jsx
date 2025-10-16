@@ -57,7 +57,7 @@ const Dashboard = () => {
 
   const sidebarItems = [
   { icon: ChartColumnBig, label: "Dashboard", path: "/operator/dashboard" },
-  { icon: CalendarCheck, label: "Booking", path: "/operator/physicalbooking" },
+  { icon: CalendarCheck, label: "Booking", path: "/operator/physicalBooking" },
   { icon: HeartHandshake, label: "Membership", active: true, path: "/operator/membership" },
   { icon: Wallet, label: "Payment", path: "/operator/payment" },
   ];

@@ -9,7 +9,7 @@ import { useNavigate } from "react-router-dom";
 // Sidebar Items
 const sidebarItems = [
   { icon: ChartColumnBig, label: "Dashboard", active: true, path: "/operator/dashboard" },
-  { icon: CalendarCheck, label: "Booking", path: "/operator/physicalbooking" },
+  { icon: CalendarCheck, label: "Booking", path: "/operator/physicalBooking" },
   { icon: HeartHandshake, label: "Membership", path: "/operator/membership" },
   { icon: Wallet, label: "Payment", path: "/operator/payment" },
   { icon: HeartHandshake, label: 'Online Booking', path: "/operator/OnlineBookingPage"},
@@ -257,22 +257,22 @@ const handleSearch = async () => {
           </div>
           <span className="text-xl font-semibold">Gate Operator</span>
         </div>
-        <nav className="space-y-2 mb-8">
-          {sidebarItems.map((item, index) => (
-            <a
-              key={index}
-              href={item.path}
-              className={`flex items-center gap-3 px-3 py-2 rounded-lg ${
-                item.active
-                  ? "bg-gradient-to-l from-blue-500 to-indigo-600 text-white"
-                  : "text-gray-300 hover:bg-gray-700 light:text-black light:hover:bg-gray-100"
-              }`}
-            >
-              <item.icon size={20} />
-              <span>{item.label}</span>
-            </a>
-          ))}
-        </nav>
+        <nav className="space-y-2">
+            {sidebarItems.map((item, index) => (
+              <a
+                key={index}
+                 href={item.path}
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                  item.active 
+                    ? 'bg-gradient-to-l from-blue-500 to-indigo-600 text-white' 
+                    : 'text-gray-300 hover:bg-gray-700 light:text-black light:hover:bg-gray-100'
+                }`}
+              >  
+                <item.icon size={20} />
+                <span>{item.label}</span>
+              </a>
+            ))}
+          </nav>
         <div className="mt-auto space-y-2">
           <a
             href="#"

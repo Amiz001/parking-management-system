@@ -50,6 +50,8 @@ const MembershipManagement = () => {
 
   const [userMemberships, setUserMemberships] = useState([]);
   const [loadingUserMemberships, setLoadingUserMemberships] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+
 
 
   useEffect(() => {
@@ -70,7 +72,7 @@ const MembershipManagement = () => {
   useEffect(()=>{
     const fetchUserMemberships = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/user-memberships');
+        const response = await axios.get('http://localhost:5000/user-membership');
         setUserMemberships(response.data);
         setLoadingUserMemberships(false);
       }catch(error){
@@ -101,21 +103,31 @@ const MembershipManagement = () => {
     { icon: LogOut, label: 'Logout' },
   ];
 
-  const statsCards = [
-    { title: 'Total Members', value: '1,234', change: '+250 this month', positive: true },
-    { title: 'Active Plans', value: '3', change: '+No change this month', positive: true },
-    { title: 'Revenue (This month)', value: 'LKR 180,000', change: '+3% vs last month', positive: true },
-    { title: 'New Subscriptions (This Week)', value: '28', change: '+12 than last week', positive: true },
-  ];
-  const performanceData = [
-    { date: '1 June', value: 45 },
-    { date: '2 June', value: 55 },
-    { date: '3 June', value: 48 },
-    { date: '4 June', value: 52 },
-    { date: '5 June', value: 75 },
-    { date: '6 June', value: 58 },
-    { date: '7 June', value: 62 }
-  ];
+  const today = new Date();
+const sevenDaysAgo = new Date();
+sevenDaysAgo.setDate(today.getDate() - 7);
+
+const totalMembers = userMemberships.length;
+
+const activePlans = membershipPlans.length;
+
+const totalRevenue = userMemberships.reduce((sum, u) => {
+  return sum + Number(u.price || 0); // assuming `price` is stored in user_membership table
+}, 0);
+
+
+const newSubscriptions = userMemberships.filter(u => {
+  const startDate = new Date(u.startDate);
+  return startDate >= sevenDaysAgo && startDate <= today;
+}).length;
+
+// Create stats cards array dynamically
+const dynamicStatsCards = [
+  { title: 'Total Members', value: totalMembers },
+  { title: 'Active Plans', value: activePlans },
+  { title: 'Revenue (This month)', value: `LKR ${totalRevenue}` },
+  { title: 'New Subscriptions (This Week)', value: newSubscriptions },
+];
 
   
   const handleUpdate = (id) => {
@@ -227,12 +239,23 @@ const confirmDelete = async () => {
   const [showLimitModal, setShowLimitModal] = useState(false);
 
 const handleAddPlanClick = () => {
-  if (membershipPlans.length >= 3) {
+  if (membershipPlans.length >= 4) {
     setShowLimitModal(true);
     return;
   }
   setShowInsertModal(true);
 };
+
+
+
+const filteredUserMemberships = userMemberships.filter(m => 
+  (m.userId?.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+  (m.userId?.email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+  (m.membershipId?._id || '').toString().toLowerCase().includes(searchTerm.toLowerCase()) || 
+  (m.membershipId?.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+  (m.vehicle_num || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+  (m.status || '').toLowerCase().includes(searchTerm.toLowerCase())
+);
 
 
 const exportData = () => {
@@ -297,6 +320,7 @@ const formatDate = (date) => {
   a.click();
   window.URL.revokeObjectURL(url);
 };
+
 
 
 
@@ -384,10 +408,13 @@ const formatDate = (date) => {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
               <input
-                type="text"
-                placeholder="Search something..."
-                className="pl-10 pr-4 py-2 bg-[#151821] light:bg-white border border-gray-900 light:border-gray-200 rounded-lg text-white placeholder-gray-400 light:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+  type="text"
+  placeholder="Search something..."
+  value={searchTerm}
+  onChange={(e) => setSearchTerm(e.target.value)}
+  className="pl-10 pr-4 py-2 bg-[#151821] light:bg-white border border-gray-900 light:border-gray-200 rounded-lg text-white placeholder-gray-400 light:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+/>
+
             </div>
             <button className="px-4 py-2 bg-gradient-to-l from-blue-500 to-indigo-600 text-white rounded-lg hover:bg-blue-600 transition-colors">
               Search
@@ -441,24 +468,32 @@ const formatDate = (date) => {
           </div>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-4 gap-6 mb-8">
-            {statsCards.map((card, index) => (
-              <div key={index} className="bg-gradient-to-b from-[#151821] to-[#242938] light:bg-gradient-to-b light:from-white light:to-white light:shadow-lg light:backdrop-blur-sm p-6 rounded-xl">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-gray-400 light:text-gray-600 text-sm">{card.title}</h3>
-                  <MoreHorizontal size={20} className="text-gray-400 light:text-gray-600 cursor-pointer" />
-                </div>
-                <div className="mb-2">
-                  <span className="text-3xl font-bold">{card.value}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className={`text-sm light:text-bold ${card.positive ? 'text-green-400 light:text-green-600' : 'text-red-400 light:text-red-600'}`}>
-                    {card.change}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
+<div className="grid grid-cols-4 gap-6 mb-8">
+  {dynamicStatsCards.map((card, index) => (
+    <div
+      key={index}
+      className="bg-gradient-to-b from-[#151821] to-[#242938] light:bg-gradient-to-b light:from-white light:to-white light:shadow-lg light:backdrop-blur-sm p-6 rounded-xl"
+    >
+      <h3 className="text-gray-400 light:text-gray-600 text-sm mb-2">{card.title}</h3>
+      <span className="text-3xl font-bold">{card.value}</span>
+
+      <div className="mt-2">
+        <div className="flex items-center gap-2">
+          <span
+            className={`text-sm font-bold ${
+              card.positive
+                ? 'text-green-400 light:text-green-600'
+                : 'text-red-400 light:text-red-600'
+            }`}
+          >
+            {card.change}
+          </span>
+        </div>
+      </div>
+    </div>
+  ))}
+</div>
+
 
           {/* Table */}
           {/* Membership Table */}
@@ -549,27 +584,27 @@ const formatDate = (date) => {
           </tr>
         </thead>
         <tbody>
-          {userMemberships.map((membership, index) => (
-            <tr key={membership._id} className="border-b border-gray-200 hover:bg-gray-700 light:hover:bg-gray-100">
-              <td className="py-4 px-4 text-gray-300 light:text-gray-600">{index + 1}</td>
-              <td className="py-4 px-4">{membership.userId?.name} ({membership.userId?.email})</td>
-              <td className="py-4 px-4">{membership.membershipId?.name} - LKR {membership.membershipId?.price}</td>
-              <td className="py-4 px-4">{membership.vehicle_num}</td>
-              <td className="py-4 px-4">{new Date(membership.startDate).toLocaleDateString()}</td>
-              <td className="py-4 px-4">{membership.endDate ? new Date(membership.endDate).toLocaleDateString() : '-'}</td>
-              <td className="py-4 px-4">{membership.status}</td>
-              <td className="py-4 px-4 flex gap-2">
-                        
-                        <button
-                          onClick={() => handleDeleteClick(plan._id)}
-                          className="px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
-                        >
-                         Delete
-                        </button>
-                        </td>
-            </tr>
-          ))}
-        </tbody>
+  {filteredUserMemberships.map((membership, index) => (
+    <tr key={membership._id} className="border-b border-gray-200 hover:bg-gray-700 light:hover:bg-gray-100">
+      <td className="py-4 px-4 text-gray-300 light:text-gray-600">{index + 1}</td>
+      <td className="py-4 px-4">{membership.userId?.name || '-'} ({membership.userId?.email || '-'})</td>
+      <td className="py-4 px-4">{membership.membershipId?.name || '-'} - LKR {membership.membershipId?.price || '-'}</td>
+      <td className="py-4 px-4">{membership.vehicle_num || '-'}</td>
+      <td className="py-4 px-4">{membership.startDate ? new Date(membership.startDate).toLocaleDateString() : '-'}</td>
+      <td className="py-4 px-4">{membership.endDate ? new Date(membership.endDate).toLocaleDateString() : '-'}</td>
+      <td className="py-4 px-4">{membership.status || '-'}</td>
+      <td className="py-4 px-4 flex gap-2">
+        <button
+          onClick={() => handleDeleteClick(membership._id)}
+          className="px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+        >
+         Delete
+        </button>
+      </td>
+    </tr>
+  ))}
+</tbody>
+
       </table>
     </div>
   )}
@@ -643,7 +678,7 @@ const formatDate = (date) => {
         Limit Reached
       </h3>
       <p className="mb-6 text-gray-700 dark:text-gray-300">
-        You can only add up to 3 membership plans.
+        You can only add up to 4 membership plans.
       </p>
       <div className="flex justify-end">
         <button 

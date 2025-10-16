@@ -7,7 +7,7 @@ import PaymentForm from '../pages/PaymentForm';
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
-const PaymentPortal = ({ amount, username, vehicleType, quantity, planName, onBack, onClose }) => {
+const PaymentPortal = ({ amount, username, vehicleType, quantity, onBack, onClose }) => {
   const [clientSecret, setClientSecret] = useState(null);
   const [paymentId, setPaymentId] = useState(null);
 

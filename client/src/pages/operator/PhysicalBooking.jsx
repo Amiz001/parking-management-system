@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
-import {toast} from 'react-toastify'
+import { useNavigate, useLocation } from "react-router-dom"; 
+import { toast } from 'react-toastify';
 
 import {
   Search,
@@ -19,15 +19,15 @@ import {
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const location = useLocation(); 
   const [lightMode, setLightMode] = useState(false);
   const [bookings, setBookings] = useState([]);
   const [filteredBookings, setFilteredBookings] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedType, setSelectedType] = useState("All"); // ✅ new filter state
+  const [selectedType, setSelectedType] = useState("All"); 
 
   const URL = "http://localhost:5000/bookings";
 
-  // ✅ Fetch bookings
   const fetchHandler = async () => {
     try {
       const res = await axios.get(URL);
@@ -38,14 +38,14 @@ const Dashboard = () => {
     }
   };
 
+  //  fetch bookings, refresh on navigate back after payment
   useEffect(() => {
     fetchHandler().then((data) => {
       setBookings(data.bookings || []);
       setFilteredBookings(data.bookings || []);
     });
-  }, []);
+  }, [location]); 
 
-  // ✅ SEARCH
   const handleSearch = () => {
     if (!searchQuery.trim()) {
       filterBookings(selectedType);
@@ -59,7 +59,31 @@ const Dashboard = () => {
     setFilteredBookings(results);
   };
 
-  // ✅ DELETE booking
+
+  // Refresh a single booking if returned from payment
+useEffect(() => {
+  if (location.state?.updatedBookingId) {
+    const updatedId = location.state.updatedBookingId;
+
+    // Update the booking in state to "paid" immediately
+    setBookings((prev) =>
+      prev.map((b) =>
+        b._id === updatedId ? { ...b, status: "paid" } : b
+      )
+    );
+
+    setFilteredBookings((prev) =>
+      prev.map((b) =>
+        b._id === updatedId ? { ...b, status: "paid" } : b
+      )
+    );
+
+    navigate(location.pathname, { replace: true });
+  }
+}, [location, navigate]);
+
+
+
   const handleDelete = async (id) => {
     try {
       await axios.delete(`${URL}/${id}`);
@@ -71,7 +95,7 @@ const Dashboard = () => {
     }
   };
 
-  // ✅ FILTER by type
+  
   const filterBookings = (type, data = bookings) => {
     let filtered;
     if (type === "All") {
@@ -83,7 +107,6 @@ const Dashboard = () => {
     setSelectedType(type);
   };
 
-  // ✅ Sidebar and Bottom items
   const sidebarItems = [
     { icon: ChartColumnBig, label: "Dashboard", path: "/operator/dashboard" },
     { icon: CalendarCheck, label: "Booking", active: true, path: "/operator/physicalbooking" },
@@ -96,11 +119,7 @@ const Dashboard = () => {
   ];
 
   return (
-    <div
-      className={`flex h-auto bg-gray-950 text-white light:text-black light:bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 ${
-        lightMode ? "light" : "dark"
-      }`}
-    >
+    <div className={`flex h-auto bg-gray-950 text-white light:text-black light:bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 ${lightMode ? "light" : "dark"}`}>
       {/* Sidebar */}
       <div className="w-64 h-screen sticky top-0 bg-[#151821] p-6 flex flex-col light:bg-white">
         <div className="flex items-center gap-3 mb-8">
@@ -115,11 +134,7 @@ const Dashboard = () => {
             <a
               key={i}
               href={item.path}
-              className={`flex items-center gap-3 px-3 py-2 rounded-lg ${
-                item.active
-                  ? "bg-gradient-to-l from-blue-500 to-indigo-600 text-white"
-                  : "text-black-300 hover:bg-gray-700"
-              }`}
+              className={`flex items-center gap-3 px-3 py-2 rounded-lg ${item.active ? "bg-gradient-to-l from-blue-500 to-indigo-600 text-white" : "text-black-300 hover:bg-gray-700"}`}
             >
               <item.icon size={20} />
               <span>{item.label}</span>
@@ -191,37 +206,25 @@ const Dashboard = () => {
           <div className="flex items-center justify-between mb-8">
             <h1 className="text-3xl font-bold">Dashboard</h1>
 
-            {/* ✅ FILTER BUTTONS */}
+            {/* FILTER BUTTONS */}
             <div className="flex items-center gap-4">
               <button
                 onClick={() => filterBookings("Online")}
-                className={`px-6 py-2 rounded-lg ${
-                  selectedType === "Online"
-                    ? "bg-gradient-to-l from-blue-500 to-indigo-600 text-white"
-                    : "bg-gray-700 hover:bg-gray-600 text-white"
-                }`}
+                className={`px-6 py-2 rounded-lg ${selectedType === "Online" ? "bg-gradient-to-l from-blue-500 to-indigo-600 text-white" : "bg-gray-700 hover:bg-gray-600 text-white"}`}
               >
                 Online
               </button>
 
               <button
                 onClick={() => filterBookings("Physical")}
-                className={`px-6 py-2 rounded-lg ${
-                 selectedType === "Physical"
-                    ? "bg-gradient-to-l from-blue-500 to-indigo-600 text-white"
-                    : "bg-gray-700 hover:bg-gray-600 text-white"
-                }`}
+                className={`px-6 py-2 rounded-lg ${selectedType === "Physical" ? "bg-gradient-to-l from-blue-500 to-indigo-600 text-white" : "bg-gray-700 hover:bg-gray-600 text-white"}`}
               >
                 Physical
               </button>
 
               <button
                 onClick={() => filterBookings("All")}
-                className={`px-6 py-2 rounded-lg ${
-                  selectedType === "All"
-                    ? "bg-gradient-to-l from-blue-500 to-indigo-600 text-white"
-                    : "bg-gray-700 hover:bg-gray-600 text-white"
-                }`}
+                className={`px-6 py-2 rounded-lg ${selectedType === "All" ? "bg-gradient-to-l from-blue-500 to-indigo-600 text-white" : "bg-gray-700 hover:bg-gray-600 text-white"}`}
               >
                 All
               </button>
@@ -229,12 +232,10 @@ const Dashboard = () => {
           </div>
 
           {/* TABLE */}
-          <div className="bg-[#151821]  p-6 light:bg-white border-gray-900 light:border-gray-200 rounded-lg text-white light:text-black">
+          <div className="bg-[#151821] p-6 light:bg-white border-gray-900 light:border-gray-200 rounded-lg text-white light:text-black">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-semibold">Bookings</h3>
-              <button
-                className="px-6 py-2 bg-gradient-to-l from-blue-500 to-indigo-600 text-white rounded-lg hover:bg-blue-600"
-              >
+              <button className="px-6 py-2 bg-gradient-to-l from-blue-500 to-indigo-600 text-white rounded-lg hover:bg-blue-600">
                 Export Data
               </button>
             </div>
@@ -261,19 +262,38 @@ const Dashboard = () => {
                       <td className="py-3 px-4">{b.zone}</td>
                       <td className="py-3 px-4">{b.types}</td>
                       <td className="py-3 px-4">{b.vehicleNum}</td>
-                      <td className="py-3 px-4">
-                        {new Date(b.date).toLocaleDateString()}
-                      </td>
+                      <td className="py-3 px-4">{new Date(b.date).toLocaleDateString()}</td>
                       <td className="py-3 px-4">{b.entryTime}</td>
                       <td className="py-3 px-4">{b.exitTime}</td>
                       <td className="py-3 px-4">
-                        <button
-                          onClick={() => navigate(`/operator/updatebookingPhysical/${b._id}`)}
-                          className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
-                        >
-                          Non Paid
-                        </button>
-                      </td>
+  {b.status === "paid" ? (
+    <button className="px-3 py-1 bg-green-500 text-white rounded cursor-not-allowed">
+      Paid
+    </button>
+  ) : b.types.toLowerCase() === "physical" ? (
+    <button
+      onClick={() => navigate(`/operator/PhysicalPayForm/${b._id}`)}
+      className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+    >
+      Non Paid
+    </button>
+  ) : b.types.toLowerCase() === "online" ? (
+    <button
+      className="px-7 py-1 bg-gray-400 text-white rounded cursor-not-allowed"
+      disabled
+    >
+      Paid
+    </button>
+  ) : (
+    <button
+      className="px-3 py-1 bg-blue-500 text-white rounded"
+    >
+      Non Paid
+    </button>
+  )}
+</td>
+
+
                       <td className="py-3 px-4 flex gap-2">
                         <button
                           onClick={() => navigate(`/operator/updatebookingPhysical/${b._id}`)}
