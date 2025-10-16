@@ -1,12 +1,14 @@
-const express = require("express");
-const cors = require("cors");
-require("dotenv").config();
-require("./config/db");
+const cors = require('cors'); 
+const express = require('express'); 
+const app = express(); 
+require("dotenv").config(); 
+require('./config/db'); 
 
-const app = express();
-
-app.use(express.json());
+app.use(express.json()); 
 app.use(cors());
+
+const MembershipRoute = require("./routes/MembershipRoute");
+const OnlinePayRoute = require('./routes/OnlinePayRoute');
 
 const bookingRoutes = require("./routes/bookingRoutes");
 //const PhysicalBookingRoutes = require("./routes/PhysicalBookingRoutes");
@@ -20,7 +22,11 @@ app.use("/users", userRoutes);
 app.use("/slots", slotRoutes);
 app.use("/zones", zoneRoutes);
 
+app.use('/plan', MembershipRoute);
+app.use('/online-payment', OnlinePayRoute);
+
 
 app.listen(5000, () => {
     console.log("Server is starting");
 })
+

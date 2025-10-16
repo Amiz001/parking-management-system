@@ -1,21 +1,17 @@
 import React, { useState, useEffect } from "react";
 import {
-  Search, CalendarCheck, Settings, MoreHorizontal, Bell, Sun, Moon,
-  ChartColumnBig, HeartHandshake, LogOut, Car, Bookmark, Wrench, LayoutGrid,
+  Search, AlertTriangle, CalendarCheck, Settings, MoreHorizontal, Bell, Sun, Moon,
+  ChartColumnBig, HeartHandshake, LogOut, Car, Wrench, LayoutGrid,
   Wallet,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-// Sidebar Items
 const sidebarItems = [
   { icon: ChartColumnBig, label: "Dashboard", active: true, path: "/operator/dashboard" },
   { icon: CalendarCheck, label: "Booking", path: "/operator/physicalbooking" },
-  { icon: HeartHandshake, label: "Membership", path: "/operator/membership" },
   { icon: Wallet, label: "Payment", path: "/operator/payment" },
-  { icon: HeartHandshake, label: 'Online Booking', path: "/operator/OnlineBookingPage"},
 ];
 
-// ParkingSpot
 const ParkingSpot = ({ spot }) => {
   const navigate = useNavigate();
   const baseClasses =
@@ -42,31 +38,31 @@ const ParkingSpot = ({ spot }) => {
         return (
           <div
             onClick={() =>
-              navigate("/operator/bookingPhysicalform", { state: { slotId: spot.slotId, zone: spot.zone, } })
+              navigate("/operator/bookingPhysicalform", {
+                state: { slotId: spot.slotId, zone: spot.zone },
+              })
             }
             className="w-6 h-6 bg-green-600 rounded-full flex items-center justify-center text-white text-lg font-bold shadow-sm"
           >
             P
           </div>
         );
-      case "occupied":
-        return <Car className="w-6 h-6" />;
-      case "disabled":
-        return <Wrench className="w-6 h-6" />;
       case "emergency":
-      return (
-        <div className="flex items-center gap-1">
+        return (
           <div
             onClick={() =>
               navigate("/operator/bookingPhysicalform", {
                 state: { slotId: spot.slotId, zone: spot.zone },
               })
             }
-          >  
-          <Bookmark className="w-6 h-6 text-yellow-600" />
+          >
+            <AlertTriangle className="w-6 h-6 text-amber-600 drop-shadow-sm"/>
           </div>
-        </div>
-      );
+        );
+      case "occupied":
+        return <Car className="w-6 h-6" />;
+      case "disabled":
+        return <Wrench className="w-6 h-6" />;
       default:
         return null;
     }
@@ -80,13 +76,12 @@ const ParkingSpot = ({ spot }) => {
         <span className="text-xs font-medium">{spot.status}</span>
         {spot.zone && <span className="text-xs font-medium">{spot.zone}</span>}
         {spot.type && <span className="text-xs font-medium">{spot.type}</span>}
-
       </div>
     </div>
   );
 };
 
-// StatsCard
+// Stats
 const StatsCard = ({ title, value }) => (
   <div className="bg-gradient-to-b from-[#151821] to-[#242938] light:from-white light:to-white light:shadow-lg p-6 rounded-xl">
     <div className="flex items-center justify-between mb-4">
@@ -97,7 +92,6 @@ const StatsCard = ({ title, value }) => (
   </div>
 );
 
-// StatsGrid
 const StatsGrid = ({ stats }) => (
   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
     <StatsCard title="Total Spots" value={stats.totalSpots} />
@@ -107,7 +101,7 @@ const StatsGrid = ({ stats }) => (
   </div>
 );
 
-// ParkingLayout
+// Parking Layout
 const ParkingLayout = ({ spots }) => (
   <div className="bg-gradient-to-b from-[#151821] to-[#242938] light:from-white light:to-white light:shadow-lg rounded-xl p-6">
     <div className="flex items-center space-x-3 mb-6">
@@ -144,19 +138,20 @@ const ParkingLayout = ({ spots }) => (
   </div>
 );
 
-// Full Dashboard 
+// Main Dashboard
 const Dashboard = () => {
   const [lightMode, setLightMode] = useState(false);
   const [spots, setSpots] = useState([]);
   const [stats, setStats] = useState(null);
+  const [zones, setZones] = useState([]);
 
   const [searchVehicle, setSearchVehicle] = useState("");
   const [searchResult, setSearchResult] = useState("");
 
-  // Filters
   const [selectedWheel, setSelectedWheel] = useState("all");
   const [selectedZone, setSelectedZone] = useState("all");
 
+  // Fetch slots from backend
   const fetchSpots = async () => {
     try {
       const response = await fetch("http://localhost:5000/slots");
@@ -164,6 +159,11 @@ const Dashboard = () => {
       const slotArray = data.slots || data;
 
       setSpots(slotArray);
+
+      // Extract unique zones dynamically
+      const uniqueZones = [...new Set(slotArray.map((s) => s.zone?.toLowerCase()))];
+      setZones(uniqueZones.filter(Boolean));
+
       setStats({
         totalSpots: slotArray.length,
         availableSpots: slotArray.filter((s) => s.status === "available").length,
@@ -179,9 +179,9 @@ const Dashboard = () => {
     fetchSpots();
   }, []);
 
-  // Apply filters
+  // Filtered spots
   const filteredSpots = spots.filter((spot) => {
-    const vehicleType = spot.type?.toLowerCase();  // ✅ fixed
+    const vehicleType = spot.type?.toLowerCase();
     const zone = spot.zone?.toLowerCase();
 
     return (
@@ -190,58 +190,57 @@ const Dashboard = () => {
     );
   });
 
-// Search 
-const handleSearch = async () => {
+  // Search Function
+  const handleSearch = async () => {
   if (!searchVehicle.trim()) {
     setSearchResult("Please enter a vehicle number.");
     return;
   }
 
   try {
-    const [physicalRes, onlineRes, memberRes] = await Promise.all([
+    const [bookingRes, memberRes] = await Promise.all([
       fetch("http://localhost:5000/bookings"),
       fetch("http://localhost:5000/user_memberships"),
     ]);
 
-    const [physicalData, onlineData, memberData] = await Promise.all([
-      physicalRes.json(),
+    // Check if responses are OK
+    if (!bookingRes.ok || !memberRes.ok) {
+      throw new Error("Network response was not ok");
+    }
+
+    // Parse JSON responses
+    const [bookingData, memberData] = await Promise.all([
+      bookingRes.json(),
       memberRes.json(),
     ]);
 
-    const physicalBookings = physicalData.bookings || physicalData;
+    // Normalize data shape
+    const bookings = bookingData.bookings || bookingData;
     const memberships = memberData.memberships || memberData;
 
     const vehicle = searchVehicle.trim().toLowerCase();
 
-    const hasPhysicalBooking = physicalBookings.some(
+    const hasBooking = bookings.some(
       (b) => b.vehicleNumber?.toLowerCase() === vehicle
     );
-
     const hasMembership = memberships.some(
       (m) => m.vehicleNumber?.toLowerCase() === vehicle
     );
 
-    if (hasPhysicalBooking && hasOnlineBooking && hasMembership) {
-      setSearchResult(`🚗 Vehicle ${searchVehicle} has physical & online bookings, plus a membership plan.`);
-    } else if (hasPhysicalBooking && hasMembership) {
-      setSearchResult(`✅ Vehicle ${searchVehicle} has a physical booking and membership.`);
-    } else if (hasOnlineBooking && hasMembership) {
-      setSearchResult(`✅ Vehicle ${searchVehicle} has an online booking and membership.`);
-    } else if (hasPhysicalBooking) {
-      setSearchResult(`✅ Vehicle ${searchVehicle} has a physical booking.`);
-    } else if (hasOnlineBooking) {
-      setSearchResult(`✅ Vehicle ${searchVehicle} has an online booking.`);
+    if (hasBooking && hasMembership) {
+      setSearchResult(`Vehicle ${searchVehicle} has a booking and membership.`);
+    } else if (hasBooking) {
+      setSearchResult(`Vehicle ${searchVehicle} has a booking.`);
     } else if (hasMembership) {
-      setSearchResult(`💳 Vehicle ${searchVehicle} has a membership plan.`);
+      setSearchResult(`Vehicle ${searchVehicle} has a membership plan.`);
     } else {
-      setSearchResult(`❌ No record found for vehicle ${searchVehicle}.`);
+      setSearchResult(`No record found for vehicle ${searchVehicle}.`);
     }
   } catch (error) {
     console.error("Search error:", error);
     setSearchResult("Error fetching data. Please try again.");
   }
 };
-
 
   return (
     <div
@@ -273,6 +272,7 @@ const handleSearch = async () => {
             </a>
           ))}
         </nav>
+
         <div className="mt-auto space-y-2">
           <a
             href="#"
@@ -282,8 +282,7 @@ const handleSearch = async () => {
           </a>
         </div>
 
-        {/* User Profile */}
-        <div className="mt-6 flex items-center gap-3 p-3 bg-[#222735] light:bg-gray-100 light:shadow-lg light:backdrop-blur-sm border-gray-400 rounded-lg ">
+        <div className="mt-6 flex items-center gap-3 p-3 bg-[#222735] light:bg-gray-100 rounded-lg">
           <div className="w-10 h-10 bg-blue-500 light:text-white rounded-full flex items-center justify-center">
             <span className="text-sm font-semibold">GO</span>
           </div>
@@ -292,78 +291,75 @@ const handleSearch = async () => {
             <p className="text-xs text-gray-400 light:text-gray-700">gate@mail.com</p>
           </div>
           <MoreHorizontal size={16} className="text-gray-400 light:text-gray-950" />
-          </div>
         </div>
-      
+      </div>
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
-        {/* Header */}
         <header className="bg-gray-950 light:bg-transparent p-6 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="relative">
               <Search
-              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-              size={20}
-            />
-            <input
-              type="text"
-              placeholder="Enter vehicle number..."
-              value={searchVehicle}
-              onChange={(e) => setSearchVehicle(e.target.value)}
-              className="pl-10 pr-4 py-2 bg-[#151821] light:bg-white border border-gray-900 light:border-gray-200 rounded-lg text-white light:text-black"
-            />
-          </div>
-          <button
-            onClick={handleSearch}
-            className="px-4 py-2 bg-gradient-to-l from-blue-500 to-indigo-600 text-white rounded-lg"
-          >
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                size={20}
+              />
+              <input
+                type="text"
+                placeholder="Enter vehicle number..."
+                value={searchVehicle}
+                onChange={(e) => setSearchVehicle(e.target.value)}
+                className="pl-10 pr-4 py-2 bg-[#151821] light:bg-white border border-gray-900 light:border-gray-200 rounded-lg text-white light:text-black"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={handleSearch}
+              className="px-4 py-2 bg-gradient-to-l from-blue-500 to-indigo-600 text-white rounded-lg"
+            >
             Search
-          </button>
+            </button>
+            <p className="px-6 text-sm text-white light:text-black mb-2">{searchResult}</p>
           </div>
+
           <div className="flex items-center gap-4">
-            <Bell size={20} className="text-gray-400 light:text-gray-700 cursor-pointer hover:text-white light:hover:text-gray-500" />
-            <Settings size={20} className="text-gray-400 light:text-gray-700 cursor-pointer hover:text-white light:hover:text-gray-500" />
+            <Bell size={20} className="text-gray-400" />
+            <Settings size={20} className="text-gray-400" />
             <Sun onClick={() => setLightMode(true)} size={20} className={`text-gray-400 ${lightMode ? "light:text-yellow-500 fill-yellow-500":""} cursor-pointer light:cursor-default hover:text-white light:hover:text-yellow-500`} />
             <Moon onClick={() => setLightMode(false)} size={20} className={`${!lightMode ? "text-yellow-500 fill-yellow-500":""} light:text-gray-700 light:cursor-pointer hover:text-yellow-500 light:hover:text-gray-500`} />
           </div>
         </header>
 
-        {searchResult && (
-          <p className="px-6 text-sm text-gray-400 mb-2">{searchResult}</p>
-        )}
-
-        {/* Content */}
         <main className="flex-1 p-6 overflow-auto">
           <div className="flex items-center justify-between mb-8">
-            <div>
-              <h1 className="text-3xl font-bold mb-8">Dashboard</h1>
-            </div>
+            <h1 className="text-3xl font-bold mb-8">Dashboard</h1>
 
             {/* Filters */}
             <div className="flex gap-4 mb-6">
-            <select
-              value={selectedWheel}
-              onChange={(e) => setSelectedWheel(e.target.value)}
-              className="px-4 py-2 bg-gradient-to-l from-blue-500 to-indigo-600 rounded-lg border-gray-300 text-black"
-            >
-              <option value="all">All Wheels</option>
-              <option value="2wheel">2 Wheel</option>
-              <option value="3wheel">3 Wheel</option>
-              <option value="4wheel">4 Wheel</option>
-            </select>
+              <select
+                value={selectedWheel}
+                onChange={(e) => setSelectedWheel(e.target.value)}
+                className="px-4 py-2 bg-gradient-to-l from-blue-500 to-indigo-600 rounded-lg text-black"
+              >
+                <option value="all">All Wheels</option>
+                <option value="2wheel">2 Wheel</option>
+                <option value="3wheel">3 Wheel</option>
+                <option value="4wheel">4 Wheel</option>
+              </select>
 
-            <select
-              value={selectedZone}
-              onChange={(e) => setSelectedZone(e.target.value)}
-              className="px-4 py-2 bg-gradient-to-l from-blue-500 to-indigo-600 rounded-lg border-gray-300 text-black"
-            >
-              <option value="all">All Zones</option>
-              <option value="zone a">Zone A</option>
-              <option value="zone b">Zone B</option>
-            </select>
+              <select
+                value={selectedZone}
+                onChange={(e) => setSelectedZone(e.target.value)}
+                className="px-4 py-2 bg-gradient-to-l from-blue-500 to-indigo-600 rounded-lg text-black"
+              >
+                <option value="all">All Zones</option>
+                {zones.map((zone, idx) => (
+                  <option key={idx} value={zone}>
+                    {zone.charAt(0).toUpperCase() + zone.slice(1)}
+                  </option>
+                ))}
+              </select>
             </div>
-          </div> 
+          </div>
 
           {stats && <StatsGrid stats={stats} />}
           {filteredSpots.length > 0 ? (

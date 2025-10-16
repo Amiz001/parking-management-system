@@ -18,8 +18,8 @@ import {
   Plus, Edit3, Trash2, Bike, Truck, Power, PowerOff,
 } from 'lucide-react';
 import axios from 'axios';
+import {toast} from 'react-toastify';
 
-// NOTE: keep this URL same as your backend route. If you mounted routes under /api/zones use that.
 const URL = "http://localhost:5000/zones";
 
 const ZoneManagement = () => {
@@ -45,36 +45,8 @@ const ZoneManagement = () => {
     { icon: LogOut, label: 'Logout' },
   ];
 
-  const statsCards = [
-    {
-      title: 'Total Employees',
-      value: '12600',
-      change: '+2% from last quarter',
-      positive: true
-    },
-    {
-      title: 'Job Application',
-      value: '1186',
-      change: '+15% from last quarter',
-      positive: true
-    },
-    {
-      title: 'New Employees',
-      value: '22',
-      change: '-2% from last quarter',
-      positive: false
-    },
-    {
-      title: 'Satisfaction Rate',
-      value: '89.9%',
-      change: '+5% from last quarter',
-      positive: true
-    }
-  ];
-
-  // parks state will be grouped from backend data
+  
   const [parks, setParks] = useState({ '4wheel': [], '3wheel': [], '2wheel': [] });
-
   const [showModal, setShowModal] = useState(false);
   const [selectedPark, setSelectedPark] = useState('4wheel');
   const [editingZone, setEditingZone] = useState(null);
@@ -87,13 +59,12 @@ const ZoneManagement = () => {
     { value: '2wheel', label: '2-Wheeler Park', icon: Bike, color: 'from-green-500 to-green-600', bgColor: 'bg-[#347540] light:bg-green-50', textColor: 'text-[fffff] light:text-green-700' }
   ];
 
-  // --- HELPERS ---
   const normalizeResponseArray = (payload) => {
     if (Array.isArray(payload)) return payload;
     if (payload == null) return [];
     if (Array.isArray(payload.zones)) return payload.zones;
     if (Array.isArray(payload.zone)) return payload.zone;
-    // sometimes controller returns { zones: doc } for single record
+  
     if (payload.zones && !Array.isArray(payload.zones)) return [payload.zones];
     return [];
   };
@@ -106,7 +77,7 @@ const ZoneManagement = () => {
     return `${prefix}${letter}`; // e.g. 4WA
   };
 
-  // --- FETCH ON MOUNT ---
+
   useEffect(() => {
     const fetchZonesFromServer = async () => {
       try {
@@ -114,7 +85,7 @@ const ZoneManagement = () => {
         const raw = res.data;
         const data = normalizeResponseArray(raw);
 
-        // group by parkType into your UI shape
+        // grouping to parkType 
         const grouped = { '4wheel': [], '3wheel': [], '2wheel': [] };
         data.forEach(z => {
           const key = z.parkType;
@@ -139,8 +110,6 @@ const ZoneManagement = () => {
   }, []);
 
 
-
-  // --- VALIDATION ---
   const validateForm = () => {
     const newErrors = {};
     if (!formData.name || !formData.name.trim()) newErrors.name = 'Zone name is required';
@@ -149,7 +118,7 @@ const ZoneManagement = () => {
     if (!formData.slots || formData.slots < 1) newErrors.slots = 'Minimum 1 slot required';
     else if (formData.slots > 30) newErrors.slots = 'Maximum 30 slots allowed per zone';
 
-    // duplicate check within park
+    // checking duplicate names in the park
     const exists = (parks[selectedPark] || []).find(z => z.name.toLowerCase() === formData.name.toLowerCase() && (!editingZone || z.id !== editingZone.id));
     if (exists) newErrors.name = 'Zone name already exists in this park';
 
@@ -157,7 +126,7 @@ const ZoneManagement = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  // --- CREATE / UPDATE HANDLER ---
+  //handle the creaate and update part
   const handleSubmit = async () => {
     const newErrors = {};
     if (!formData.slots || formData.slots < 1) newErrors.slots = 'Minimum 1 slot required';
@@ -168,7 +137,7 @@ const ZoneManagement = () => {
     try {
       const payload = {
         totalSlots: formData.slots,
-        parkType: selectedPark // send the park type to backend
+        parkType: selectedPark 
       };
 
       let res;
@@ -212,7 +181,6 @@ const ZoneManagement = () => {
     setErrors({});
   };
 
-  // When clicking "Add Zone"
   const handleOpenModal = async (parkType) => {
     setSelectedPark(parkType);
 
@@ -235,15 +203,12 @@ const ZoneManagement = () => {
   };
 
 
-
-
-
-
   const handleEdit = (zone, parkType) => {
     setSelectedPark(parkType);
     setEditingZone(zone);
     setFormData({ zoneId: zone.zoneId || '', name: zone.name, slots: zone.slots, parkType, status: zone.status });
     setShowModal(true);
+    toast.success("Slot updated successfully!");
   };
 
   const handleDelete = async (zoneId, parkType) => {
@@ -251,6 +216,7 @@ const ZoneManagement = () => {
     try {
       await axios.delete(`${URL}/${zoneId}`);
       setParks(prev => ({ ...prev, [parkType]: prev[parkType].filter(z => z.id !== zoneId) }));
+      toast.success("Slot deleted successfully!");
     } catch (err) {
       console.error('Failed to delete zone:', err);
     }
@@ -398,37 +364,15 @@ const ZoneManagement = () => {
               <p className="text-gray-400 light:text-gray-600">Here is today's report and performances</p>
             </div>
             <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2 px-4 py-2 bg-[#151821] light:bg-white rounded-lg">
-                <Calendar size={16} />
-                <span>Jun 1 - Jun 30</span>
-              </div>
-              <select
-                value={selectedPeriod}
-                onChange={(e) => setSelectedPeriod(e.target.value)}
-                className="px-4 py-2 bg-[#151821] light:bg-white border border-gray-900 light:border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option>Monthly</option>
-                <option>Weekly</option>
-                <option>Daily</option>
-              </select>
-              <select
-                value={selectedSegment}
-                onChange={(e) => setSelectedSegment(e.target.value)}
-                className="px-4 py-2 bg-[#151821] light:bg-white border border-gray-900 light:border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option>All Segment</option>
-                <option>HR</option>
-                <option>Engineering</option>
-              </select>
-              <button className="px-6 py-2 bg-gradient-to-l from-blue-500 to-indigo-600 text-white rounded-lg hover:bg-blue-600 transition-colors">
-                AI Assistant
+             
+              <button className="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white px-6 py-3 rounded-xl flex items-center gap-2 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105">
+                Export Data
               </button>
             </div>
           </div>
 
 
-          {/* Table */}
-
+        
           <div className="min-h-screen bg-transparent-50 p-6">
             <div className="max-w-7xl mx-auto">
 
@@ -440,7 +384,7 @@ const ZoneManagement = () => {
                   const parkZones = parks[parkType.value] || [];
 
                   return (
-                    <div key={parkType.value} className=" bg-[#151821] light:bg-white rounded-xl shadow-sm border p-6 border-gray-900">
+                    <div key={parkType.value} className=" bg-[#151821] light:bg-white rounded-xl shadow-sm border p-6 border-gray-900 light:border-white">
                       <div className="flex items-center justify-between mb-6">
                         <div className="flex items-center gap-4">
                           <div className={`p-3 rounded-lg bg-gradient-to-r ${parkType.color} bg-opacity-10`}>
@@ -571,7 +515,7 @@ const ZoneManagement = () => {
                         type="number"
                         min="1"
                         max="30"
-                        required // ✅ Add this
+                        required 
                         value={formData.slots}
                         onChange={(e) =>
                           setFormData({ ...formData, slots: e.target.value === '' ? '' : parseInt(e.target.value) })

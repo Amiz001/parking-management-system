@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import {toast} from 'react-toastify'
 
 import {
   Search,
@@ -22,11 +23,10 @@ const Dashboard = () => {
   const [bookings, setBookings] = useState([]);
   const [filteredBookings, setFilteredBookings] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedType, setSelectedType] = useState("All"); // ✅ new filter state
+  const [selectedType, setSelectedType] = useState("All");
 
   const URL = "http://localhost:5000/bookings";
 
-  // ✅ Fetch bookings
   const fetchHandler = async () => {
     try {
       const res = await axios.get(URL);
@@ -44,7 +44,6 @@ const Dashboard = () => {
     });
   }, []);
 
-  // ✅ SEARCH
   const handleSearch = () => {
     if (!searchQuery.trim()) {
       filterBookings(selectedType);
@@ -58,19 +57,20 @@ const Dashboard = () => {
     setFilteredBookings(results);
   };
 
-  // ✅ DELETE booking
+
   const handleDelete = async (id) => {
     try {
       await axios.delete(`${URL}/${id}`);
       const updated = bookings.filter((b) => b._id !== id);
       setBookings(updated);
       filterBookings(selectedType, updated);
+      toast.success("Booking delete successfully!");
     } catch (err) {
       console.error("Delete error:", err.response?.data || err.message);
     }
   };
 
-  // ✅ FILTER by type
+
   const filterBookings = (type, data = bookings) => {
     let filtered;
     if (type === "All") {
@@ -82,17 +82,72 @@ const Dashboard = () => {
     setSelectedType(type);
   };
 
-  // ✅ Sidebar and Bottom items
   const sidebarItems = [
     { icon: ChartColumnBig, label: "Dashboard", path: "/operator/dashboard" },
     { icon: CalendarCheck, label: "Booking", active: true, path: "/operator/physicalbooking" },
-    { icon: HeartHandshake, label: "Membership", path: "/operator/membership" },
     { icon: Wallet, label: "Payment", path: "/operator/payment" },
   ];
 
   const bottomItems = [
     { icon: LogOut, label: "Logout" },
   ];
+
+//Export Data
+const exportData = () => {
+  if (!filteredBookings || filteredBookings.length === 0) {
+    toast.warn("No bookings to export!");
+    return;
+  }
+
+  let csv = "";
+
+
+  const headers = [
+    "Booking ID",
+    "Slot ID",
+    "Zone",
+    "Type",
+    "Vehicle No",
+    "Date",
+    "Entry Time",
+    "Exit Time"
+  ];
+  csv += headers.join(",") + "\n";
+
+  const formatDate = (date) => {
+    if (!date) return "-";
+    const d = new Date(date);
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+  };
+
+
+  filteredBookings.forEach((b) => {
+    const row = [
+      b._id,
+      b.slotId,
+      b.zone,
+      b.types,
+      b.vehicleNum,
+      `"${formatDate(b.date)}"`, 
+      b.entryTime,
+      b.exitTime
+    ];
+    csv += row.join(",") + "\n";
+  });
+
+  const blob = new Blob([csv], { type: "text/csv" });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "bookings_export.csv";
+  a.click();
+  window.URL.revokeObjectURL(url);
+
+  toast.success("Bookings exported successfully!");
+};
 
   return (
     <div
@@ -190,7 +245,6 @@ const Dashboard = () => {
           <div className="flex items-center justify-between mb-8">
             <h1 className="text-3xl font-bold">Dashboard</h1>
 
-            {/* ✅ FILTER BUTTONS */}
             <div className="flex items-center gap-4">
               <button
                 onClick={() => filterBookings("Online")}
@@ -232,6 +286,7 @@ const Dashboard = () => {
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-semibold">Bookings</h3>
               <button
+                onClick={exportData}
                 className="px-6 py-2 bg-gradient-to-l from-blue-500 to-indigo-600 text-white rounded-lg hover:bg-blue-600"
               >
                 Export Data

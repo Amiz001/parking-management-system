@@ -1,0 +1,17 @@
+const express = require("express");
+const router = express.Router();
+
+//insert model
+const MembershipPlan = require("../models/MembershipModel");
+
+//insert controller
+const MembershipController = require("../controllers/MembershipController");
+
+router.get("/",MembershipController.getAllPlans);
+router.post("/",MembershipController.addPlans);
+router.get("/:id",MembershipController.getById);
+router.put("/:id",MembershipController.updatePlans);
+router.delete("/:id",MembershipController.deletePlans);
+
+//export
+module.exports=router;

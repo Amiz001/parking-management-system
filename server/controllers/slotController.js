@@ -1,4 +1,4 @@
-// server/controllers/slotController.js
+
 const Slot = require('../models/slots');
 
 const getAllSlots = async (req, res) => {
@@ -74,21 +74,30 @@ const updateSlot = async (req, res, next) => {
  };
 
 
- //data delete
- const deleteSlot = async (req, res, next) => {
+ /// data delete
+const deleteSlot = async (req, res, next) => {
   const id = req.params.id;
-  let slots;
+  let slot;
   try {
-    slots = await Slot.findByIdAndDelete(id);
-  }catch (error) {
+    slot = await Slot.findById(id);
+    if (!slot) {
+      return res.status(404).json({ message: "Slot not found" });
+    }
+    //checking the occupied slot stastus
+    if (slot.status === "occupied") {
+      return res.status(400).json({ message: "Cannot delete slot: currently occupied!" });
+    }
+
+    // Delete if the slot is not occupied
+    await slot.deleteOne();
+
+    return res.status(200).json({ message: "Slot successfully deleted" });
+  } catch (error) {
     console.log(error);
+    return res.status(500).json({ message: "Slot is occupied, cannot delete" });
   }
-  //if not deleted
-  if(!slots){
-    return res.status(404).json({message: "Unable to delete"});
-  }
-  return res.status(200).json({message: "Successfully deleted"});
- };
+};
+
 
 exports.getAllSlots = getAllSlots;
 exports.addSlots = addSlots;
