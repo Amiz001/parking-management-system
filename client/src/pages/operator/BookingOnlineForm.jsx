@@ -19,17 +19,6 @@ export default function BookingForm() {
   const today = new Date().toISOString().split("T")[0];
 
   const [formData, setFormData] = useState({
-<<<<<<< HEAD
-  userId: "",
-  types: "",     
-  slotId: initialSlotId,
-  zone: initialZone,
-  vehicleNum: "", 
-  date: today,
-  entryTime: "",
-  exitTime: "",
-});
-=======
     userId: "",
     types: "",     
     slotId: initialSlotId,
@@ -39,7 +28,6 @@ export default function BookingForm() {
     entryTime: "",
     exitTime: "",
   });
->>>>>>> origin/feature/membership-payment
 
   const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
@@ -126,20 +114,12 @@ export default function BookingForm() {
             <p><strong>Exit Time:</strong> {formData.exitTime}</p>
           </div>
           <button
-<<<<<<< HEAD
-            onClick={() => navigate("/operator/onlinebookingPage")}
-            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
-          >
-            Pay Now
-          </button>
-=======
   onClick={() => navigate("/paymentform", { state: { bookingData: formData, amount: formData.amount } })}
   className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
 >
   Pay Now
 </button>
 
->>>>>>> origin/feature/membership-payment
         </div>
       </div>
     );

@@ -10,11 +10,7 @@ import ProtectedRoute from "../components/ProtectedRoute"
 
 const AdminRoutes = [
     { path: "/admin/dashboard", element: <Dashboard /> },
-<<<<<<< HEAD
     { path: "/admin/users", element: <ProtectedRoute><User /></ProtectedRoute> },
-=======
-    { path: "/admin/h", element: <User /> },
->>>>>>> origin/feature/refund-feedback
     { path: "/admin/vehicles", element: <Vehicle /> },
     { path: "/admin/slot-management", element: <SlotManagement /> },
     { path: "/admin/zone-management", element: <ZoneManagement /> },

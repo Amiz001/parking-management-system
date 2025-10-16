@@ -9,9 +9,6 @@ require('./config/db');
 app.use(express.json()); 
 app.use(cors());
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
 app.use(
   helmet.contentSecurityPolicy({
     useDefaults: true,
@@ -38,13 +35,12 @@ app.use(
 );
 
 
-
 const onlineBookPayRoutes = require('./routes/onlineBookPayRoutes.js');
 
-
 const bookingRoutes = require('./routes/bookingRoutes');
-const paymentRoutes = require('./routes/PaymentRoute');
+const PaymentRoute = require('./routes/PaymentRoute');
 const userRoutes = require('./routes/userRoutes');
+const vehicleRoutes = require('./routes/vehicleRoutes.js');
 const slotRoutes = require('./routes/slotRoutes');
 const zoneRoutes = require('./routes/zoneRoutes');
 
@@ -52,64 +48,20 @@ const feedbackRoutes = require('./routes/feedbackRoutes');
 const complaintRoutes = require('./routes/complaintRoutes'); 
 const refundRoutes = require('./routes/refundRoutes'); 
 const ticketRoutes = require('./routes/ticketRoutes'); 
-
->>>>>>> origin/feature/membership-payment
 const MembershipRoute = require("./routes/MembershipRoute");
 const OnlinePayRoute = require('./routes/OnlinePayRoute');
 const User_MembershipRoute = require('./routes/User_MembershipRoute');
 
-<<<<<<< HEAD
-const bookingRoutes = require("./routes/bookingRoutes");
-//const PhysicalBookingRoutes = require("./routes/PhysicalBookingRoutes");
-const userRoutes = require("./routes/userRoutes");
-const slotRoutes = require("./routes/slotRoutes");
-const zoneRoutes = require("./routes/zoneRoutes");
-=======
-const physicalBookingRoutes = require('./routes/PhysicalBookingRoutes');
-const PaymentRoute = require("./routes/PaymentRoute");
-const userRoutes = require('./routes/userRoutes');
-const vehicleRoutes = require('./routes/vehicleRoutes');
-const slotRoutes = require('./routes/slotRoutes');
-const zoneRoutes = require('./routes/zoneRoutes');
 
-const feedbackRoutes = require('./routes/feedbackRoutes'); 
-const complaintRoutes = require('./routes/complaintRoutes'); 
-const refundRoutes = require('./routes/refundRoutes'); 
-const ticketRoutes = require('./routes/ticketRoutes'); 
-
-const MembershipRoute = require("./routes/MembershipRoute");
-const OnlinePayRoute = require('./routes/OnlinePayRoute');
-
-app.use('/physicalbookings', physicalBookingRoutes);
+app.use('/onlineBookPay',onlineBookPayRoutes);
+app.use('/bookings',bookingRoutes);
 app.use('/payment',PaymentRoute);
 app.use('/users', userRoutes);
 app.use('/slots', slotRoutes);
 app.use('/zones', zoneRoutes);
 app.use('/vehicles', vehicleRoutes);
->>>>>>> origin/feature/user-management
 
-<<<<<<< HEAD
-app.use("/bookings", bookingRoutes);
-//app.use("/bookings", PhysicalBookingRoutes);
-app.use("/users", userRoutes);
-app.use("/slots", slotRoutes);
-app.use("/zones", zoneRoutes);
-=======
- 
-app.use('/feedbacks', feedbackRoutes); 
-app.use('/complaints', complaintRoutes); 
-app.use('/refunds', refundRoutes); 
-app.use('/tickets', ticketRoutes); 
->>>>>>> origin/feature/refund-feedback
-=======
-app.use('/onlineBookPay',onlineBookPayRoutes);
-app.use('/bookings', bookingRoutes);
-app.use('/payment',paymentRoutes);
-app.use('/users', userRoutes);
-app.use('/slots', slotRoutes);
-app.use('/zones', zoneRoutes);
 
->>>>>>> origin/feature/membership-payment
 
 app.use('/api/feedback', feedbackRoutes);
 app.use('/api/complaint', complaintRoutes);
@@ -120,13 +72,6 @@ app.use('/plan', MembershipRoute)
 app.use('/online-payment', OnlinePayRoute);
 app.use('/user-membership', User_MembershipRoute);
 
-
-
-
 app.listen(5000, () => {
     console.log("Server is starting");
 })
-<<<<<<< HEAD
-
-=======
->>>>>>> origin/feature/membership-payment

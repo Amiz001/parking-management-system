@@ -108,20 +108,11 @@ const Dashboard = () => {
   }, []);
 
   const sidebarItems = [
-<<<<<<< HEAD
     { icon: ChartColumnBig, link: "/admin/dashboard", label: "Dashboard", active: true },
     { icon: SquareParking, link: "/admin/slot-management", label: "Slot Management" },
     { icon: HeartHandshake, link: "/admin/membership-management", label: "Membership plans" },
     { icon: BanknoteArrowDown, link: "/admin/refund-requests", label: "Refund requests" },
     { icon: Megaphone, link: "/admin/notifications", label: "Notifications" },
-=======
-    { icon: ChartColumnBig, link:"/admin/dashboard", label: 'Dashboard', active: true },
-    { icon: SquareParking , link:"/admin/slot-management", label: 'Slot Management' },
-    { icon: HeartHandshake, link:"/admin/membership-management", label: 'Membership plans' },
-    { icon: BanknoteArrowDown,link:"/customerSupport/refundrequestlist", label: 'Refund requests' },
-    { icon: Megaphone, link:"/admin/slot-management", label: 'Notifications' },
-   // { icon: FileText, label: 'Report' },
->>>>>>> origin/feature/refund-feedback
   ];
 
   const userItems = [

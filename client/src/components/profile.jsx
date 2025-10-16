@@ -225,6 +225,7 @@ export default function ProfessionalParkingDashboard() {
   ];
 
   const handleLogout = () => {
+    localStorage.removeItem("token");
     navigate("/");
   };  
 
