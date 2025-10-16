@@ -1,135 +1,162 @@
-import React, { useState,  useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import {toast} from 'react-toastify'
 
-//import * as XLSX from "xlsx";
-//import { saveAs } from "file-saver";
-
-import { 
-  Search, 
-  Calendar, 
-  Users, 
-  Settings, 
-  MoreHorizontal,
+import {
+  Search,
+  CalendarCheck,
+  Settings,
   Bell,
   Sun,
   Moon,
-  SquareParking,
   ChartColumnBig,
-  CalendarCheck,
-  Car,
-  Megaphone,
-  BanknoteArrowDown,
   HeartHandshake,
-  LogOut,
   Wallet,
+  LogOut,
+  MoreHorizontal,
 } from 'lucide-react';
 
 const Dashboard = () => {
   const navigate = useNavigate();
-
-  const [selectedPeriod, setSelectedPeriod] = useState('Monthly');
   const [lightMode, setLightMode] = useState(false);
-  const [selectedSegment, setSelectedSegment] = useState('All Segment');
+  const [bookings, setBookings] = useState([]);
+  const [filteredBookings, setFilteredBookings] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedType, setSelectedType] = useState("All");
 
-  const [editingBooking, setEditingBooking] = useState(null);
+  const URL = "http://localhost:5000/bookings";
 
-  const openEditModal = (booking) => {
-    setEditingBooking(booking); // this sets the booking to edit
+  const fetchHandler = async () => {
+    try {
+      const res = await axios.get(URL);
+      return res.data;
+    } catch (err) {
+      console.error("Fetch error:", err);
+      return { bookings: [] };
+    }
   };
 
-  const handleDownload = () => {
-  if (!bookings || bookings.length === 0) {
-    alert("No data available to download!");
-    return;
-  }
+  useEffect(() => {
+    fetchHandler().then((data) => {
+      setBookings(data.bookings || []);
+      setFilteredBookings(data.bookings || []);
+    });
+  }, []);
 
-  // 1. Convert bookings into a worksheet
-  const worksheet = XLSX.utils.json_to_sheet(
-    bookings.map((b) => ({
-      "Slot ID": b.slotId,
-      "Vehicle Number": b.vehicleNumber,
-      "Entry Date": new Date(b.entryDate).toLocaleDateString(),
-      "Entry Time": b.entryTime,
-      "Exit Date": new Date(b.exitDate).toLocaleDateString(),
-      "Exit Time": b.exitTime,
-      "Amount": b.amount,
-      "Payment Status": b.status,
-    }))
-  );
+  const handleSearch = () => {
+    if (!searchQuery.trim()) {
+      filterBookings(selectedType);
+      return;
+    }
+    const results = bookings.filter((b) =>
+      Object.values(b).some((val) =>
+        String(val).toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    );
+    setFilteredBookings(results);
+  };
 
-  // 2. Create a workbook and append worksheet
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Bookings");
 
-  // 3. Export to Excel
-  const excelBuffer = XLSX.write(workbook, {
-    bookType: "xlsx",
-    type: "array",
-  });
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`${URL}/${id}`);
+      const updated = bookings.filter((b) => b._id !== id);
+      setBookings(updated);
+      filterBookings(selectedType, updated);
+      toast.success("Booking delete successfully!");
+    } catch (err) {
+      console.error("Delete error:", err.response?.data || err.message);
+    }
+  };
 
-  const data = new Blob([excelBuffer], { type: "application/octet-stream" });
-  saveAs(data, "Bookings.xlsx");
+
+  const filterBookings = (type, data = bookings) => {
+    let filtered;
+    if (type === "All") {
+      filtered = data;
+    } else {
+      filtered = data.filter((b) => b.types.toLowerCase() === type.toLowerCase());
+    }
+    setFilteredBookings(filtered);
+    setSelectedType(type);
   };
 
   const sidebarItems = [
-    { icon: ChartColumnBig, label: 'Dashboard', path: "/operator/dashboard" },
-    { icon: CalendarCheck , label: 'Physical Booking', active: true, path: "/operator/physicalbooking" },
-    { icon: CalendarCheck, label: 'Online Booking', path: "/operator/onlinebooking"},
-    { icon: HeartHandshake, label: 'Memebership', path: "/operator/membershipplan"},
-    { icon: Wallet, label: 'Physical Payment ', path: "/operator/Physicalpayment"},
+    { icon: ChartColumnBig, label: "Dashboard", path: "/operator/dashboard" },
+    { icon: CalendarCheck, label: "Booking", active: true, path: "/operator/physicalbooking" },
+    { icon: Wallet, label: "Payment", path: "/operator/payment" },
   ];
 
   const bottomItems = [
-    { icon: Settings, label: 'Settings' },
-   // { icon: HelpCircle, label: 'Help & Support' },
-    { icon: LogOut, label: 'Logout' },
+    { icon: LogOut, label: "Logout" },
   ];
 
-
-const URL = "http://localhost:5000/physicalbookings"; // ✅ backend endpoint
-
-const fetchHandler = async () => {
-  return await axios.get(URL).then((res) => res.data);
-};
-
-const [bookings, setBookings] = useState([]);
-
-  useEffect(() => {
-    fetchHandler().then((data) => setBookings(data.bookings));
-  }, []);
-  
-  // ✅ DELETE booking
-const handleDelete = async (id) => {
-  try {
-    await axios.delete(`${URL}/${id}`); // must match your backend route
-    setBookings(bookings.filter((b) => b._id !== id));
-    toast.success("Deleted successfully!")
-  } catch (err) {
-    console.error("Delete error:", err.response?.data || err.message);
+//Export Data
+const exportData = () => {
+  if (!filteredBookings || filteredBookings.length === 0) {
+    toast.warn("No bookings to export!");
+    return;
   }
-};
 
-//✅ UPDATE booking
-const handleUpdate = async (id) => {
-  try {
-    const updatedBooking = {
-      status: "active", // example, you can collect data from a form
-    };
-    await axios.put(`${URL}/${id}`, updatedBooking); // must match your backend
-    // refresh data after update
-    fetchHandler().then((data) => setBookings(data.bookings || []));
-  } catch (err) {
-    console.error("Update error:", err.response?.data || err.message);
-  }
-};
+  let csv = "";
 
+
+  const headers = [
+    "Booking ID",
+    "Slot ID",
+    "Zone",
+    "Type",
+    "Vehicle No",
+    "Date",
+    "Entry Time",
+    "Exit Time"
+  ];
+  csv += headers.join(",") + "\n";
+
+  const formatDate = (date) => {
+    if (!date) return "-";
+    const d = new Date(date);
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+  };
+
+
+  filteredBookings.forEach((b) => {
+    const row = [
+      b._id,
+      b.slotId,
+      b.zone,
+      b.types,
+      b.vehicleNum,
+      `"${formatDate(b.date)}"`, 
+      b.entryTime,
+      b.exitTime
+    ];
+    csv += row.join(",") + "\n";
+  });
+
+  const blob = new Blob([csv], { type: "text/csv" });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "bookings_export.csv";
+  a.click();
+  window.URL.revokeObjectURL(url);
+
+  toast.success("Bookings exported successfully!");
+};
 
   return (
-    <div className={`flex h-auto bg-gray-950 text-white light:text-black light:bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 ${lightMode ? "light" : "dark"}`}>
+    <div
+      className={`flex h-auto bg-gray-950 text-white light:text-black light:bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 ${
+        lightMode ? "light" : "dark"
+      }`}
+    >
       {/* Sidebar */}
-      <div className="w-64 h-screen sticky top-0 bg-[#151821] p-6 flex flex-col light:bg-white light:shadow-lg light:backdrop-blur-sm">
+      <div className="w-64 h-screen sticky top-0 bg-[#151821] p-6 flex flex-col light:bg-white">
         <div className="flex items-center gap-3 mb-8">
           <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
             <span className="text-white font-bold">✦</span>
@@ -137,36 +164,29 @@ const handleUpdate = async (id) => {
           <span className="text-xl font-semibold">Gate Operator</span>
         </div>
 
-        {/* Main Menu */}
-        <div className="mb-8">
-          <p className="text-gray-400 light:text-black text-sm mb-4 uppercase tracking-wide">Main Menu</p>
-          <nav className="space-y-2">
-            {sidebarItems.map((item, index) => (
-              <a
-                key={index}
-                 href={item.path}
-                className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
-                  item.active 
-                    ? 'bg-gradient-to-l from-blue-500 to-indigo-600 text-white' 
-                    : 'text-gray-300 hover:bg-gray-700 light:text-black light:hover:bg-gray-100'
-                }`}
-              >  
-                <item.icon size={20} />
-                <span>{item.label}</span>
-              </a>
-            ))}
-          </nav>
-        </div>
-
-        
-
-        {/* Bottom Items */}
-        <div className="mt-auto space-y-2">
-          {bottomItems.map((item, index) => (
+        <nav className="space-y-2 mb-8">
+          {sidebarItems.map((item, i) => (
             <a
-              key={index}
+              key={i}
+              href={item.path}
+              className={`flex items-center gap-3 px-3 py-2 rounded-lg ${
+                item.active
+                  ? "bg-gradient-to-l from-blue-500 to-indigo-600 text-white"
+                  : "text-black-300 hover:bg-gray-700"
+              }`}
+            >
+              <item.icon size={20} />
+              <span>{item.label}</span>
+            </a>
+          ))}
+        </nav>
+
+        <div className="mt-auto space-y-2">
+          {bottomItems.map((item, i) => (
+            <a
+              key={i}
               href="#"
-              className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 light:text-black hover:bg-gray-700 light:hover:bg-gray-100 transition-colors"
+              className="flex items-center gap-3 px-3 py-2 rounded-lg text-black-300 hover:bg-gray-700"
             >
               <item.icon size={20} />
               <span>{item.label}</span>
@@ -174,16 +194,15 @@ const handleUpdate = async (id) => {
           ))}
         </div>
 
-        {/* User Profile */}
-        <div className="mt-6 flex items-center gap-3 p-3 bg-[#222735] light:bg-gray-100 light:shadow-lg light:backdrop-blur-sm border-gray-400 rounded-lg ">
-          <div className="w-10 h-10 bg-blue-500 light:text-white rounded-full flex items-center justify-center">
+        <div className="mt-6 flex items-center gap-3 p-3 bg-[#222735] rounded-lg light:bg-white light:border-gray-200">
+          <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
             <span className="text-sm font-semibold">GO</span>
           </div>
           <div className="flex-1">
-            <p className="text-sm font-medium light:text-gray-950">Gate Operator</p>
-            <p className="text-xs text-gray-400 light:text-gray-700">gate@mail.com</p>
+            <p className="text-sm font-medium">Gate Operator</p>
+            <p className="text-xs text-gray-400">gate@mail.com</p>
           </div>
-          <MoreHorizontal size={16} className="text-gray-400 light:text-gray-950" />
+          <MoreHorizontal size={16} className="text-gray-400" />
         </div>
       </div>
 
@@ -193,21 +212,29 @@ const handleUpdate = async (id) => {
         <header className="bg-gray-950 light:bg-transparent p-6 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+              <Search
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                size={20}
+              />
               <input
                 type="text"
-                placeholder="Search something..."
-                className="pl-10 pr-4 py-2 bg-[#151821] light:bg-white border border-gray-900 light:border-gray-200 rounded-lg text-white placeholder-gray-400 light:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Search..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 pr-4 py-2 bg-[#151821] light:bg-white border-gray-900 light:border-gray-200 rounded-lg text-white light:text-black"
               />
             </div>
-            <button className="px-4 py-2 bg-gradient-to-l from-blue-500 to-indigo-600 text-white rounded-lg hover:bg-blue-600 transition-colors">
+            <button
+              onClick={handleSearch}
+              className="px-4 py-2 bg-gradient-to-l from-blue-500 to-indigo-600 text-white rounded-lg hover:bg-blue-600"
+            >
               Search
             </button>
           </div>
 
           <div className="flex items-center gap-4">
-            <Bell size={20} className="text-gray-400 light:text-gray-700 cursor-pointer hover:text-white light:hover:text-gray-500" />
-            <Settings size={20} className="text-gray-400 light:text-gray-700 cursor-pointer hover:text-white light:hover:text-gray-500" />
+            <Bell size={20} className="text-gray-400" />
+            <Settings size={20} className="text-gray-400" />
             <Sun onClick={() => setLightMode(true)} size={20} className={`text-gray-400 ${lightMode ? "light:text-yellow-500 fill-yellow-500":""} cursor-pointer light:cursor-default hover:text-white light:hover:text-yellow-500`} />
             <Moon onClick={() => setLightMode(false)} size={20} className={`${!lightMode ? "text-yellow-500 fill-yellow-500":""} light:text-gray-700 light:cursor-pointer hover:text-yellow-500 light:hover:text-gray-500`} />
           </div>
@@ -215,97 +242,109 @@ const handleUpdate = async (id) => {
 
         {/* Content */}
         <main className="flex-1 p-6 overflow-auto">
-          {/* Dashboard Header */}
           <div className="flex items-center justify-between mb-8">
-            <div>
-              <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
-            </div>
+            <h1 className="text-3xl font-bold">Dashboard</h1>
+
             <div className="flex items-center gap-4">
-             <button className="px-6 py-2 bg-gradient-to-l from-blue-500 to-indigo-600 text-white rounded-lg hover:bg-blue-600 transition-colors">
-                4Wheel
+              <button
+                onClick={() => filterBookings("Online")}
+                className={`px-6 py-2 rounded-lg ${
+                  selectedType === "Online"
+                    ? "bg-gradient-to-l from-blue-500 to-indigo-600 text-white"
+                    : "bg-gray-700 hover:bg-gray-600 text-white"
+                }`}
+              >
+                Online
               </button>
-              <button className="px-6 py-2 bg-gradient-to-l from-blue-500 to-indigo-600 text-white rounded-lg hover:bg-blue-600 transition-colors">
-                3Wheel
+
+              <button
+                onClick={() => filterBookings("Physical")}
+                className={`px-6 py-2 rounded-lg ${
+                 selectedType === "Physical"
+                    ? "bg-gradient-to-l from-blue-500 to-indigo-600 text-white"
+                    : "bg-gray-700 hover:bg-gray-600 text-white"
+                }`}
+              >
+                Physical
               </button>
-              <button className="px-6 py-2 bg-gradient-to-l from-blue-500 to-indigo-600 text-white rounded-lg hover:bg-blue-600 transition-colors">
-                2Wheel
+
+              <button
+                onClick={() => filterBookings("All")}
+                className={`px-6 py-2 rounded-lg ${
+                  selectedType === "All"
+                    ? "bg-gradient-to-l from-blue-500 to-indigo-600 text-white"
+                    : "bg-gray-700 hover:bg-gray-600 text-white"
+                }`}
+              >
+                All
               </button>
             </div>
           </div>
 
-          {/* Table */}
-          <div className="bg-gradient-to-b from-[#151821] to-[#242938]  light:bg-gradient-to-b light:from-white light:to-white light:shadow-lg light:backdrop-blur-sm rounded-xl p-6">
+          {/* TABLE */}
+          <div className="bg-[#151821] rounded-xl p-6 light:bg-white border-gray-900 light:border-gray-200 rounded-lg text-white light:text-black">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-semibold">Customers</h3>
-              <button 
-                onClick={handleDownload}
-                className="px-6 py-2 bg-gradient-to-l from-blue-500 to-indigo-600 text-white rounded-lg hover:bg-blue-600 transition-colors">
+              <h3 className="text-xl font-semibold">Bookings</h3>
+              <button
+                onClick={exportData}
+                className="px-6 py-2 bg-gradient-to-l from-blue-500 to-indigo-600 text-white rounded-lg hover:bg-blue-600"
+              >
                 Export Data
-               </button>
+              </button>
             </div>
 
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-400">
-                    <th className="text-left py-3 px-4 text-gray-400 light:text-gray-700 font-medium">Slot ID</th>
-                    <th className="text-left py-3 px-4 text-gray-400 light:text-gray-700   font-medium">Vehicle Number</th>
-                    <th className="text-left py-3 px-4 text-gray-400 light:text-gray-700 font-medium">Entry Date</th>
-                    <th className="text-left py-3 px-4 text-gray-400 light:text-gray-700 font-medium">Entry Time</th>
-                    <th className="text-left py-3 px-4 text-gray-400 light:text-gray-700 font-medium">Exit Date</th>
-                    <th className="text-left py-3 px-4 text-gray-400 light:text-gray-700 font-medium">Exit Time</th>
-                    <th className="text-left py-3 px-4 text-gray-400 light:text-gray-700 font-medium">Amount</th>
-                    <th className="text-left py-3 px-4 text-gray-400 light:text-gray-700 font-medium">Paid Status</th>
-                    <th className="text-left py-3 px-4 text-gray-400 light:text-gray-700 font-medium">Actions</th>
+                    <th className="py-3 px-4 text-left text-gray-400">Slot ID</th>
+                    <th className="py-3 px-4 text-left text-gray-400">Zone</th>
+                    <th className="py-3 px-4 text-left text-gray-400">Type</th>
+                    <th className="py-3 px-4 text-left text-gray-400">Vehicle</th>
+                    <th className="py-3 px-4 text-left text-gray-400">Date</th>
+                    <th className="py-3 px-4 text-left text-gray-400">Entry</th>
+                    <th className="py-3 px-4 text-left text-gray-400">Exit</th>
+                    <th className="py-3 px-4 text-left text-gray-400">Status</th>
+                    <th className="py-3 px-4 text-left text-gray-400">Actions</th>
                   </tr>
                 </thead>
-                 <tbody>
-                {bookings.map((booking, index) => (
-                  <tr
-                    key={index}
-                    className="border-b border-gray-200 hover:bg-gray-700 light:hover:bg-gray-100"
-                  >
-                    <td className="py-4 px-4 text-gray-300 light:text-gray-600">{booking.slotId}</td>
-                    <td className="py-4 px-4 text-gray-300 light:text-gray-600">{booking.vehicleNumber}</td>
-                    <td className="py-4 px-4 text-gray-300 light:text-gray-600">
-                      {new Date(booking.entryDate).toLocaleDateString()}
-                    </td>
-                    <td className="py-4 px-4 text-gray-300 light:text-gray-600">{booking.entryTime}</td>
-                    <td className="py-4 px-4 text-gray-300 light:text-gray-600">
-                      {new Date(booking.exitDate).toLocaleDateString()}
-                    </td>
-                    <td className="py-4 px-4 text-gray-300 light:text-gray-600">{booking.exitTime}</td>
-                    <td className="py-4 px-4 text-gray-300 light:text-gray-600">Rs. {booking.amount}</td>
-                    <td className="py-4 px-4">
+                <tbody>
+                  {filteredBookings.map((b, i) => (
+                    <tr key={i} className="border-b border-gray-700 hover:bg-gray-800">
+                      <td className="py-3 px-4">{b.slotId}</td>
+                      <td className="py-3 px-4">{b.zone}</td>
+                      <td className="py-3 px-4">{b.types}</td>
+                      <td className="py-3 px-4">{b.vehicleNum}</td>
+                      <td className="py-3 px-4">
+                        {new Date(b.date).toLocaleDateString()}
+                      </td>
+                      <td className="py-3 px-4">{b.entryTime}</td>
+                      <td className="py-3 px-4">{b.exitTime}</td>
+                      <td className="py-3 px-4">
                         <button
-                          onClick={() => navigate(`/operator/physicalpayform/${booking._id}`)}
-                          className={`px-3 py-1 rounded ${
-                            booking.paidStatus === "Paid"
-                              ? "bg-green-500 text-white hover:bg-green-600"
-                              : "bg-red-500 text-white hover:bg-red-600"
-                          }`}
+                          onClick={() => navigate(`/operator/updatebookingPhysical/${b._id}`)}
+                          className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
                         >
-                          Not Paid
+                          Non Paid
                         </button>
                       </td>
-                    <td className="py-3 px-4 flex gap-2">
-                    <button
-                      onClick={() => navigate(`/operator/updatebookingPhysical/${booking._id}`)}
-                      className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
-                    >
-                      Update
-                    </button>
-
-                    <button
-                      onClick={() => handleDelete(booking._id)}   // ✅ use _id not id
-                      className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-                    >
-                      Delete
-                    </button>
-                    </td>
-                  </tr>
-                ))}
-            </tbody>
+                      <td className="py-3 px-4 flex gap-2">
+                        <button
+                          onClick={() => navigate(`/operator/updatebookingPhysical/${b._id}`)}
+                          className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+                        >
+                          Update
+                        </button>
+                        <button
+                          onClick={() => handleDelete(b._id)}
+                          className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
               </table>
             </div>
           </div>

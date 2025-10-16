@@ -7,35 +7,26 @@ require('./config/db');
 app.use(express.json()); 
 app.use(cors());
 
-const physicalBookingRoutes = require('./routes/PhysicalBookingRoutes');
-const PaymentRoute = require("./routes/PaymentRoute");
-const userRoutes = require('./routes/userRoutes');
-const slotRoutes = require('./routes/slotRoutes');
-const zoneRoutes = require('./routes/zoneRoutes');
-
-const feedbackRoutes = require('./routes/feedbackRoutes'); 
-const complaintRoutes = require('./routes/complaintRoutes'); 
-const refundRoutes = require('./routes/refundRoutes'); 
-const ticketRoutes = require('./routes/ticketRoutes'); 
-
 const MembershipRoute = require("./routes/MembershipRoute");
 const OnlinePayRoute = require('./routes/OnlinePayRoute');
 
-app.use('/physicalbookings', physicalBookingRoutes);
-app.use('/payment',PaymentRoute);
-app.use('/users', userRoutes);
-app.use('/slots', slotRoutes);
-app.use('/zones', zoneRoutes);
+const bookingRoutes = require("./routes/bookingRoutes");
+//const PhysicalBookingRoutes = require("./routes/PhysicalBookingRoutes");
+const userRoutes = require("./routes/userRoutes");
+const slotRoutes = require("./routes/slotRoutes");
+const zoneRoutes = require("./routes/zoneRoutes");
 
- 
-app.use('/api/feedback', feedbackRoutes); 
-app.use('/api/complaint', complaintRoutes); 
-app.use('/api/refund', refundRoutes); 
-app.use('/api/ticket', ticketRoutes); 
+app.use("/bookings", bookingRoutes);
+//app.use("/bookings", PhysicalBookingRoutes);
+app.use("/users", userRoutes);
+app.use("/slots", slotRoutes);
+app.use("/zones", zoneRoutes);
 
 app.use('/plan', MembershipRoute);
 app.use('/online-payment', OnlinePayRoute);
 
+
 app.listen(5000, () => {
-    console.log("Server is starting"); 
-}); 
+    console.log("Server is starting");
+})
+
