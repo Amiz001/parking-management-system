@@ -50,7 +50,6 @@ export default function BookingForm() {
     }
   };
 
-
   const validateForm = () => {
     const newErrors = {};
     if (!formData.slotId.trim()) newErrors.slotId = "Slot ID is required";
@@ -169,6 +168,7 @@ export default function BookingForm() {
                 name="types"
                 value={formData.types}
                 onChange={handleInputChange}
+                disabled
                 className="w-full border px-3 py-2 rounded-lg"
               >
                 <option value="">Select Type</option>

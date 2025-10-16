@@ -9,7 +9,6 @@ export default function BookingForm() {
 
   const today = new Date().toISOString().split("T")[0];
 
-
   const [formData, setFormData] = useState({
   userId: "",
   types: "",     
@@ -20,7 +19,6 @@ export default function BookingForm() {
   entryTime: "",
   exitTime: "",
 });
-
 
   const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
@@ -111,7 +109,7 @@ export default function BookingForm() {
             <p><strong>Exit Time:</strong> {formData.exitTime}</p>
           </div>
           <button
-            onClick={() => navigate("/operator/dashboard")}
+            onClick={() => navigate("/operator/onlinebookingPage")}
             className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
           >
             Pay Now
@@ -261,7 +259,7 @@ export default function BookingForm() {
             <div className="flex gap-4">
               <button
                 type="button"
-                onClick={() => navigate("/operator/dashboard")}
+                onClick={() => navigate("/operator/onlinebookingPage")}
                 className="flex-1 bg-gray-200 py-2 rounded-lg hover:bg-gray-300"
               >
                 Cancel

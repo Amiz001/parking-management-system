@@ -1,5 +1,6 @@
 const Booking = require("../models/bookingModel");
 const Slot = require("../models/slots"); 
+const authenticateToken = require("../middleware/authMiddleware");
 
 // Get all bookings
 const getAllBookings = async (req, res) => {

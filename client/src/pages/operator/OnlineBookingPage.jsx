@@ -8,9 +8,8 @@ import {
   ArrowLeft,
   MapPin,
 } from "lucide-react";
-import bgPic from "../../images/backgroundpic.jpg"; // adjust path as needed
+import bgPic from "../../images/backgroundpic.jpg"; 
 
-// Single parking spot card with enhanced design
 const ParkingSpot = ({ spot }) => {
   const navigate = useNavigate();
 
@@ -66,7 +65,6 @@ const ParkingSpot = ({ spot }) => {
   );
 };
 
-// ✅ Parking Layout (grid container)
 const ParkingLayout = ({ spots }) => {
   return (
     <div className="bg-white/10 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-white/20">
@@ -83,33 +81,13 @@ const ParkingLayout = ({ spots }) => {
   );
 };
 
-/*Stats Card Component
-const StatsCard = ({ icon: Icon, label, value, color }) => {
-  return (
-    <div className={`bg-white/10 backdrop-blur-xl rounded-2xl p-6 border border-white/20 hover:scale-105 transition-transform duration-300`}>
-      <div className="flex items-center space-x-4">
-        <div className={`p-3 rounded-xl bg-gradient-to-br ${color}`}>
-          <Icon className="w-6 h-6 text-white" />
-        </div>
-        <div>
-          <p className="text-white/70 text-sm font-medium">{label}</p>
-          <p className="text-white text-2xl font-bold">{value}</p>
-        </div>
-      </div>
-    </div>
-  );
-};*/
-
-// ✅ Main Page
 const OnlineBookingPage = () => {
   const [spots, setSpots] = useState([]);
   const [stats, setStats] = useState(null);
 
-  // Filters
   const [selectedWheel, setSelectedWheel] = useState("all");
   const [selectedZone, setSelectedZone] = useState("all");
 
-  // Fetch spots
   const fetchSpots = async () => {
     try {
       const response = await fetch("http://localhost:5000/slots");
@@ -132,7 +110,6 @@ const OnlineBookingPage = () => {
     fetchSpots();
   }, []);
 
-  // Apply filters
   const filteredSpots = spots.filter((spot) => {
     const vehicleType = spot.type?.toLowerCase();
     const zone = spot.zone?.toLowerCase();
@@ -145,7 +122,6 @@ const OnlineBookingPage = () => {
 
   return (
     <div className="min-h-screen relative overflow-hidden">
-        {/* Background Image */}
       <div
         className="absolute inset-0 bg-cover bg-center"
         style={{ backgroundImage: `url(${bgPic})` }}
@@ -153,17 +129,14 @@ const OnlineBookingPage = () => {
         <div className="absolute inset-0 bg-black/50"></div>
       </div>
 
-      {/* Animated Blobs */}
       <div className="absolute inset-0 opacity-30">
         <div className="absolute top-0 left-0 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob"></div>
         <div className="absolute top-0 right-0 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000"></div>
         <div className="absolute bottom-0 left-1/2 w-96 h-96 bg-pink-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-4000"></div>
       </div>
 
-      {/* Grid Pattern Overlay */}
       <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMC41IiBvcGFjaXR5PSIwLjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-20"></div>
 
-      {/* Content */}
       <div className="relative z-10 py-10 px-6">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
@@ -186,42 +159,12 @@ const OnlineBookingPage = () => {
             </button>
           </div>
 
-          {/* Stats Cards }
-          {stats && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              <StatsCard
-                icon={MapPin}
-                label="Total Spots"
-                value={stats.totalSpots}
-                color="from-blue-500 to-indigo-600"
-              />
-              <StatsCard
-                icon={CheckCircle}
-                label="Available"
-                value={stats.availableSpots}
-                color="from-emerald-500 to-green-600"
-              />
-              <StatsCard
-                icon={Car}
-                label="Occupied"
-                value={stats.occupiedSpots}
-                color="from-rose-500 to-red-600"
-              />
-              <StatsCard
-                icon={AlertTriangle}
-                label="Emergency"
-                value={stats.emergencySpots}
-                color="from-amber-500 to-yellow-600"
-              />
-            </div>
-          )}
-
           {/* Filters */}
           <div className="flex flex-wrap gap-4 mb-8">
             <select
               value={selectedWheel}
               onChange={(e) => setSelectedWheel(e.target.value)}
-              className="px-6 py-3 bg-white/20 backdrop-blur-xl rounded-2xl border border-white/30 text-white font-medium focus:outline-none focus:ring-2 focus:ring-white/50 transition-all cursor-pointer hover:bg-white/30"
+              className="px-4 py-2 bg-gradient-to-l from-blue-500 to-indigo-600 rounded-lg border-gray-300 text-black"
             >
               <option value="all" className="text-gray-900">All Wheels</option>
               <option value="2wheel" className="text-gray-900">2 Wheel</option>
@@ -232,7 +175,7 @@ const OnlineBookingPage = () => {
             <select
               value={selectedZone}
               onChange={(e) => setSelectedZone(e.target.value)}
-              className="px-6 py-3 bg-white/20 backdrop-blur-xl rounded-2xl border border-white/30 text-white font-medium focus:outline-none focus:ring-2 focus:ring-white/50 transition-all cursor-pointer hover:bg-white/30"
+              className="px-4 py-2 bg-gradient-to-l from-blue-500 to-indigo-600 rounded-lg border-gray-300 text-black"
             >
               <option value="all" className="text-gray-900">All Zones</option>
               <option value="zone a" className="text-gray-900">Zone A</option>

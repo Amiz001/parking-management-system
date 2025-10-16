@@ -7,9 +7,7 @@ export default function BookingForm() {
   const initialSlotId = location.state?.slotId || "";
   const initialZone = location.state?.zone || "";
 
-
   const today = new Date().toISOString().split("T")[0];
-
 
   const [formData, setFormData] = useState({
   slotId: initialSlotId,
@@ -20,7 +18,6 @@ export default function BookingForm() {
   entryTime: "",
   exitTime: "",
 });
-
 
   const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
