@@ -564,7 +564,7 @@ const Dashboard = () => {
                       <td className="py-4 px-4 text-gray-300 light:text-gray-600">
                         {user.lname}
                       </td>
-                      <td className="py-4 px-4 text-gray-300 light:text-gray-600">
+                      <td className="py-4 px-2 text-gray-300 light:text-gray-600">
                         {user.email}
                       </td>
                       <td className="py-4 px-4 text-gray-300 light:text-gray-600">

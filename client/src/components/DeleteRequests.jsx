@@ -18,13 +18,9 @@ export default function DeleteRequests({ status, onClose }) {
         return;
       }
 
-      if (res.data.deleteRequests) {
-        const filtered = res.data.deleteRequests.filter((d) => {
-          d.status == "pending";
-        });
-        setDeleteRequests(filtered);
+      if (res.data) {
+        setDeleteRequests(res.data);
       }
-      fetchDeleteRequests();
     } catch (err) {
       console.error("Error fetching delete requests:", err);
       toast.error("Failed to fetch delete requests");
@@ -49,7 +45,7 @@ export default function DeleteRequests({ status, onClose }) {
   };
 
   useEffect(() => {
-    fetchDeleteRequests();
+    //fetchDeleteRequests();
   }, []);
 
   return (
@@ -112,19 +108,19 @@ export default function DeleteRequests({ status, onClose }) {
             </h2>
             <div className="bg-[#242938] p-5 rounded-lg space-y-3 border border-gray-700">
               <p className="text-lg font-medium">
-                <span className="text-gray-400">Name:</span> {selectedUser.name}
+                <span className="text-gray-400">Name:</span> {selectedUser ? selectedUser.name : ""}
               </p>
               <p>
                 <span className="text-gray-400">Email:</span>{" "}
-                {selectedUser.email}
+                {selectedUser ? selectedUser.email : ""}
               </p>
               <p>
                 <span className="text-gray-400">Request Date:</span>{" "}
-                {formatDate(selectedUser.createdAt)}
+                {selectedUser ? formatDate(selectedUser.createdAt) : ""}
               </p>
               <p className="italic text-gray-300">
                 <span className="text-gray-400 not-italic">Reason:</span>{" "}
-                {selectedUser.reason}
+                {selectedUser ? selectedUser.reason : ""}
               </p>
             </div>
 

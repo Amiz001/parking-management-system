@@ -5,6 +5,7 @@
 #root, html, body {
   margin: 0;
   padding: 0;
+  background-color: black;
 }
 
 /* custom scroll bar for popup forms*/
@@ -33,5 +34,26 @@ input[type="password"]::-ms-clear {
 input[type="password"]::-webkit-textfield-decoration-container {
   display: none;
 }
+
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0a0f1d; /* very dark blue */
+}
+
+::-webkit-scrollbar-thumb {
+  background: #14213d; /* your dark blue theme color */
+  border-radius: 20px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #1d335c; /* lighter dark blue on hover */
+}
+
+
 
 

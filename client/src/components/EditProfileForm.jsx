@@ -62,19 +62,14 @@ const EditProfileForm = ({ status, selectedUser, onClose, refresh, token }) => {
     const { fname, lname, email, phone } = formData;
 
     if (!fname || !lname || !email || !phone) {
-      toast.error("Please fill all required fields!");
-      return;
+      return toast.error("Please fill all required fields!");
     }
 
     const isValidPhone = /^[0-9]{10}$/.test(phone);
     const isValidEmail = /\S+@\S+\.\S+/.test(email);
-    const isValidFirstName = /^[A-Za-z]{2,}$/.test(fname);
-    const isValidLastName = /^[A-Za-z]{2,}$/.test(lname);
 
-    if (!isValidEmail) return toast.error("Invalid email address");
+    if (!isValidEmail) return toast.error("Invalid email");
     if (!isValidPhone) return toast.error("Invalid phone number");
-    if (!isValidFirstName) return toast.error("Invalid first name");
-    if (!isValidLastName) return toast.error("Invalid last name");
 
     try {
       const response = await axios.put(
@@ -84,9 +79,9 @@ const EditProfileForm = ({ status, selectedUser, onClose, refresh, token }) => {
       );
 
       if (response.data.message === "Updated successfully!") {
-        toast.success("Profile updated successfully");
-        onClose();
+        toast.success("Profile updated successfully!");
         refresh();
+        onClose();
       } else {
         toast.error("Failed to update profile");
       }
@@ -98,19 +93,18 @@ const EditProfileForm = ({ status, selectedUser, onClose, refresh, token }) => {
 
   return (
     <div
-      className={`fixed inset-0 bg-[#00000065] flex items-center justify-center p-4 z-50 ${
+      className={`fixed inset-0 bg-[#00000080] backdrop-blur-sm flex items-center justify-center p-4 z-50 ${
         status ? "visible" : "hidden"
       }`}
     >
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <div className="bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        
         {/* Header */}
-        <div className="relative p-6 border-b border-gray-200">
-          <h2 className="text-gray-800 text-xl font-semibold text-center">
-            Edit Profile
-          </h2>
+        <div className="relative p-6 border-b border-gray-700">
+          <h2 className="text-white text-xl font-semibold text-center">Edit Profile</h2>
           <button
             onClick={onClose}
-            className="absolute top-6 right-6 text-gray-500 hover:text-gray-800 transition"
+            className="absolute top-6 right-6 text-gray-400 hover:text-white transition"
           >
             <X size={22} />
           </button>
@@ -118,22 +112,23 @@ const EditProfileForm = ({ status, selectedUser, onClose, refresh, token }) => {
 
         {/* Form */}
         <div className="p-6 space-y-6">
-          {/* Profile Photo */}
+
+          {/* Photo Upload */}
           <div className="flex justify-center mb-6">
             <div className="flex items-center gap-6">
-              <div className="w-24 h-24 bg-gray-100 rounded-xl overflow-hidden shadow-sm border border-gray-200">
+              <div className="w-24 h-24 bg-gray-800 border border-gray-700 rounded-xl overflow-hidden">
                 <img
-                  src={formData.profilePhoto || "/uploads/default.webp"}
-                  alt="Profile"
+                  src={formData.profilePhoto}
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div className="flex flex-col justify-center">
-                <label className="block text-gray-700 text-sm font-medium mb-2">
+
+              <div>
+                <label className="block text-gray-300 text-sm font-medium mb-2">
                   Profile Photo
                 </label>
                 <button
-                  className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-all shadow-sm"
+                  className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white rounded-lg font-medium shadow-sm transition"
                   onClick={() => widgetRef.current && widgetRef.current.open()}
                 >
                   Upload
@@ -145,76 +140,69 @@ const EditProfileForm = ({ status, selectedUser, onClose, refresh, token }) => {
           {/* First + Last Name */}
           <div className="flex gap-6">
             <div className="w-1/2">
-              <label className="block text-gray-700 text-sm font-medium mb-2">
-                First Name
-              </label>
+              <label className="block text-gray-300 text-sm font-medium mb-2">First Name</label>
               <input
                 type="text"
                 value={formData.fname}
                 placeholder="Enter first name"
                 onChange={(e) => handleInputChange("fname", e.target.value)}
-                className="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-3 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="w-full bg-gray-800/50 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500"
               />
             </div>
 
             <div className="w-1/2">
-              <label className="block text-gray-700 text-sm font-medium mb-2">
-                Last Name
-              </label>
+              <label className="block text-gray-300 text-sm font-medium mb-2">Last Name</label>
               <input
                 type="text"
                 value={formData.lname}
                 placeholder="Enter last name"
                 onChange={(e) => handleInputChange("lname", e.target.value)}
-                className="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-3 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="w-full bg-gray-800/50 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500"
               />
             </div>
           </div>
 
           {/* Email */}
           <div>
-            <label className="block text-gray-700 text-sm font-medium mb-2">
-              Email
-            </label>
+            <label className="block text-gray-300 text-sm font-medium mb-2">Email</label>
             <input
               type="email"
               value={formData.email}
               placeholder="Enter email"
               onChange={(e) => handleInputChange("email", e.target.value)}
-              className="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-3 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="w-full bg-gray-800/50 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500"
             />
           </div>
 
           {/* Phone */}
           <div>
-            <label className="block text-gray-700 text-sm font-medium mb-2">
-              Phone
-            </label>
+            <label className="block text-gray-300 text-sm font-medium mb-2">Phone</label>
             <input
               type="text"
               value={formData.phone}
               placeholder="Enter phone"
               onChange={(e) => handleInputChange("phone", e.target.value)}
-              className="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-3 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="w-full bg-gray-800/50 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500"
             />
           </div>
         </div>
 
         {/* Footer */}
-        <div className="p-6 border-t border-gray-200 flex justify-end gap-3 bg-gray-50 rounded-b-2xl">
+        <div className="p-6 border-t border-gray-700 flex justify-end gap-3 bg-gray-800/40 rounded-b-2xl">
           <button
             onClick={onClose}
-            className="px-6 py-3 text-gray-600 hover:text-gray-900 font-medium transition"
+            className="px-6 py-3 text-gray-300 hover:text-white font-medium transition"
           >
             Cancel
           </button>
           <button
             onClick={handleSubmit}
-            className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition"
+            className="px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white rounded-lg font-medium transition"
           >
             Update
           </button>
         </div>
+
       </div>
     </div>
   );

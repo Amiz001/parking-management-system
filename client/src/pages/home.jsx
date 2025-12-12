@@ -99,7 +99,7 @@ export default function ParkingLandingPage() {
   const handleLogout = () => {
     localStorage.removeItem("token");
     setIsLoggedIn(false); 
-    navigate("/");
+    navigate("/login");
   };
 
   useEffect(() => {
@@ -110,7 +110,7 @@ export default function ParkingLandingPage() {
   return (
     <div className="bg-white">
       {/* Header */}
-      <header className="bg-gray-900 text-white h-100">
+      <header className="bg-gray-900 text-white h-100" >
         <div className="absolute z-0 -top-200 w-screen h-300 bg-[radial-gradient(circle_at_center,_rgba(79,70,229,0.6),_rgba(59,130,246,0.4),_transparent_50%)]"></div>
         <div className="relative z-5 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
@@ -246,7 +246,7 @@ export default function ParkingLandingPage() {
             ))}
           </div>
         </div>
-      </section>*/}
+      </section>*
 
       {/* Stats Section */}
       <section className="py-20 bg-white">

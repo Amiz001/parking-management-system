@@ -300,7 +300,7 @@ const deleteUser = async (req, res) => {
 
 const validateUser = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, rememberMe } = req.body;
 
     const user = await Users.findOne({ email });
 
@@ -311,6 +311,10 @@ const validateUser = async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(401).json({ message: "Invalid Credentials!" });
+    }
+
+    const expireTime = () => {
+      return rememberMe ? "30d" : "2h"
     }
 
     const token = jwt.sign(
@@ -325,7 +329,7 @@ const validateUser = async (req, res) => {
       },
       process.env.JWT_SECRET,
       {
-        expiresIn: "2h",
+        expiresIn: expireTime(),
       }
     );
 

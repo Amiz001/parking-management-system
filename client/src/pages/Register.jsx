@@ -4,7 +4,7 @@ import Logo from "../assets/parkbay.png";
 import { toast, ToastContainer } from "react-toastify";
 import Axios from "axios";
 import { useNavigate } from "react-router-dom";
-import VerificationPopup from "../components/VerificationPopup "
+import VerificationPopup from "../components/VerificationPopup"
 
 export default function Login() {
   const [firstName, setFirstName] = useState("");
@@ -13,7 +13,6 @@ export default function Login() {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [showPopup, setShowPopup] = useState(false);
-
   const [showPassword, setShowPassword] = useState(false);
   const [current, setCurrent] = useState(0);
 

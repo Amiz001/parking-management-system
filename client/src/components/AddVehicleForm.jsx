@@ -48,7 +48,7 @@ const AddVehicleForm = ({
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const { vehicleNo, userId, type, model } = formData;
+    const { vehicleNo, type, model } = formData;
 
     if (!vehicleNo || !type) {
       toast.error("Please fill all required fields!");
@@ -61,72 +61,59 @@ const AddVehicleForm = ({
     }
 
     if (model && !isValidModel(model)) {
-      toast.error(
-        "Vehicle model can only contain letters, numbers, and spaces!"
-      );
+      toast.error("Vehicle model can only contain letters, numbers, and spaces!");
       return;
     }
-    if (mode == "add") {
-      try {
-        const response = await axios.post(
-          "http://localhost:5000/vehicles",
-          formData,
-          { headers: { Authorization: `Bearer ${token}` } }
+
+    try {
+      const url =
+        mode === "add"
+          ? "http://localhost:5000/vehicles"
+          : `http://localhost:5000/vehicles/${selectedVehicle._id}`;
+
+      const method = mode === "add" ? axios.post : axios.put;
+
+      const response = await method(url, formData, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const successMessage =
+        mode === "add"
+          ? "Added successfully"
+          : "Updated successfully!";
+
+      if (response.data.message === successMessage) {
+        toast.success(
+          mode === "add"
+            ? "Vehicle added successfully!"
+            : "Vehicle updated successfully!"
         );
-
-        if (response.data.message === "Added successfully") {
-          toast.success("Vehicle added successfully!");
-          refresh();
-          onClose();
-        } else {
-          console.log(response.data.message);
-          toast.error("Failed to add vehicle");
-        }
-      } catch (error) {
-        console.error(error);
-        toast.error("Something went wrong");
+        refresh();
+        onClose();
+      } else {
+        toast.error("Operation failed");
       }
-    }
-
-    else{
-
-      try {
-        const response = await axios.put(
-          `http://localhost:5000/vehicles/${selectedVehicle._id}`,
-          formData,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-
-        if (response.data.message === "Updated successfully!") {
-          toast.success("Vehicle updated successfully!");
-          refresh();
-          onClose();
-        } else {
-          console.log(response.data.message);
-          toast.error("Failed to update vehicle");
-        }
-      } catch (error) {
-        console.error(error);
-        toast.error("Something went wrong");
-      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Something went wrong");
     }
   };
 
   return (
     <div
-      className={`fixed inset-0 bg-[#00000065] flex items-center justify-center p-4 z-50 ${
+      className={`fixed inset-0 bg-[#00000080] backdrop-blur-sm flex items-center justify-center p-4 z-50 ${
         status ? "visible" : "hidden"
       }`}
     >
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <div className="bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="relative p-6 border-b border-gray-200">
-          <h2 className="text-gray-800 text-xl font-semibold text-center">
-            {mode == "add" ? "Add Vehicle" : "Update Vehicle"}
+        <div className="relative p-6 border-b border-gray-700">
+          <h2 className="text-white text-xl font-semibold text-center">
+            {mode === "add" ? "Add Vehicle" : "Update Vehicle"}
           </h2>
           <button
             onClick={onClose}
-            className="absolute top-6 right-6 text-gray-500 hover:text-gray-800 transition"
+            className="absolute top-6 right-6 text-gray-400 hover:text-white transition"
           >
             <X size={22} />
           </button>
@@ -136,7 +123,7 @@ const AddVehicleForm = ({
         <div className="p-6 space-y-6">
           {/* Vehicle No */}
           <div>
-            <label className="block text-gray-700 text-sm font-medium mb-2">
+            <label className="block text-gray-300 text-sm font-medium mb-2">
               Vehicle Number <span className="text-red-500">*</span>
             </label>
             <input
@@ -144,19 +131,19 @@ const AddVehicleForm = ({
               value={formData.vehicleNo}
               placeholder="Enter vehicle number (e.g., WP-ABC-1234)"
               onChange={(e) => handleInputChange("vehicleNo", e.target.value)}
-              className="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-3 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="w-full bg-gray-800/50 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500"
             />
           </div>
 
           {/* Vehicle Type */}
           <div>
-            <label className="block text-gray-700 text-sm font-medium mb-2">
+            <label className="block text-gray-300 text-sm font-medium mb-2">
               Vehicle Type <span className="text-red-500">*</span>
             </label>
             <select
               value={formData.type}
               onChange={(e) => handleInputChange("type", e.target.value)}
-              className="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="w-full bg-gray-800/50 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
             >
               <option value="">Select type</option>
               <option value="Car">Car</option>
@@ -168,9 +155,9 @@ const AddVehicleForm = ({
             </select>
           </div>
 
-          {/* Vehicle Model (Optional) */}
+          {/* Model */}
           <div>
-            <label className="block text-gray-700 text-sm font-medium mb-2">
+            <label className="block text-gray-300 text-sm font-medium mb-2">
               Vehicle Model (Optional)
             </label>
             <input
@@ -178,24 +165,24 @@ const AddVehicleForm = ({
               value={formData.model}
               placeholder="Enter model (e.g., Civic, Corolla)"
               onChange={(e) => handleInputChange("model", e.target.value)}
-              className="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-3 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="w-full bg-gray-800/50 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500"
             />
           </div>
         </div>
 
         {/* Footer */}
-        <div className="p-6 border-t border-gray-200 flex justify-end gap-3 bg-gray-50 rounded-b-2xl">
+        <div className="p-6 border-t border-gray-700 flex justify-end gap-3 bg-gray-800/40 rounded-b-2xl">
           <button
             onClick={onClose}
-            className="px-6 py-3 text-gray-600 hover:text-gray-900 font-medium transition"
+            className="px-6 py-3 text-gray-300 hover:text-white font-medium transition"
           >
             Cancel
           </button>
           <button
             onClick={handleSubmit}
-            className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition"
+            className="px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white rounded-lg font-medium transition"
           >
-            {mode == "add" ? "Add Vehicle" : "Update"}
+            {mode === "add" ? "Add Vehicle" : "Update"}
           </button>
         </div>
       </div>
