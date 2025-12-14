@@ -15,4 +15,3 @@ router.delete("/:id",PaymentController.deletePayment);
 
 //export
 module.exports=router;
-

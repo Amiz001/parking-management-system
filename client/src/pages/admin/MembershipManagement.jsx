@@ -14,6 +14,7 @@ import {
   ChartColumnBig,
   Car,
   Megaphone,
+  Download,
   BanknoteArrowDown,
   HeartHandshake,
   LogOut,
@@ -47,6 +48,11 @@ const MembershipManagement = () => {
     features: ''
   });
 
+  const [userMemberships, setUserMemberships] = useState([]);
+  const [loadingUserMemberships, setLoadingUserMemberships] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+
+
 
   useEffect(() => {
     const fetchPlans = async () => {
@@ -63,6 +69,19 @@ const MembershipManagement = () => {
   }, []);
 
 
+  useEffect(()=>{
+    const fetchUserMemberships = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/user-membership');
+        setUserMemberships(response.data);
+        setLoadingUserMemberships(false);
+      }catch(error){
+        console.error('Error fetching user memberships: ',error);
+        setLoadingUserMemberships(false);
+      }
+    };
+    fetchUserMemberships();
+  },[]);
 
   const sidebarItems = [
     { icon: ChartColumnBig, label: 'Dashboard' },
@@ -84,21 +103,31 @@ const MembershipManagement = () => {
     { icon: LogOut, label: 'Logout' },
   ];
 
-  const statsCards = [
-    { title: 'Total Members', value: '1,234', change: '+250 this month', positive: true },
-    { title: 'Active Plans', value: '3', change: '+No change this month', positive: true },
-    { title: 'Revenue (This month)', value: 'LKR 180,000', change: '+3% vs last month', positive: true },
-    { title: 'New Subscriptions (This Week)', value: '28', change: '+12 than last week', positive: true },
-  ];
-  const performanceData = [
-    { date: '1 June', value: 45 },
-    { date: '2 June', value: 55 },
-    { date: '3 June', value: 48 },
-    { date: '4 June', value: 52 },
-    { date: '5 June', value: 75 },
-    { date: '6 June', value: 58 },
-    { date: '7 June', value: 62 }
-  ];
+  const today = new Date();
+const sevenDaysAgo = new Date();
+sevenDaysAgo.setDate(today.getDate() - 7);
+
+const totalMembers = userMemberships.length;
+
+const activePlans = membershipPlans.length;
+
+const totalRevenue = userMemberships.reduce((sum, u) => {
+  return sum + Number(u.price || 0); // assuming `price` is stored in user_membership table
+}, 0);
+
+
+const newSubscriptions = userMemberships.filter(u => {
+  const startDate = new Date(u.startDate);
+  return startDate >= sevenDaysAgo && startDate <= today;
+}).length;
+
+// Create stats cards array dynamically
+const dynamicStatsCards = [
+  { title: 'Total Members', value: totalMembers },
+  { title: 'Active Plans', value: activePlans },
+  { title: 'Revenue (This month)', value: `LKR ${totalRevenue}` },
+  { title: 'New Subscriptions (This Week)', value: newSubscriptions },
+];
 
   
   const handleUpdate = (id) => {
@@ -178,6 +207,15 @@ const confirmDelete = async () => {
   };
 
   const confirmInsert = async () => {
+    if (!insertForm.name || !insertForm.price || !insertForm.description || !insertForm.features) {
+    alert("All fields are required!");
+    return;
+  }
+
+  if (isNaN(insertForm.price)) {
+    alert("Price must be a number!");
+    return;
+  }
     try {
       const newPlan = {
         ...insertForm,
@@ -197,6 +235,94 @@ const confirmDelete = async () => {
     setShowInsertModal(false);
     setInsertForm({ name: '', price: '', description: '', features: '' });
   };
+
+  const [showLimitModal, setShowLimitModal] = useState(false);
+
+const handleAddPlanClick = () => {
+  if (membershipPlans.length >= 4) {
+    setShowLimitModal(true);
+    return;
+  }
+  setShowInsertModal(true);
+};
+
+
+
+const filteredUserMemberships = userMemberships.filter(m => 
+  (m.userId?.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+  (m.userId?.email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+  (m.membershipId?._id || '').toString().toLowerCase().includes(searchTerm.toLowerCase()) || 
+  (m.membershipId?.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+  (m.vehicle_num || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+  (m.status || '').toLowerCase().includes(searchTerm.toLowerCase())
+);
+
+
+const exportData = () => {
+  if ((!membershipPlans || membershipPlans.length === 0) &&
+      (!userMemberships || userMemberships.length === 0)) {
+    alert("No data to export!");
+    return;
+  }
+
+  let csv = "";
+
+  // Export Membership Plans
+  if (membershipPlans.length > 0) {
+    csv += "Membership Plans\n";
+    const membershipData = membershipPlans.map(plan => ({
+      ID: plan._id,
+      Name: plan.name,
+      Price: plan.price,
+      Description: plan.description,
+      Features: Array.isArray(plan.features) ? plan.features.join(", ") : plan.features
+    }));
+    csv += Object.keys(membershipData[0]).join(",") + "\n"; // headers
+    csv += membershipData.map(row => Object.values(row).join(",")).join("\n");
+    csv += "\n\n"; // space between tables
+  }
+
+
+const formatDate = (date) => {
+  if (!date) return "-";
+  const d = new Date(date);
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`; // 2025-10-08
+};
+
+
+
+
+  // Export User Memberships
+  if (userMemberships.length > 0) {
+    csv += "User Memberships\n";
+    const userData = userMemberships.map(u => ({
+      ID: u._id,
+      User: u.userId?.name + " (" + u.userId?.email + ")",
+      Membership: u.membershipId?.name + " - LKR " + u.membershipId?.price,
+      Vehicle: u.vehicle_num,
+      StartDate: `"${formatDate(u.startDate)}"`, 
+      EndDate: `"${formatDate(u.endDate)}"`,
+      Status: u.status
+    }));
+    csv += Object.keys(userData[0]).join(",") + "\n"; // headers
+    csv += userData.map(row => Object.values(row).join(",")).join("\n");
+  }
+
+  // Download CSV
+  const blob = new Blob([csv], { type: "text/csv" });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "membership_export.csv";
+  a.click();
+  window.URL.revokeObjectURL(url);
+};
+
+
+
 
   return (
     <div className={`flex h-auto bg-gray-950 text-white light:text-black light:bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 ${lightMode ? "light" : "dark"}`}>
@@ -282,10 +408,13 @@ const confirmDelete = async () => {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
               <input
-                type="text"
-                placeholder="Search something..."
-                className="pl-10 pr-4 py-2 bg-[#151821] light:bg-white border border-gray-900 light:border-gray-200 rounded-lg text-white placeholder-gray-400 light:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+  type="text"
+  placeholder="Search something..."
+  value={searchTerm}
+  onChange={(e) => setSearchTerm(e.target.value)}
+  className="pl-10 pr-4 py-2 bg-[#151821] light:bg-white border border-gray-900 light:border-gray-200 rounded-lg text-white placeholder-gray-400 light:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+/>
+
             </div>
             <button className="px-4 py-2 bg-gradient-to-l from-blue-500 to-indigo-600 text-white rounded-lg hover:bg-blue-600 transition-colors">
               Search
@@ -308,6 +437,7 @@ const confirmDelete = async () => {
               <h1 className="text-3xl font-bold mb-2">Membership Plans</h1>
               <p className="text-gray-400 light:text-gray-600">Manage and track all membership plans and subscribers here.</p>
             </div>
+            
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2 px-4 py-2 bg-[#151821] light:bg-white rounded-lg">
                 <Calendar size={16} />
@@ -338,36 +468,54 @@ const confirmDelete = async () => {
           </div>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-4 gap-6 mb-8">
-            {statsCards.map((card, index) => (
-              <div key={index} className="bg-gradient-to-b from-[#151821] to-[#242938] light:bg-gradient-to-b light:from-white light:to-white light:shadow-lg light:backdrop-blur-sm p-6 rounded-xl">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-gray-400 light:text-gray-600 text-sm">{card.title}</h3>
-                  <MoreHorizontal size={20} className="text-gray-400 light:text-gray-600 cursor-pointer" />
-                </div>
-                <div className="mb-2">
-                  <span className="text-3xl font-bold">{card.value}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className={`text-sm light:text-bold ${card.positive ? 'text-green-400 light:text-green-600' : 'text-red-400 light:text-red-600'}`}>
-                    {card.change}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
+<div className="grid grid-cols-4 gap-6 mb-8">
+  {dynamicStatsCards.map((card, index) => (
+    <div
+      key={index}
+      className="bg-gradient-to-b from-[#151821] to-[#242938] light:bg-gradient-to-b light:from-white light:to-white light:shadow-lg light:backdrop-blur-sm p-6 rounded-xl"
+    >
+      <h3 className="text-gray-400 light:text-gray-600 text-sm mb-2">{card.title}</h3>
+      <span className="text-3xl font-bold">{card.value}</span>
+
+      <div className="mt-2">
+        <div className="flex items-center gap-2">
+          <span
+            className={`text-sm font-bold ${
+              card.positive
+                ? 'text-green-400 light:text-green-600'
+                : 'text-red-400 light:text-red-600'
+            }`}
+          >
+            {card.change}
+          </span>
+        </div>
+      </div>
+    </div>
+  ))}
+</div>
+
 
           {/* Table */}
           {/* Membership Table */}
           
           <div className="bg-gradient-to-b from-[#151821] to-[#242938] light:bg-gradient-to-b light:from-white light:to-white light:shadow-lg light:backdrop-blur-sm rounded-xl p-6">
             <h3 className="text-xl font-semibold mb-4">Membership Plans</h3>
+            <div className="flex items-center gap-4 ml-auto">
             <button 
-                onClick={() => setShowInsertModal(true)} 
+                onClick={handleAddPlanClick} 
                 className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-800 transition-colors"
               >
                 + Add Plan
               </button>
+              
+              <button
+                onClick={exportData}
+                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:bg-blue-600  text-white px-4 py-2 rounded-xl flex items-center gap-2 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+              >
+                <Download className="w-5 h-5" />
+                Export Data
+              </button>
+            </div>
             
             {loading ? (
               <p>Loading membership plans...</p>
@@ -414,6 +562,54 @@ const confirmDelete = async () => {
               </div>
             )}
           </div>
+          
+          <div className="bg-gradient-to-b from-[#151821] to-[#242938] light:bg-gradient-to-b light:from-white light:to-white light:shadow-lg light:backdrop-blur-sm rounded-xl p-6 mt-8">
+  <h3 className="text-xl font-semibold mb-4">User Memberships</h3>
+
+  {loadingUserMemberships ? (
+    <p>Loading user memberships...</p>
+  ) : (
+    <div className="overflow-x-auto">
+      <table className="w-full">
+        <thead>
+          <tr className="border-b border-gray-400">
+            <th className="text-left py-3 px-4 text-gray-400 light:text-gray-700 font-medium">ID</th>
+            <th className="text-left py-3 px-4 text-gray-400 light:text-gray-700 font-medium">User</th>
+            <th className="text-left py-3 px-4 text-gray-400 light:text-gray-700 font-medium">Membership Plan</th>
+            <th className="text-left py-3 px-4 text-gray-400 light:text-gray-700 font-medium">Vehicle Number</th>
+            <th className="text-left py-3 px-4 text-gray-400 light:text-gray-700 font-medium">Start Date</th>
+            <th className="text-left py-3 px-4 text-gray-400 light:text-gray-700 font-medium">End Date</th>
+            <th className="text-left py-3 px-4 text-gray-400 light:text-gray-700 font-medium">Status</th>
+            <th className="text-left py-3 px-4 text-gray-400 light:text-gray-700 font-medium">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+  {filteredUserMemberships.map((membership, index) => (
+    <tr key={membership._id} className="border-b border-gray-200 hover:bg-gray-700 light:hover:bg-gray-100">
+      <td className="py-4 px-4 text-gray-300 light:text-gray-600">{index + 1}</td>
+      <td className="py-4 px-4">{membership.userId?.name || '-'} ({membership.userId?.email || '-'})</td>
+      <td className="py-4 px-4">{membership.membershipId?.name || '-'} - LKR {membership.membershipId?.price || '-'}</td>
+      <td className="py-4 px-4">{membership.vehicle_num || '-'}</td>
+      <td className="py-4 px-4">{membership.startDate ? new Date(membership.startDate).toLocaleDateString() : '-'}</td>
+      <td className="py-4 px-4">{membership.endDate ? new Date(membership.endDate).toLocaleDateString() : '-'}</td>
+      <td className="py-4 px-4">{membership.status || '-'}</td>
+      <td className="py-4 px-4 flex gap-2">
+        <button
+          onClick={() => handleDeleteClick(membership._id)}
+          className="px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+        >
+         Delete
+        </button>
+      </td>
+    </tr>
+  ))}
+</tbody>
+
+      </table>
+    </div>
+  )}
+</div>
+
 
             {/* Insert Modal */}
 {showInsertModal && (
@@ -474,6 +670,30 @@ const confirmDelete = async () => {
   </div>
 )}
 
+
+{showLimitModal && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-96">
+      <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
+        Limit Reached
+      </h3>
+      <p className="mb-6 text-gray-700 dark:text-gray-300">
+        You can only add up to 4 membership plans.
+      </p>
+      <div className="flex justify-end">
+        <button 
+          onClick={() => setShowLimitModal(false)} 
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        >
+          OK
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
+
+
           {/* Delete Confirmation Modal */}
           {showDeleteModal && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -499,6 +719,8 @@ const confirmDelete = async () => {
               </div>
             </div>
           )}
+
+
 
           {/* Update Modal */}
           {showUpdateModal && (
@@ -556,6 +778,8 @@ const confirmDelete = async () => {
               </div>
             </div>
           )}
+
+
 
           
         </main>

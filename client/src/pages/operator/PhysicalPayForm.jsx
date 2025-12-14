@@ -1,185 +1,190 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const PhysicalPayForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-   const initialSlotId = location.state?.vehicleNumber || "";
 
   const [formData, setFormData] = useState({
-    vehicleNumber: initialSlotId,
+    slotId: "",
+    vehicleNumber: "",
     entryDate: "",
     entryTime: "",
-    exitDate: "",
     exitTime: "",
-    amount: "",
+    amount: 0,
+    duration: "",
   });
+
+  const [loading, setLoading] = useState(false);
+
+  // Format date to YYYY-MM-DD
+  const formatDate = (d) => {
+    const dateObj = new Date(d);
+    const year = dateObj.getFullYear();
+    const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+    const day = String(dateObj.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
 
   useEffect(() => {
     const fetchBooking = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/physicalbookings/${id}`);
-        const booking = res.data.booking;
+        const res = await axios.get(`http://localhost:5000/bookings/${id}`);
+        const b = res.data.booking;
 
-        const toISODate = (dateStr) => {
-          const [month, day, year] = dateStr.split("/");
-          return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
-        };
+        if (!b) {
+          alert("Booking not found");
+          navigate("/operator/physicalBooking");
+          return;
+        }
+
+        // Parse entry/exit times
+        const [entryHour, entryMin] = b.entryTime.split(":").map(Number);
+        const [exitHour, exitMin] = b.exitTime.split(":").map(Number);
+
+        const entry = new Date(b.date);
+        entry.setHours(entryHour, entryMin, 0, 0);
+
+        const exit = new Date(b.date);
+        exit.setHours(exitHour, exitMin, 0, 0);
+
+        let diffMs = exit - entry;
+        if (diffMs < 0) diffMs = 0;
+
+        const diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
+        const diffMin = Math.ceil((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+
+        // Calculate amount (Rs 100 per hour, round up partial hours)
+        const amount = Math.ceil(diffMs / (1000 * 60 * 60)) * 100;
 
         setFormData({
-          vehicleNumber: booking.vehicleNumber || "",
-          entryDate: toISODate(booking.entryDate),
-          entryTime: booking.entryTime || "00:00",
-          exitDate: toISODate(booking.exitDate),
-          exitTime: booking.exitTime || "00:00",
-          amount: booking.amount || "", // if amount is saved already
+          slotId: b.slotId || "",
+          vehicleNumber: b.vehicleNum || "",
+          entryDate: formatDate(b.date),
+          entryTime: b.entryTime,
+          exitTime: b.exitTime,
+          amount: amount || 0,
+          duration: `${diffHrs}h ${diffMin}m`,
         });
       } catch (err) {
-        console.error("Error fetching booking:", err);
+        console.error("Fetch booking error:", err);
+        alert("Failed to load booking");
+        navigate("/operator/physicalBooking");
       }
     };
 
     fetchBooking();
-  }, [id]);
-
-  // Calculate amount based on entry and exit datetime
-  useEffect(() => {
-    if (formData.entryDate && formData.exitDate && formData.entryTime && formData.exitTime) {
-      const entry = new Date(`${formData.entryDate}T${formData.entryTime}`);
-      const exit = new Date(`${formData.exitDate}T${formData.exitTime}`);
-
-      if (!isNaN(entry) && !isNaN(exit) && exit > entry) {
-        const diffMs = exit - entry;
-        const diffHrs = Math.max(1, Math.ceil(diffMs / (1000 * 60 * 60)));
-        const ratePerHour = 100;
-        setFormData((prev) => ({ ...prev, amount: diffHrs * ratePerHour }));
-      }
-    }
-  }, [formData.entryDate, formData.exitDate, formData.entryTime, formData.exitTime]);
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleCancel = () => {
-    navigate(-1); // Go back
-  };
+  }, [id, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    try {
-      const payload = {
-        ...formData,
-        amount: Number(formData.amount),
-      };
+    // Basic validation
+    if (!formData.slotId || !formData.vehicleNumber || !formData.entryDate || !formData.amount) {
+      alert("Missing required fields");
+      return;
+    }
 
-      await axios.post("http://localhost:5000/payment", payload, {
-        headers: { "Content-Type": "application/json" },
+    setLoading(true);
+
+    try {
+      const res = await axios.post("http://localhost:5000/payment", {
+        slotId: formData.slotId,
+        vehicleNumber: formData.vehicleNumber,
+        entryDate: formData.entryDate,
+        duration: formData.duration,
+        amount: Number(formData.amount),
       });
 
-      alert("✅ Payment saved successfully!");
-      navigate("/"); // or wherever you want to redirect
-    } catch (error) {
-      console.error("Error saving payment:", error.response?.data || error.message);
-      alert("❌ Failed to save payment!");
+      alert("Payment saved successfully!");
+      navigate("/operator/physicalBooking");
+    } catch (err) {
+      console.error("Payment save error:", err.response?.data || err.message);
+      if (err.response?.data?.message) {
+        alert(`Error: ${err.response.data.message}`);
+      } else {
+        alert("Error saving payment");
+        navigate("/operator/physicalBooking");
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold mb-6 text-blue-600">Physical Payment</h2>
+    <div className="p-6 bg-white rounded-2xl shadow-lg w-[420px] mx-auto mt-10">
+      <h2 className="text-2xl font-semibold text-blue-600 mb-5 text-center">
+        Physical Payment
+      </h2>
+
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block mb-1 font-semibold">Vehicle Number</label>
+          <label className="block text-gray-700 mb-1">Vehicle Number</label>
           <input
             type="text"
-            name="vehicleNumber"
             value={formData.vehicleNumber}
-            onChange={handleChange}
-            required
-            className="w-full border rounded px-3 py-2"
+            readOnly
+            className="w-full border rounded-lg px-3 py-2 bg-gray-100 cursor-not-allowed"
+          />
+        </div>
+
+        <div>
+          <label className="block text-gray-700 mb-1">Entry Date</label>
+          <input
+            type="date"
+            value={formData.entryDate}
+            readOnly
+            className="w-full border rounded-lg px-3 py-2 bg-gray-100 cursor-not-allowed"
           />
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block mb-1 font-semibold">Entry Date</label>
-            <input
-              type="date"
-              name="entryDate"
-              value={formData.entryDate}
-              onChange={handleChange}
-              required
-              className="w-full border rounded px-3 py-2"
-            />
-          </div>
-
-          <div>
-            <label className="block mb-1 font-semibold">Entry Time</label>
+            <label className="block text-gray-700 mb-1">Entry Time</label>
             <input
               type="time"
-              name="entryTime"
               value={formData.entryTime}
-              onChange={handleChange}
-              required
-              className="w-full border rounded px-3 py-2"
+              readOnly
+              className="w-full border rounded-lg px-3 py-2 bg-gray-100 cursor-not-allowed"
             />
           </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block mb-1 font-semibold">Exit Date</label>
-            <input
-              type="date"
-              name="exitDate"
-              value={formData.exitDate}
-              onChange={handleChange}
-              required
-              className="w-full border rounded px-3 py-2"
-            />
-          </div>
-
-          <div>
-            <label className="block mb-1 font-semibold">Exit Time</label>
+            <label className="block text-gray-700 mb-1">Exit Time</label>
             <input
               type="time"
-              name="exitTime"
               value={formData.exitTime}
-              onChange={handleChange}
-              required
-              className="w-full border rounded px-3 py-2"
+              readOnly
+              className="w-full border rounded-lg px-3 py-2 bg-gray-100 cursor-not-allowed"
             />
           </div>
         </div>
 
         <div>
-          <label className="block mb-1 font-semibold">Amount (Rs.)</label>
+          <label className="block text-gray-700 mb-1">Amount (Rs)</label>
           <input
             type="number"
-            name="amount"
             value={formData.amount}
             readOnly
-            className="w-full border rounded px-3 py-2 bg-gray-100 cursor-not-allowed"
+            className="w-full border rounded-lg px-3 py-2 bg-gray-100 cursor-not-allowed"
           />
         </div>
 
-        <div className="flex justify-between mt-6">
+        <div className="flex justify-between pt-4">
           <button
             type="button"
-            onClick={handleCancel}
-            className="px-6 py-2 bg-gray-300 rounded hover:bg-gray-400"
+            onClick={() => navigate("/operator/physicalBooking")}
+            className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300"
+            disabled={loading}
           >
             Cancel
           </button>
           <button
             type="submit"
-            className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            className={`bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
+            disabled={loading}
           >
-            Save Payment
+            {loading ? "Saving..." : "Save Payment"}
           </button>
         </div>
       </form>

@@ -1,10 +1,11 @@
-/*const mongoose = require("mongoose");
+const mongoose = require("mongoose");
 
 const BookingSchema = new mongoose.Schema(
   {
+    userId: { type: String }, 
+    types: { type: String, enum: ["physical", "online"], required: true },
     slotId: { type: String, required: true },
     zone: { type: String, required: true },
-    types: { type: String, enum: ["physical", "online"], required: true },
     vehicleNum: { type: String, required: true },
     date: { type: Date, required: true },
     entryTime: { type: String, required: true },
@@ -14,4 +15,4 @@ const BookingSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model("Bookings", BookingSchema);*/
+module.exports = mongoose.model("Booking", BookingSchema);

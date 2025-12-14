@@ -1,0 +1,101 @@
+const User_membership = require("../models/User_Membership");
+
+// ✅ Add a new user membership
+exports.addUserMembership = async (req, res) => {
+  try {
+    const { userId, membershipId, vehicle_num, startDate, endDate, status } = req.body;
+
+    const newRecord = new User_membership({
+      userId,
+      membershipId,
+      vehicle_num,
+      startDate,
+      endDate,
+      status,
+    });
+
+    const savedRecord = await newRecord.save();
+    res.status(201).json(savedRecord);
+  } catch (error) {
+    res.status(500).json({ message: "Error adding user membership", error });
+  }
+};
+
+// ✅ Get all user memberships
+exports.getAllUserMemberships = async (req, res) => {
+  try {
+    const memberships = await User_membership.find()
+      .populate("userId", "name email")
+      .populate("membershipId", "planName price");
+    res.status(200).json(memberships);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching user memberships", error });
+  }
+};
+
+// ✅ Get a single user membership by ID
+exports.getUserMembershipById = async (req, res) => {
+  try {
+    const record = await User_membership.findById(req.params.id)
+      .populate("userId", "name email")
+      .populate("membershipId", "planName price");
+
+    if (!record) {
+      return res.status(404).json({ message: "User membership not found" });
+    }
+
+    res.status(200).json(record);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching record", error });
+  }
+};
+
+// ✅ Update user membership
+exports.updateUserMembership = async (req, res) => {
+  try {
+    const updatedRecord = await User_membership.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }
+    );
+
+    if (!updatedRecord) {
+      return res.status(404).json({ message: "User membership not found" });
+    }
+
+    res.status(200).json(updatedRecord);
+  } catch (error) {
+    res.status(500).json({ message: "Error updating record", error });
+  }
+};
+
+// ✅ Delete user membership
+exports.deleteUserMembership = async (req, res) => {
+  try {
+    const deletedRecord = await User_membership.findByIdAndDelete(req.params.id);
+    if (!deletedRecord) {
+      return res.status(404).json({ message: "User membership not found" });
+    }
+
+    res.status(200).json({ message: "User membership deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Error deleting record", error });
+  }
+};
+
+exports.checkUserPlan = async (req, res) => {
+  try {
+    const { userId, planId } = req.query;
+
+    const existing = await UserMembershipModel.findOne({ userId, planId });
+
+    if (existing) {
+      return res.status(400).json({ message: "User already has this plan." });
+    }
+
+    res.status(200).json({ message: "User can take this plan." });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};

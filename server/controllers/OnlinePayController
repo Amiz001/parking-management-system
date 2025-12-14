@@ -1,6 +1,6 @@
-
-const OnlinePay = require("../models/OnlinePayModel");
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+require('dotenv').config();
+const OnlinePay = require('../models/OnlinePayModel'); 
+const stripe = require('stripe')(process.env.VITE_STRIPE_SECRET_KEY);
 
 // Create payment (save to DB + create Stripe payment intent)
 const createPayment = async (req, res) => {
@@ -38,7 +38,7 @@ const createPayment = async (req, res) => {
 
     res.status(201).json({
       paymentId: payment._id,
-      clientSecret: paymentIntent.client_secret, // send this to frontend for Stripe checkout
+      clientSecret: paymentIntent.client_secret, 
     });
 
   } catch (err) {
@@ -50,9 +50,11 @@ const createPayment = async (req, res) => {
 // Update payment status after Stripe webhook
 const updatePaymentStatus = async (req, res) => {
   try {
-    const { paymentId, status } = req.body;
-    if (!paymentId || !status) {
-      return res.status(400).json({ message: "Payment ID and status are required" });
+    const paymentId = req.params.id;
+    const {status} = req.body;
+
+    if (!status) {
+      return res.status(400).json({ message: "Status is required" });
     }
 
     const payment = await OnlinePay.findByIdAndUpdate(paymentId, { status }, { new: true });
@@ -63,7 +65,22 @@ const updatePaymentStatus = async (req, res) => {
   }
 };
 
+
+const getAllPayments = async (req, res, next) => {
+    try {
+        const payment = await OnlinePay.find();
+        if (!payment) {
+            return res.status(404).json({ message: "No payments found." });
+        }
+        return res.status(200).json({ payment });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ message: err.message }); 
+    }
+};
+
 module.exports = {
   createPayment,
   updatePaymentStatus,
+  getAllPayments,
 };

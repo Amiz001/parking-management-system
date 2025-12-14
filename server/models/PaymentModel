@@ -1,16 +1,16 @@
+
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const PaymentSchema = new Schema(
+const physicalPaySchema = new Schema(
   {
+    slotId:{type:String, required:true},
     vehicleNumber: { type: String, required: true, trim: true },
-    entryDate: { type: Date, default: Date.now },
+    entryDate: { type: Date, required:true},
     duration: { type: String, default: "" },
     amount: { type: Number, required: true }, 
   },
   { timestamps: true }
 );
 
-module.exports = mongoose.model('Payment', PaymentSchema);
-
-
+module.exports = mongoose.model('physicalpays', physicalPaySchema);

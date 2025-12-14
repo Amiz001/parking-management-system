@@ -1,10 +1,10 @@
-/*const Bookings = require("../models/PhysicalBookingModel");
+const Booking = require("../models/bookingModel");
 const Slot = require("../models/slots"); 
 
 // Get all bookings
 const getAllBookings = async (req, res) => {
   try {
-    const bookings = await Bookings.find();
+    const bookings = await Booking.find();
 
     if (!bookings.length) {
       return res.status(404).json({ message: "No bookings found" });
@@ -18,14 +18,15 @@ const getAllBookings = async (req, res) => {
 };
 
 // Add new booking
-const addBooking = async (req, res) => {
-  const {slotId, zone, types, vehicleNum, date, entryTime, exitTime } = req.body;
+const addBookings = async (req, res) => {
+  const { userId, types, slotId, zone, vehicleNum, date, entryTime, exitTime } = req.body;
 
   try {
     const booking = new Booking({
+      userId,
+      types,
       slotId,
       zone,
-      types,
       vehicleNum,
       date,
       entryTime,
@@ -52,72 +53,10 @@ const addBooking = async (req, res) => {
   }
 };
 
-
-/* Add new booking (with time-overlap check)
-const addBooking = async (req, res) => {
-  const {slotId, zone, types, vehicleNum, date, entryTime, exitTime } = req.body;
-
-  try {
-    // ✅ Convert times to full Date objects for accurate comparison
-    const bookingDate = new Date(date); // e.g. "2025-10-10"
-    const [entryHour, entryMin] = entryTime.split(":").map(Number);
-    const [exitHour, exitMin] = exitTime.split(":").map(Number);
-
-    const start = new Date(bookingDate);
-    start.setHours(entryHour, entryMin, 0, 0);
-
-    const end = new Date(bookingDate);
-    end.setHours(exitHour, exitMin, 0, 0);
-
-    if (end <= start) {
-      return res.status(400).json({ message: "Exit time must be after entry time" });
-    }
-
-    // ✅ Check for overlap
-    const overlap = await Bookings.findOne({
-      slotId,
-      date, // same calendar day
-      $or: [
-        {
-          $and: [
-            { entryTime: { $lt: exitTime } },
-            { exitTime: { $gt: entryTime } },
-          ],
-        },
-      ],
-    });
-
-    if (overlap) {
-      return res.status(400).json({
-        message: "Slot already booked during this time range",
-      });
-    }
-
-    // ✅ Save booking
-    const booking = new Booking({
-      slotId,
-      zone,
-      types,
-      vehicleNum,
-      date,
-      entryTime,
-      exitTime,
-    });
-    await booking.save();
-
-
-    return res.status(201).json({ message: "Booking created", booking });
-  } catch (error) {
-    console.error("Error adding booking:", error);
-    return res.status(500).json({ message: "Unable to add booking", error: error.message });
-  }
-};
-
-
 // Get booking by ID
 const getById = async (req, res) => {
   try {
-    const booking = await Bookings.findById(req.params.id);
+    const booking = await Booking.findById(req.params.id);
 
     if (!booking) {
       return res.status(404).json({ message: "Booking not found" });
@@ -131,9 +70,9 @@ const getById = async (req, res) => {
 };
 
 // Update booking
-const updateBooking = async (req, res) => {
+const updateBookings = async (req, res) => {
   try {
-    const booking = await Bookings.findByIdAndUpdate(req.params.id, req.body, {
+    const booking = await Booking.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true,
     });
@@ -150,9 +89,9 @@ const updateBooking = async (req, res) => {
 };
 
 // Delete booking
-const deleteBooking = async (req, res) => {
+const deleteBookings = async (req, res) => {
   try {
-    const booking = await Bookings.findByIdAndDelete(req.params.id);
+    const booking = await Booking.findByIdAndDelete(req.params.id);
 
     if (!booking) {
       return res.status(404).json({ message: "Booking not found" });
@@ -169,8 +108,8 @@ const deleteBooking = async (req, res) => {
 
 module.exports = {
   getAllBookings,
-  addBooking,
+  addBookings,
   getById,
-  updateBooking,
-  deleteBooking,
-};*/
+  updateBookings,
+  deleteBookings,
+};
