@@ -238,6 +238,7 @@ export default function DarkProfileDashboard() {
   };
 
   const handleLogout = () => {
+    localStorage.removeItem("token");
     navigate("/");
   };
 
@@ -878,6 +879,10 @@ export default function DarkProfileDashboard() {
                 </div>
               </div>
             )}
+
+            {activeTab === "logout" && handleLogout()}
+            {activeTab === "back" && navigate('/')}
+            
 
           </div>
         </div>
