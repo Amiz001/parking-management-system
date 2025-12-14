@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import {
   Search, CalendarCheck, Settings, MoreHorizontal, Bell, Sun, Moon,
-  ChartColumnBig, HeartHandshake, LogOut, Car, Bookmark, Wrench, LayoutGrid,
+  ChartColumnBig, LogOut, Car, Bookmark, Wrench, LayoutGrid,
   Wallet,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -10,9 +10,9 @@ import { useNavigate } from "react-router-dom";
 const sidebarItems = [
   { icon: ChartColumnBig, label: "Dashboard", active: true, path: "/operator/dashboard" },
   { icon: CalendarCheck, label: "Booking", path: "/operator/physicalBooking" },
-  { icon: HeartHandshake, label: "Membership", path: "/operator/membership" },
+ 
   { icon: Wallet, label: "Payment", path: "/operator/payment" },
-  { icon: HeartHandshake, label: 'Online Booking', path: "/operator/OnlineBookingPage"},
+  
 ];
 
 // ParkingSpot

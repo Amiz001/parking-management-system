@@ -10,7 +10,6 @@ import {
   ChartColumnBig,
   CalendarCheck,
   Wallet,
-  HeartHandshake,
   Download,
   LogOut,
 } from 'lucide-react';
@@ -24,7 +23,6 @@ const PaymentManagement = () => {
   const sidebarItems = [
     { icon: ChartColumnBig, label: "Dashboard", path: "/operator/dashboard" },
     { icon: CalendarCheck, label: "Booking",  path: "/operator/physicalbooking" },
-    { icon: HeartHandshake, label: "Membership", path: "/operator/membership" },
     { icon: Wallet, label: "Payment", active: true, path: "/operator/payment" },
   ];
 

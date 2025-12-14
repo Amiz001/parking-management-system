@@ -11,7 +11,6 @@ import {
   Sun,
   Moon,
   ChartColumnBig,
-  HeartHandshake,
   Wallet,
   LogOut,
   MoreHorizontal,
@@ -108,10 +107,66 @@ useEffect(() => {
     setSelectedType(type);
   };
 
+  //Export Data
+const exportData = () => {
+  if (!filteredBookings || filteredBookings.length === 0) {
+    toast.warn("No bookings to export!");
+    return;
+  }
+
+  let csv = "";
+ 
+  const headers = [
+    "Booking ID",
+    "Slot ID",
+    "Zone",
+    "Type",
+    "Vehicle No",
+    "Date",
+    "Entry Time",
+    "Exit Time"
+  ];
+  csv += headers.join(",") + "\n";
+
+  const formatDate = (date) => {
+    if (!date) return "-";
+    const d = new Date(date);
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+  };
+
+
+  filteredBookings.forEach((b) => {
+    const row = [
+      b._id,
+      b.slotId,
+      b.zone,
+      b.types,
+      b.vehicleNum,
+      `"${formatDate(b.date)}"`, 
+      b.entryTime,
+      b.exitTime
+    ];
+    csv += row.join(",") + "\n";
+  });
+
+  const blob = new Blob([csv], { type: "text/csv" });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "bookings_export.csv";
+  a.click();
+  window.URL.revokeObjectURL(url);
+
+  toast.success("Bookings exported successfully!");
+};
+
+
   const sidebarItems = [
     { icon: ChartColumnBig, label: "Dashboard", path: "/operator/dashboard" },
     { icon: CalendarCheck, label: "Booking", active: true, path: "/operator/physicalbooking" },
-    { icon: HeartHandshake, label: "Membership", path: "/operator/membership" },
     { icon: Wallet, label: "Payment", path: "/operator/payment" },
   ];
 
@@ -236,7 +291,10 @@ useEffect(() => {
           <div className="bg-[#151821] p-6 light:bg-white border-gray-900 light:border-gray-200 rounded-lg text-white light:text-black">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-semibold">Bookings</h3>
-              <button className="px-6 py-2 bg-gradient-to-l from-blue-500 to-indigo-600 text-white rounded-lg hover:bg-blue-600">
+              <button
+                onClick={exportData}
+                className="px-6 py-2 bg-gradient-to-l from-blue-500 to-indigo-600 text-white rounded-lg hover:bg-blue-600"
+              >
                 Export Data
               </button>
             </div>

@@ -1,5 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
+import { FaUser, FaCar, FaPlus, FaMinus, FaExclamationTriangle, FaTimes, FaCheckCircle } from 'react-icons/fa';
 import PaymentPortal from './PaymentPortal';
 
 const PlanModal = ({ isOpen, onClose, selectedPlan }) => {
@@ -15,7 +15,7 @@ const PlanModal = ({ isOpen, onClose, selectedPlan }) => {
       setUsername('');
       setVehicleType('Two Wheel');
       setQuantity(1);
-      setShowPaymentPortal(false); 
+      setShowPaymentPortal(false);
       setUsernameError('');
     }
   }, [isOpen, selectedPlan]);
@@ -35,14 +35,12 @@ const PlanModal = ({ isOpen, onClose, selectedPlan }) => {
 
   const handleProceedToPayment = () => {
     if(!username.trim()){
-        setUsernameError('Username is required.');
-        return;
+      setUsernameError('Username is required.');
+      return;
     }
     const regex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z0-9]+$/;
-
-
     if (!regex.test(username)){
-      setUsernameError('Username cannot be numbers or symbols.');
+      setUsernameError('Username must contain both letters and numbers.');
       return;
     }
     setUsernameError('');
@@ -52,9 +50,17 @@ const PlanModal = ({ isOpen, onClose, selectedPlan }) => {
   const amount = basePrice + (quantity - 1) * pricePerAddOn;
 
   return (
-    <div className={`fixed inset-0 flex items-center justify-center z-50 ${
-        showPaymentPortal ? 'bg-white' : 'backdrop-blur-xl bg-black/30'}`}>
-      <div className="bg-white rounded-2xl shadow-lg w-full max-w-4xl p-6 flex flex-col md:flex-row gap-4">
+    <div className="fixed inset-0 flex items-center justify-center z-50 p-4 backdrop-blur-md bg-black/50 animate-fadeIn">
+      <div className="relative w-full max-w-5xl bg-gradient-to-br from-slate-800 to-slate-900 rounded-3xl shadow-2xl border border-slate-700 overflow-hidden flex flex-col md:flex-row">
+
+        {/* Close button */}
+        <button
+          onClick={() => setShowCancelPopup(true)}
+          className="absolute top-6 right-6 text-gray-400 hover:text-white transition-colors z-10"
+        >
+          <FaTimes size={24} />
+        </button>
+
         {showPaymentPortal ? (
           <PaymentPortal
             amount={amount}
@@ -66,76 +72,130 @@ const PlanModal = ({ isOpen, onClose, selectedPlan }) => {
           />
         ) : (
           <>
-            {/* Left Side: User Input */}
-            <div className="w-full md:w-1/2 space-y-4">
-              <h2 className="text-xl font-bold mb-2">Plan: {selectedPlan.name}</h2>
+            {/* Left Panel: User Info */}
+            <div className="p-8 w-full md:w-1/2 space-y-6">
+              <div className="mb-6">
+                <div className="inline-block px-4 py-1 bg-blue-500/20 rounded-full border border-blue-500/30 mb-3">
+                  <span className="text-blue-400 text-sm font-semibold">{selectedPlan?.name} Plan</span>
+                </div>
+                <h2 className="text-3xl font-bold text-white mb-2">Complete Your Subscription</h2>
+                <p className="text-gray-400 text-sm">Enter your details to get started</p>
+              </div>
+
               <div>
-                <label className="block mb-1">UserID</label>
+                <label className="block text-sm text-gray-300 mb-2 flex items-center gap-2">
+                  <FaUser className="text-blue-400" size={14} />
+                  User ID
+                </label>
                 <input
                   type="text"
-                  className="w-full border p-2 rounded"
+                  placeholder="e.g., user123"
                   value={username}
-                  onChange={(e) =>{
-                    setUsername(e.target.value);
-                    if (usernameError) setUsernameError('');
-                }
-                  } 
+                  onChange={(e) => { setUsername(e.target.value); if(usernameError) setUsernameError(''); }}
+                  className={`w-full px-4 py-3 rounded-xl bg-slate-700/50 border ${
+                    usernameError ? 'border-red-500' : 'border-slate-600'
+                  } text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all`}
                 />
                 {usernameError && (
-                    <p className = "text-red-600 text-sm mt-1">{usernameError}</p>
+                  <p className="text-red-400 text-sm mt-2 flex items-center gap-1">
+                    <FaExclamationTriangle size={12} /> {usernameError}
+                  </p>
                 )}
               </div>
 
               <div>
-                <label className="block mb-1">Vehicle Type</label>
+                <label className="block text-sm text-gray-300 mb-2 flex items-center gap-2">
+                  <FaCar className="text-blue-400" size={14} />
+                  Vehicle Type
+                </label>
                 <select
-                  className="w-full border p-2 rounded"
                   value={vehicleType}
                   onChange={(e) => setVehicleType(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl bg-slate-700/50 border border-slate-600 text-white appearance-none cursor-pointer focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
                 >
                   <option>Two Wheel</option>
                   <option>Three Wheel</option>
                   <option>Four Wheel</option>
                 </select>
               </div>
-              <div className="flex items-center justify-between mt-4">
-                <label className="block">Number of Vehicles</label>
-                <div className="flex items-center gap-2">
-                  <button className="bg-gray-300 px-2 rounded" onClick={() => handleQuantityChange(-1)}>-</button>
-                  <span>{quantity}</span>
-                  <button className="bg-gray-300 px-2 rounded" onClick={() => handleQuantityChange(1)}>+</button>
+
+              <div>
+                <label className="block text-sm text-gray-300 mb-2">Number of Vehicles</label>
+                <div className="flex items-center justify-between bg-slate-700/30 rounded-xl p-4 border border-slate-600">
+                  <button
+                    onClick={() => handleQuantityChange(-1)}
+                    disabled={quantity <= 1}
+                    className="w-10 h-10 flex items-center justify-center rounded-lg bg-slate-700 text-white hover:bg-slate-600 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                  ><FaMinus size={14} /></button>
+                  
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-white">{quantity}</div>
+                    <div className="text-xs text-gray-400">Max: {maxVehicles}</div>
+                  </div>
+
+                  <button
+                    onClick={() => handleQuantityChange(1)}
+                    disabled={quantity >= maxVehicles}
+                    className="w-10 h-10 flex items-center justify-center rounded-lg bg-slate-700 text-white hover:bg-slate-600 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                  ><FaPlus size={14} /></button>
+                </div>
+                {quantity >= maxVehicles && (
+                  <p className="text-amber-400 text-xs mt-2 flex items-center gap-1">
+                    <FaExclamationTriangle size={10} /> Maximum vehicles reached
+                  </p>
+                )}
+              </div>
+
+              <p className="mt-2 font-semibold text-white">Total Payment: LKR {amount}</p>
+            </div>
+
+            {/* Right Panel: Payment Summary */}
+            <div className="w-full md:w-1/2 bg-gradient-to-br from-slate-900 to-black p-8 flex flex-col border-l border-slate-700">
+              <h3 className="text-xl font-bold text-white mb-6">Payment Summary</h3>
+              <div className="space-y-4 flex-grow">
+                <div className="flex justify-between items-center py-3 border-b border-slate-700">
+                  <span className="text-gray-400">Base Price</span>
+                  <span className="text-white font-semibold">LKR {basePrice}</span>
+                </div>
+
+                {quantity > 1 && (
+                  <div className="flex justify-between items-center py-3 border-b border-slate-700">
+                    <span className="text-gray-400">Extra Vehicles ({quantity - 1})</span>
+                    <span className="text-white font-semibold">LKR {(quantity - 1) * pricePerAddOn}</span>
+                  </div>
+                )}
+
+                <div className="flex justify-between items-center py-4 mt-4 bg-blue-500/10 rounded-xl px-4 border border-blue-500/30">
+                  <span className="text-lg font-semibold text-white">Total Amount</span>
+                  <span className="text-2xl font-bold text-blue-400">LKR {amount}</span>
+                </div>
+
+                <div className="mt-6 p-4 bg-slate-800/50 rounded-xl border border-slate-700">
+                  <p className="text-xs text-gray-400 mb-2">Included in your plan:</p>
+                  <ul className="space-y-1">
+                    {selectedPlan?.features.slice(0, 3).map((feature, i) => (
+                      <li key={i} className="text-xs text-gray-300 flex items-center gap-2">
+                        <FaCheckCircle className="text-green-400" size={10} /> {feature}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               </div>
 
-              {quantity > maxVehicles && (
-                <p className="text-red-500 text-sm">
-                  You can select up to {maxVehicles} vehicle(s)
-                </p>
-              )}
-              <p className="mt-2 font-semibold">Total Payment: LKR {amount}</p>
-            </div>
-
-            {/* Right Side: Payment Summary */}
-            <div className="w-full md:w-1/2 bg-gray-100 p-4 rounded">
-              <h3 className="font-bold mb-4">Payment Summary</h3>
-              <p><strong>Base Price:</strong> LKR {basePrice}</p>
-              <p><strong>Extra Charges:</strong> LKR {(quantity - 1) * pricePerAddOn}</p>
-              <hr className="my-2" />
-              <p className="text-xl font-bold">Total: LKR {amount}</p>
-
-              <button
-                className="mt-4 w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-800"
-                onClick={handleProceedToPayment}
-              >
-                Proceed to Payment
-              </button>
-
-
-              <button
-                className="mt-2 w-full bg-red-500 text-white py-2 rounded hover:bg-red-700"
-                onClick={() => setShowCancelPopup(true)}>
-                Cancel
-              </button>
+              <div className="space-y-3 mt-6">
+                <button
+                  onClick={handleProceedToPayment}
+                  className="w-full py-4 bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-blue-500/50 transform hover:-translate-y-0.5 transition-all"
+                >
+                  Proceed to Payment
+                </button>
+                <button
+                  onClick={() => setShowCancelPopup(true)}
+                  className="w-full py-4 bg-slate-700 text-gray-300 font-semibold rounded-xl hover:bg-slate-600 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
           </>
         )}
@@ -143,30 +203,37 @@ const PlanModal = ({ isOpen, onClose, selectedPlan }) => {
 
       {/* Cancel Confirmation Popup */}
       {showCancelPopup && (
-        <div className="fixed inset-0 backdrop-blur-xl bg-black/30 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-80 text-center">
-            <h3 className="text-lg font-bold mb-4">Are you sure you want to cancel the plan?</h3>
-            <div className="flex justify-between gap-4">
+        <div className="fixed inset-0 backdrop-blur-sm bg-black/60 flex items-center justify-center z-50">
+          <div className="bg-slate-800 border border-slate-700 p-8 rounded-2xl shadow-2xl w-full max-w-md text-center">
+            <h3 className="text-2xl font-bold mb-3 text-white">Cancel Subscription?</h3>
+            <p className="text-gray-400 mb-6">
+              Are you sure you want to cancel this plan? Your details won't be saved.
+            </p>
+            <div className="flex gap-3">
               <button
-                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-800 w-full"
-                onClick={() => {
-                  onClose();
-                  setShowCancelPopup(false);
-                }}
+                onClick={() => setShowCancelPopup(false)}
+                className="flex-1 px-6 py-3 bg-slate-700 text-white font-semibold rounded-xl hover:bg-slate-600 transition-colors"
               >
-                Yes
+                Keep Editing
               </button>
               <button
-                className="px-4 py-2 bg-gray-300 text-black rounded hover:bg-gray-500 w-full"
-                onClick={() => setShowCancelPopup(false)}
+                onClick={() => { onClose(); setShowCancelPopup(false); }}
+                className="flex-1 px-6 py-3 bg-red-500 text-white font-semibold rounded-xl hover:bg-red-600 transition-colors"
               >
-                No
+                Yes, Cancel
               </button>
             </div>
           </div>
         </div>
       )}
 
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: scale(0.95); }
+          to { opacity: 1; transform: scale(1); }
+        }
+        .animate-fadeIn { animation: fadeIn 0.2s ease-out; }
+      `}</style>
     </div>
   );
 };
