@@ -15,6 +15,8 @@ const getAllSlots = async (req, res) => {
 //data insert
 const addSlots = async (req, res, next) => {
   const { slotId, type, status, zone, park, notice } = req.body;
+
+
   let slots;
   try {
     slots = new Slot({

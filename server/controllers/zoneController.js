@@ -29,6 +29,7 @@ const getAllZones = async (req, res) => {
 // Add a new zone
 const addZone = async (req, res) => {
   let { zoneId, zoneName, totalSlots, parkType, status } = req.body;
+  
 
   try {
     // Get all existing zones for this park type

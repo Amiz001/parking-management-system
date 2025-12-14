@@ -3,6 +3,8 @@
   "version": "1.0.0",
   "main": "server.js",
   "dependencies": {
+    "@stripe/react-stripe-js": "^5.2.0",
+    "@stripe/stripe-js": "^8.0.0",
     "axios": "^1.10.0",
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",

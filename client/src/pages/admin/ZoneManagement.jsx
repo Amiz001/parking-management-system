@@ -20,7 +20,7 @@ import {
 import axios from 'axios';
 import {toast} from 'react-toastify';
 
-const URL = "http://localhost:5000/zones";
+const URL = "http://localhost:5000/zones" 
 
 const ZoneManagement = () => {
   const [selectedPeriod, setSelectedPeriod] = useState('Monthly');
@@ -81,7 +81,7 @@ const ZoneManagement = () => {
   useEffect(() => {
     const fetchZonesFromServer = async () => {
       try {
-        const res = await axios.get(URL);
+        const res = await axios.get(URL , { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
         const raw = res.data;
         const data = normalizeResponseArray(raw);
 
@@ -142,9 +142,9 @@ const ZoneManagement = () => {
 
       let res;
       if (editingZone) {
-        res = await axios.put(`${URL}/${editingZone.id}`, payload);
+        res = await axios.put(`${URL}/${editingZone.id}`, payload , { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
       } else {
-        res = await axios.post(URL, payload);
+        res = await axios.post(URL, payload , { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
       }
 
       const createdOrUpdated = res.data.zone || res.data;
@@ -185,7 +185,7 @@ const ZoneManagement = () => {
     setSelectedPark(parkType);
 
     try {
-      const res = await axios.get(`http://localhost:5000/zones/next/${parkType}`);
+      const res = await axios.get(`http://localhost:5000/zones/next/${parkType}`, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
       const { zoneId, zoneName } = res.data;
 
       setFormData({
@@ -208,19 +208,61 @@ const ZoneManagement = () => {
     setEditingZone(zone);
     setFormData({ zoneId: zone.zoneId || '', name: zone.name, slots: zone.slots, parkType, status: zone.status });
     setShowModal(true);
-    toast.success("Slot updated successfully!");
+    toast.success("Zone updated successfully!");
   };
 
   const handleDelete = async (zoneId, parkType) => {
     if (!window.confirm('Are you sure you want to delete this zone?')) return;
     try {
-      await axios.delete(`${URL}/${zoneId}`);
+      await axios.delete(`${URL}/${zoneId}`, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
       setParks(prev => ({ ...prev, [parkType]: prev[parkType].filter(z => z.id !== zoneId) }));
-      toast.success("Slot deleted successfully!");
+      toast.success("Zone deleted successfully!");
     } catch (err) {
       console.error('Failed to delete zone:', err);
     }
   };
+
+  // --- EXPORT FUNCTION ---
+const exportData = () => {
+  // Flatten all zones across all park types
+  const allZones = Object.entries(parks).flatMap(([parkType, zones]) =>
+    zones.map((zone) => ({
+      ID: zone.id || "",
+      Zone_ID: zone.zoneId || "",
+      Zone_Name: zone.name || "",
+      Total_Slots: zone.slots || 0,
+      Status: zone.status || "N/A",
+      Park_Type: parkType || "N/A",
+    }))
+  );
+
+  if (allZones.length === 0) {
+    toast.warn("No data available to export!");
+    return;
+  }
+
+  // Convert JSON → CSV
+  const csv = [
+    Object.keys(allZones[0]).join(","),
+    ...allZones.map((row) =>
+      Object.values(row)
+        .map((val) => `"${val}"`) // wrap in quotes to handle commas/spaces
+        .join(",")
+    ),
+  ].join("\n");
+
+  // Create blob and trigger download
+  const blob = new Blob([csv], { type: "text/csv" });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `zones_data_${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  window.URL.revokeObjectURL(url);
+
+  toast.success("Zone data exported successfully!");
+};
+
 
   const toggleZoneStatus = async (zoneId, parkType) => {
     try {
@@ -236,7 +278,7 @@ const ZoneManagement = () => {
         status: newStatus
       };
 
-      const res = await axios.put(`${URL}/${zoneId}`, payload);
+      const res = await axios.put(`${URL}/${zoneId}`, payload , { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
       const updated = res.data.zone || res.data;
 
       setParks(prev => ({
@@ -335,16 +377,9 @@ const ZoneManagement = () => {
         <header className="bg-gray-950 light:bg-transparent p-6 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-              <input
-                type="text"
-                placeholder="Search something..."
-                className="pl-10 pr-4 py-2 bg-[#151821] light:bg-white border border-gray-900 light:border-gray-200 rounded-lg text-white placeholder-gray-400 light:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+              
             </div>
-            <button className="px-4 py-2 bg-gradient-to-l from-blue-500 to-indigo-600 text-white rounded-lg hover:bg-blue-600 transition-colors">
-              Search
-            </button>
+            
           </div>
 
           <div className="flex items-center gap-4">
@@ -365,9 +400,13 @@ const ZoneManagement = () => {
             </div>
             <div className="flex items-center gap-4">
              
-              <button className="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white px-6 py-3 rounded-xl flex items-center gap-2 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105">
-                Export Data
-              </button>
+              <button
+  onClick={exportData}
+  className="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white px-6 py-3 rounded-xl flex items-center gap-2 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+>
+  Export Data
+</button>
+
             </div>
           </div>
 
@@ -525,6 +564,8 @@ const ZoneManagement = () => {
                       />
                       {(!formData.slots) && <p className="text-red-500 text-sm mt-1">Minimum 1 slot required</p>}
                       {( formData.slots > 30) && <p className="text-red-500 text-sm mt-1">Maximum 30 slots allowed per zone</p>}
+                      {( formData.slots <= 0) && <p className="text-red-500 text-sm mt-1">must be a positive number</p>}
+                      
                     </div>
 
                     <div className="flex gap-3 pt-4">
