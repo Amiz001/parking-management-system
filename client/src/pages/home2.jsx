@@ -203,7 +203,7 @@ export default function ParkingLandingPage() {
                   </div>
 
                   {showPopup && (
-                    <div className="absolute right-0 mt-3 w-48 bg-gray-900 rounded-xl shadow-2xl border border-gray-700 overflow-hidden z-50 backdrop-blur-md">
+                    <div className="absolute left-0 mt-3 w-48 bg-gray-900 rounded-xl shadow-2xl border border-gray-700 overflow-hidden z-50 backdrop-blur-md">
                       <ul className="text-gray-200 text-sm">
                         {user && user.role !== "user" && (
                           <li

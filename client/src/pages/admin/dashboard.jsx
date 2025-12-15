@@ -125,7 +125,13 @@ const Dashboard = () => {
     { icon: LogOut, link: "/", label: "Logout" },
   ];
 
-  
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+
+    setTimeout(() => {
+      navigate("/", { replace: true });
+    }, 300);
+  };
 
   return (
     <div

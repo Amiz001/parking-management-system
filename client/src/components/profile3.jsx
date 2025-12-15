@@ -60,7 +60,7 @@ export default function DarkProfileDashboard() {
   const [showPassword, setShowPassword] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [showPopup, setShowPopup] = useState(false);
-  const [status, setStatus] = useState(true);
+  const [status, setStatus] = useState(false);
   const [vehicles, setVehicles] = useState([]);
   const [mode, setMode] = useState("add");
   const [selectedVehicle, setSelectedVehicle] = useState(null);
@@ -433,6 +433,7 @@ export default function DarkProfileDashboard() {
                   return (
                     <button
                       key={action.id}
+                      onClick={() => setActiveTab(action.id)}
                       className="w-full flex items-center space-x-3 px-4 py-3 text-gray-400 hover:text-cyan-400 hover:bg-gray-800/50 rounded-xl transition-all duration-200"
                     >
                       <IconComponent className="w-5 h-5" />
@@ -882,7 +883,6 @@ export default function DarkProfileDashboard() {
 
             {activeTab === "logout" && handleLogout()}
             {activeTab === "back" && navigate('/')}
-            
 
           </div>
         </div>

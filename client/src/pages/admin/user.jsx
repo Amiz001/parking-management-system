@@ -242,10 +242,12 @@ const Dashboard = () => {
     else setMenuOpen(true);
   };
 
-    const handleLogout = () => {
+  const handleLogout = () => {
     localStorage.removeItem("token");
-    setIsLoggedIn(false); 
-    navigate("/");
+
+    setTimeout(() => {
+      navigate("/", { replace: true });
+    }, 300);
   };
 
   return (
@@ -313,21 +315,23 @@ const Dashboard = () => {
 
         {/* Bottom Items */}
         <div className="mt-auto space-y-2">
-            <a
-              href='/'
-              className={`flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 light:text-black hover:bg-gray-700 light:hover:bg-gray-100 transition-colors`}
-            >
-              <House size={20} />
-              <span>Back to home</span>
-            </a>
+          <a
+            href="/"
+            className={`flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 light:text-black hover:bg-gray-700 light:hover:bg-gray-100 transition-colors`}
+          >
+            <House size={20} />
+            <span>Back to home</span>
+          </a>
 
-            <a
-              onClick={() => handleLogout()}
-              className={`flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 light:text-black hover:bg-gray-700 light:hover:bg-gray-100 transition-colors`}
-            >
-              <LogOut size={20} />
-              <span>Log out</span>
-            </a>
+          <div
+            onClick={() => {
+              handleLogout();
+            }}
+            className={`flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 light:text-black hover:bg-gray-700 light:hover:bg-gray-100 transition-colors cursor-pointer`}
+          >
+            <LogOut size={20} />
+            <span>Log out</span>
+          </div>
         </div>
 
         {/* User Profile */}
@@ -564,13 +568,13 @@ const Dashboard = () => {
                       <td className="py-4 px-4 text-gray-300 light:text-gray-600">
                         {user.lname}
                       </td>
-                      <td className="py-4 px-2 text-gray-300 light:text-gray-600">
+                      <td className="py-4 px-2 max-w-24 overflow-hidden text-gray-300 light:text-gray-600">
                         {user.email}
                       </td>
                       <td className="py-4 px-4 text-gray-300 light:text-gray-600">
                         {user.phone}
                       </td>
-                      <td className="py-4 px-4 text-gray-300 light:text-gray-600">
+                      <td className="py-4 px-4 w-2 text-gray-300 light:text-gray-600">
                         {user.membership.name}
                       </td>
                       <td className="py-4 px-4 text-gray-300 light:text-gray-600">

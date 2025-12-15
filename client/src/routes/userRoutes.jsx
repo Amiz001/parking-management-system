@@ -4,7 +4,8 @@ import Login from "../pages/login3";
 import Register from "../pages/Register2";
 import Profile from "../components/profile3";
 import ProtectedRoute from "../components/ProtectedRoute"
-import ResetPassword from "../pages/resetPassword"
+import ResetPassword from "../pages/resetPassword2"
+import ResetPassword2 from "../pages/resetPassword2"
 
 
 const UserRoutes = [
@@ -12,6 +13,7 @@ const UserRoutes = [
   { path: "/new", element: <Landing /> },
   { path: "/login", element: <Login /> },
   { path: "/reset-password", element: <ResetPassword /> },
+  { path: "/reset-password2", element: <ResetPassword2 /> },
   { path: "/register", element: <Register /> },
   { path: "/profile", element: <ProtectedRoute><Profile /></ProtectedRoute>},
 ];

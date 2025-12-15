@@ -9,11 +9,10 @@ const OAuth2 = google.auth.OAuth2;
 
 const getUsers = async (req, res) => {
   try {
-
-    console.log("function called")
+    console.log("function called");
     const users = await Users.find().populate("membership").lean();
 
-    console.log("still ok")
+    console.log("still ok");
     if (!users) {
       return res.status(404).json({ message: "Not found" });
     }
@@ -99,7 +98,9 @@ const getUserByEmail = async (req, res) => {
 
 const getDeleteRequests = async (req, res) => {
   try {
-    const deleteRequests = await DeleteRequests.find().populate("userId").lean();
+    const deleteRequests = await DeleteRequests.find()
+      .populate("userId")
+      .lean();
 
     if (deleteRequests.length === 0) {
       return res.status(200).json({ message: "No delete requests found" });
@@ -114,9 +115,8 @@ const getDeleteRequests = async (req, res) => {
 
 const getDeleteRequestById = async (req, res) => {
   try {
-
     const id = req.params.id;
-    const deleteRequest = await DeleteRequests.findOne({userId: id});
+    const deleteRequest = await DeleteRequests.findOne({ userId: id });
 
     return res.json(deleteRequest);
   } catch (err) {
@@ -128,7 +128,7 @@ const getDeleteRequestById = async (req, res) => {
 const addDeleteRequest = async (req, res) => {
   try {
     const { userId, reason } = req.body;
-    
+
     const existingReq = await DeleteRequests.findOne({ userId });
     if (existingReq) {
       return res.json({ message: "Requests already exists!" });
@@ -136,13 +136,12 @@ const addDeleteRequest = async (req, res) => {
 
     const deleteReq = new DeleteRequests({
       userId,
-      reason
+      reason,
     });
 
     const result = await deleteReq.save();
 
-
-    if(!result){
+    if (!result) {
       return res.json({ message: "Delete request failed!" });
     }
     res.json({ message: "Delete request sent successfully!" });
@@ -185,19 +184,24 @@ const deleteDeleteRequest = async (req, res) => {
 
     console.log("deleteDeleteRequest called for id:", req.params.id);
 
-    const deletedRequest = await DeleteRequests.findByIdAndDelete(req.params.id);
+    const deletedRequest = await DeleteRequests.findByIdAndDelete(
+      req.params.id
+    );
 
     if (!deletedRequest) {
       return res.status(404).json({ message: "Delete request not found!" });
     }
 
-    return res.status(200).json({ message: "Delete request deleted successfully!" });
+    return res
+      .status(200)
+      .json({ message: "Delete request deleted successfully!" });
   } catch (err) {
     console.error("Error deleting delete request:", err);
-    return res.status(500).json({ message: "Server error while deleting delete request!" });
+    return res
+      .status(500)
+      .json({ message: "Server error while deleting delete request!" });
   }
 };
-
 
 const addUser = async (req, res) => {
   try {
@@ -266,7 +270,7 @@ const updateProfile = async (req, res) => {
 
     const updatedUser = await Users.findByIdAndUpdate(
       userId,
-      { fname, lname, email, phone, profilePhoto, isVerified : false },
+      { fname, lname, email, phone, profilePhoto, isVerified: false },
       { new: true }
     );
 
@@ -314,8 +318,8 @@ const validateUser = async (req, res) => {
     }
 
     const expireTime = () => {
-      return rememberMe ? "30d" : "2h"
-    }
+      return rememberMe ? "30d" : "2h";
+    };
 
     const token = jwt.sign(
       {
@@ -407,13 +411,18 @@ const registerUser = async (req, res) => {
       text: `Hi ${firstName},\n\nYour verification code is: ${verificationCode}\n\nThis code will expire in 10 minutes.`,
     };
 
-    await transporter.sendMail(mailOptions);
+    try {
+      await transporter.sendMail(mailOptions);
+    } catch (mailErr) {
+      console.error("Email failed:", mailErr);
+    }
+
     console.log("Verification email sent");
 
     res.status(200).json({ message: "Verification code sent to your email!" });
   } catch (err) {
     console.error("Error in registerUser:", err);
-    res.status(500).json({ message: "Internal Server Error!" });
+    res.status(500).json({ message: `Internal Server Error! ${err}` });
   }
 };
 
@@ -430,14 +439,14 @@ const verifyEmail = async (req, res) => {
     if (user.verificationCode !== code)
       return res.status(400).json({ message: "Invalid verification code" });
 
-    if (new Date() > user.expirationTime)
+    if (new Date() > user.verificationCodeExpires)
       return res
         .status(400)
         .json({ message: "Code expired, request a new one" });
 
     user.isVerified = true;
     user.verificationCode = null;
-    user.expirationTime = null;
+    user.verificationCodeExpires = null;
     await user.save();
 
     res.status(200).json({ message: "Email verified successfully" });
@@ -481,7 +490,7 @@ const setPassword = async (req, res) => {
     const { password } = req.body;
     const id = req.params.id;
 
-    console.log(id)
+    console.log(id);
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -509,9 +518,9 @@ const verifyPassword = async (req, res) => {
   try {
     const { userId, oldPassword } = req.body;
 
-    const user = await Users.findById({_id : userId});
-  
-    console.log(user)
+    const user = await Users.findById({ _id: userId });
+
+    console.log(user);
     if (!user) {
       return res.status(404).json({ message: "User not found." });
     }
@@ -546,5 +555,5 @@ module.exports = {
   updateProfile,
   addDeleteRequest,
   getDeleteRequestById,
-  deleteDeleteRequest
+  deleteDeleteRequest,
 };
