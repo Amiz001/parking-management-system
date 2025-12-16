@@ -75,17 +75,6 @@ const MembershipPackage = () => {
     }
   };
 
-  const isLogged = () => {
-    const token = localStorage.getItem("token");
-    if (!token) return;
-    const decoded = jwtDecode(token);
-    setUser(decoded);
-  };
-
-  useEffect(() => {
-    isLogged();
-  }, []);
-
   return (
     <div className="min-h-screen bg-black">
       <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md bg-black/25 border-b border-white/10">
