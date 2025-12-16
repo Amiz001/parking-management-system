@@ -12,12 +12,10 @@ const PasswordResetForm = ({ status, onClose, userId, token }) => {
 
   const handleVerifyOldPassword = async (e) => {
     e.preventDefault();
-
     if (!oldPassword) {
       toast.error("Please enter your old password!");
       return;
     }
-
     setLoading(true);
     try {
       const res = await axios.post(
@@ -26,7 +24,7 @@ const PasswordResetForm = ({ status, onClose, userId, token }) => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      if (res.data.message == "Valid password!") {
+      if (res.data.message === "Valid password!") {
         toast.success("Password verified successfully!");
         setStep(2);
       } else {
@@ -42,17 +40,14 @@ const PasswordResetForm = ({ status, onClose, userId, token }) => {
 
   const handleUpdatePassword = async (e) => {
     e.preventDefault();
-
     if (!newPassword || !rePassword) {
       toast.error("Please fill both fields!");
       return;
     }
-
     if (newPassword !== rePassword) {
       toast.error("Passwords do not match!");
       return;
     }
-
     if (newPassword.length < 6) {
       toast.error("Password must be at least 6 characters!");
       return;
@@ -62,11 +57,11 @@ const PasswordResetForm = ({ status, onClose, userId, token }) => {
     try {
       const res = await axios.patch(
         `http://localhost:5000/users/reset-password/${userId}`,
-        { password : newPassword },
+        { password: newPassword },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      if (res.data.message == "Password changed successfully") {
+      if (res.data.message === "Password changed successfully") {
         toast.success("Password updated!");
         setStep(1);
         setOldPassword("");
@@ -86,19 +81,19 @@ const PasswordResetForm = ({ status, onClose, userId, token }) => {
 
   return (
     <div
-      className={`fixed inset-0 bg-[#00000065] flex items-center justify-center p-4 z-50 ${
+      className={`fixed inset-0 bg-[#000000aa] flex items-center justify-center p-4 z-50 ${
         status ? "visible" : "hidden"
       }`}
     >
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+      <div className="bg-[#14213d] rounded-2xl shadow-2xl w-full max-w-md overflow-hidden text-white">
         {/* Header */}
-        <div className="relative p-6 border-b border-gray-200">
-          <h2 className="text-gray-800 text-xl font-semibold text-center">
+        <div className="relative p-6 border-b border-gray-700">
+          <h2 className="text-white text-xl font-semibold text-center">
             Reset Password
           </h2>
           <button
             onClick={onClose}
-            className="absolute top-6 right-6 text-gray-500 hover:text-gray-800 transition"
+            className="absolute top-6 right-6 text-gray-400 hover:text-white transition"
           >
             <X size={22} />
           </button>
@@ -108,7 +103,7 @@ const PasswordResetForm = ({ status, onClose, userId, token }) => {
         {step === 1 && (
           <form onSubmit={handleVerifyOldPassword} className="p-6 space-y-6">
             <div>
-              <label className="block text-gray-700 text-sm font-medium mb-2">
+              <label className="block text-gray-300 text-sm font-medium mb-2">
                 Old Password
               </label>
               <input
@@ -116,7 +111,7 @@ const PasswordResetForm = ({ status, onClose, userId, token }) => {
                 value={oldPassword}
                 onChange={(e) => setOldPassword(e.target.value)}
                 placeholder="Enter old password"
-                className="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-3 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="w-full bg-[#1b264f] border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500"
               />
             </div>
 
@@ -124,15 +119,15 @@ const PasswordResetForm = ({ status, onClose, userId, token }) => {
               <button
                 type="button"
                 onClick={onClose}
-                className="px-6 py-3 text-gray-600 hover:text-gray-900 font-medium transition"
+                className="px-6 py-3 text-gray-300 hover:text-white font-medium transition"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className={`px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition ${
-                  loading && "opacity-50 cursor-not-allowed"
+                className={`px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-400 text-white rounded-lg font-medium transition ${
+                  loading && "opacity-70 cursor-not-allowed"
                 }`}
               >
                 {loading ? "Verifying..." : "Next"}
@@ -145,7 +140,7 @@ const PasswordResetForm = ({ status, onClose, userId, token }) => {
         {step === 2 && (
           <form onSubmit={handleUpdatePassword} className="p-6 space-y-6">
             <div>
-              <label className="block text-gray-700 text-sm font-medium mb-2">
+              <label className="block text-gray-300 text-sm font-medium mb-2">
                 New Password
               </label>
               <input
@@ -153,12 +148,12 @@ const PasswordResetForm = ({ status, onClose, userId, token }) => {
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 placeholder="Enter new password"
-                className="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-3 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="w-full bg-[#1b264f] border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500"
               />
             </div>
 
             <div>
-              <label className="block text-gray-700 text-sm font-medium mb-2">
+              <label className="block text-gray-300 text-sm font-medium mb-2">
                 Re-enter Password
               </label>
               <input
@@ -166,7 +161,7 @@ const PasswordResetForm = ({ status, onClose, userId, token }) => {
                 value={rePassword}
                 onChange={(e) => setRePassword(e.target.value)}
                 placeholder="Re-enter password"
-                className="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-3 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="w-full bg-[#1b264f] border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500"
               />
             </div>
 
@@ -174,23 +169,23 @@ const PasswordResetForm = ({ status, onClose, userId, token }) => {
               <button
                 type="button"
                 onClick={() => setStep(1)}
-                className="px-4 py-2 text-gray-500 hover:text-gray-900 text-md transition"
+                className="px-4 py-2 text-gray-400 hover:text-white text-md transition"
               >
-                
+                Back
               </button>
               <div className="flex gap-3">
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-6 py-3 text-gray-600 hover:text-gray-900 font-medium transition"
+                  className="px-6 py-3 text-gray-300 hover:text-white font-medium transition"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
-                  className={`px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition ${
-                    loading && "opacity-50 cursor-not-allowed"
+                  className={`px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-400 text-white rounded-lg font-medium transition ${
+                    loading && "opacity-70 cursor-not-allowed"
                   }`}
                 >
                   {loading ? "Updating..." : "Submit"}
