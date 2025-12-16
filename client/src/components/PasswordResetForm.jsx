@@ -68,6 +68,10 @@ const PasswordResetForm = ({ status, onClose, userId, token }) => {
 
       if (res.data.message == "Password changed successfully") {
         toast.success("Password updated!");
+        setStep(1);
+        setOldPassword("");
+        setNewPassword("");
+        setRePassword("");
         onClose();
       } else {
         toast.error("Failed to update password!");

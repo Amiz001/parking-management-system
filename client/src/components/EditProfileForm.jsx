@@ -168,9 +168,10 @@ const EditProfileForm = ({ status, selectedUser, onClose, refresh, token }) => {
             <input
               type="email"
               value={formData.email}
+              disabled
               placeholder="Enter email"
               onChange={(e) => handleInputChange("email", e.target.value)}
-              className="w-full bg-gray-800/50 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              className="w-full bg-gray-800/50 border border-gray-600 rounded-lg px-4 py-3 text-white/50 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500"
             />
           </div>
 
@@ -181,8 +182,9 @@ const EditProfileForm = ({ status, selectedUser, onClose, refresh, token }) => {
               type="text"
               value={formData.phone}
               placeholder="Enter phone"
+              disabled
               onChange={(e) => handleInputChange("phone", e.target.value)}
-              className="w-full bg-gray-800/50 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              className="w-full bg-gray-800/50 border border-gray-600 rounded-lg px-4 py-3 text-white/50 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500"
             />
           </div>
         </div>

@@ -61,6 +61,8 @@ export default function DarkProfileDashboard() {
   const [searchTerm, setSearchTerm] = useState("");
   const [showPopup, setShowPopup] = useState(false);
   const [status, setStatus] = useState(false);
+  const [statusPasswordReset, setStatusPasswordReset] = useState(false);
+  const [statusDeleteReq, setStatusDeleteReq] = useState(false);
   const [vehicles, setVehicles] = useState([]);
   const [mode, setMode] = useState("add");
   const [selectedVehicle, setSelectedVehicle] = useState(null);
@@ -333,7 +335,10 @@ export default function DarkProfileDashboard() {
             </div>
 
             {showPopup && (
-              <div className="absolute right-38 top-16 w-48 bg-gray-900 rounded-xl shadow-2xl border border-gray-700 overflow-hidden z-50 backdrop-blur-md" ref={popupRef}>
+              <div
+                className="absolute right-38 top-16 w-48 bg-gray-900 rounded-xl shadow-2xl border border-gray-700 overflow-hidden z-50 backdrop-blur-md"
+                ref={popupRef}
+              >
                 <ul className="text-gray-200 text-sm">
                   {user && user.role !== "user" && (
                     <li
@@ -459,7 +464,12 @@ export default function DarkProfileDashboard() {
                     <p className="text-blue-100 mb-4">
                       Here's what's happening with your parking today
                     </p>
-                    <button className="bg-white/20 hover:bg-white/30 text-white px-6 py-3 rounded-lg font-medium transition-all backdrop-blur-sm border border-white/20 hover:border-white/40 shadow-lg" onClick={()=>{navigate('/operator/onlinebookingPage')}}>
+                    <button
+                      className="bg-white/20 hover:bg-white/30 text-white px-6 py-3 rounded-lg font-medium transition-all backdrop-blur-sm border border-white/20 hover:border-white/40 shadow-lg"
+                      onClick={() => {
+                        navigate("/operator/onlinebookingPage");
+                      }}
+                    >
                       <Plus className="w-4 h-4 mr-2 inline" />
                       Book New Spot
                     </button>
@@ -605,9 +615,9 @@ export default function DarkProfileDashboard() {
                 </div>
 
                 {/* Membership Card */}
-                <div className="bg-gradient-to-br from-cyan-500/70 via-blue-500/60 to-blue-600/60 border border-cyan-500/30 rounded-2xl p-6 backdrop-blur-md">
+                <div className="bg-gradient-to-r from-cyan-500/20 to-blue-600/20  font-semibold border border-cyan-500/30 shadow-lg shadow-cyan-500/20 rounded-2xl p-6 backdrop-blur-md">
                   <div className="flex items-center space-x-3 mb-4">
-                    <div className="w-12 h-12 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-xl flex items-center justify-center shadow-lg shadow-yellow-500/30">
+                    <div className="w-12 h-12 bg-gradient-to-br from-cyan-400/50 to-blue-500/50 rounded-xl flex items-center justify-center shadow-lg shadow-yellow-500/10">
                       <Award className="w-6 h-6 text-white" />
                     </div>
                     <div>
@@ -633,20 +643,19 @@ export default function DarkProfileDashboard() {
                       </span>
                     </div>
                   </div>
-                  <button className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white py-3 px-4 rounded-xl font-medium transition-all shadow-lg shadow-blue-500/30">
+                  <button className="w-full bg-cyan-400/50 hover:bg-cyan-400/60 text-white py-3 px-4 rounded-xl font-medium transition-all shadow-lg shadow-blue-500/30 backdrop-blur-2xl border-white/20 hover:border-white/40">
                     Upgrade to Platinum
                   </button>
                 </div>
 
                 {/* Edit profile form */}
                 <EditProfileForm
-                    status={status}
-                    selectedUser={user}
-                    onClose={() => setStatus(false)}
-                    refresh={() => fetchUser()}
-                    token={localStorage.getItem("token")}
-                  />
-
+                  status={status}
+                  selectedUser={user}
+                  onClose={() => setStatus(false)}
+                  refresh={() => fetchUser()}
+                  token={localStorage.getItem("token")}
+                />
               </div>
             )}
 
@@ -719,88 +728,91 @@ export default function DarkProfileDashboard() {
 
             {/* Vehicles */}
             {activeTab === "vehicles" && (
-                <>
-              <div className="bg-gray-900/50 backdrop-blur-md border border-gray-800 rounded-2xl overflow-hidden">
-                <div className="p-6 border-b border-gray-800">
-                  <div className="flex items-center justify-between">
-                    <h2 className="text-xl font-semibold text-white">
-                      My Vehicles
-                    </h2>
-                    <button
-                      onClick={() => {
-                        setMode("add");
-                        setStatus(true);
-                      }}
-                      className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white px-4 py-2 rounded-lg font-medium transition-all flex items-center space-x-2 shadow-lg shadow-cyan-500/30"
-                    >
-                      <Plus className="w-4 h-4" />
-                      <span>Add Vehicle</span>
-                    </button>
-                  </div>
-                </div>
-
-                <div className="p-6">
-                  <div className="space-y-4">
-                    {vehicles.map((vehicle) => (
-                      <div
-                        key={vehicle._id}
-                        className="border border-gray-700 rounded-xl p-6 hover:border-cyan-500/30 hover:shadow-lg hover:shadow-cyan-500/10 transition-all bg-gray-800/30"
+              <>
+                <div className="bg-gray-900/50 backdrop-blur-md border border-gray-800 rounded-2xl overflow-hidden">
+                  <div className="p-6 border-b border-gray-800">
+                    <div className="flex items-center justify-between">
+                      <h2 className="text-xl font-semibold text-white">
+                        My Vehicles
+                      </h2>
+                      <button
+                        onClick={() => {
+                          setMode("add");
+                          setStatus(true);
+                        }}
+                        className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white px-4 py-2 rounded-lg font-medium transition-all flex items-center space-x-2 shadow-lg shadow-cyan-500/30"
                       >
-                        <div className="flex flex-col lg:flex-row lg:items-center justify-between space-y-4 lg:space-y-0">
-                          <div className="flex items-start space-x-4">
-                            <div className="w-14 h-14 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-cyan-500/30">
-                              {vehicle.type === "Car" ? (
-                                <Car className="w-7 h-7 text-white" />
-                              ) : (
-                                <Bus className="w-7 h-7 text-white" />
-                              )}
-                            </div>
-                            <div className="space-y-1">
-                              <h3 className="font-semibold text-white text-lg">
-                                {vehicle.vehicleNo}
-                              </h3>
-                              <p className="text-gray-400">
-                                Type: {vehicle.type}
-                              </p>
-                            </div>
-                          </div>
+                        <Plus className="w-4 h-4" />
+                        <span>Add Vehicle</span>
+                      </button>
+                    </div>
+                  </div>
 
-                          <div className="flex items-center space-x-2">
-                            <button
-                              className="px-4 py-2 text-green-400 hover:bg-green-500/20 border border-green-500/30 rounded-lg transition-all"
-                              onClick={() => {
-                                setMode("update");
-                                setStatus(true);
-                                setSelectedVehicle(vehicle);
-                              }}
-                            >
-                              Edit
-                            </button>
-                            <button className="px-4 py-2 text-red-400 hover:bg-red-500/20 border border-red-500/30 rounded-lg transition-all">
-                              Delete
-                            </button>
+                  <div className="p-6">
+                    <div className="space-y-4">
+                      {vehicles.map((vehicle) => (
+                        <div
+                          key={vehicle._id}
+                          className="border border-gray-700 rounded-xl p-6 hover:border-cyan-500/30 hover:shadow-lg hover:shadow-cyan-500/10 transition-all bg-gray-800/30"
+                        >
+                          <div className="flex flex-col lg:flex-row lg:items-center justify-between space-y-4 lg:space-y-0">
+                            <div className="flex items-start space-x-4">
+                              <div className="w-14 h-14 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-cyan-500/30">
+                                {vehicle.type === "Car" ? (
+                                  <Car className="w-7 h-7 text-white" />
+                                ) : (
+                                  <Bus className="w-7 h-7 text-white" />
+                                )}
+                              </div>
+                              <div className="space-y-1">
+                                <h3 className="font-semibold text-white text-lg">
+                                  {vehicle.vehicleNo}
+                                </h3>
+                                <p className="text-gray-400">
+                                  Type: {vehicle.type}
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center space-x-2">
+                              <button
+                                className="px-4 py-2 text-green-400 hover:bg-green-500/20 border border-green-500/30 rounded-lg transition-all"
+                                onClick={() => {
+                                  setMode("update");
+                                  setStatus(true);
+                                  setSelectedVehicle(vehicle);
+                                }}
+                              >
+                                Edit
+                              </button>
+                              <button
+                                className="px-4 py-2 text-red-400 hover:bg-red-500/20 border border-red-500/30 rounded-lg transition-all"
+                                onClick={() => {
+                                  handleDelete(vehicle._id);
+                                }}
+                              >
+                                Delete
+                              </button>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
                 </div>
 
-              </div>
-
-              
                 <AddVehicleForm
-                      status={status}
-                      mode={mode}
-                      userId={user._id}
-                      selectedVehicle={selectedVehicle}
-                      onClose={() => setStatus(false)}
-                      refresh={() => fetchVehicles()}
-                      token={localStorage.getItem("token")}
-                    />
-
+                  status={status}
+                  mode={mode}
+                  userId={user._id}
+                  selectedVehicle={selectedVehicle}
+                  onClose={() => setStatus(false)}
+                  refresh={() => fetchVehicles()}
+                  token={localStorage.getItem("token")}
+                />
               </>
             )}
+
             {/* Settings */}
             {activeTab === "settings" && (
               <div className="space-y-6">
@@ -821,7 +833,7 @@ export default function DarkProfileDashboard() {
                       </div>
                     </div>
                     <button
-                      onClick={() => setStatus(true)}
+                      onClick={() => setStatusPasswordReset(true)}
                       className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white px-4 py-2 rounded-lg font-medium transition-all shadow-lg shadow-cyan-500/30"
                     >
                       Reset Password
@@ -847,7 +859,9 @@ export default function DarkProfileDashboard() {
                     </div>
 
                     {!deleteReq ? (
-                      <button className="bg-red-500/20 hover:bg-red-500/30 text-red-400 px-4 py-2 rounded-lg font-medium transition-all border border-red-500/30">
+                      <button className="bg-red-500/20 hover:bg-red-500/30 text-red-400 px-4 py-2 rounded-lg font-medium transition-all border border-red-500/30"
+                      onClick={() => setStatusDeleteReq(true)}
+                      >
                         Request Delete
                       </button>
                     ) : (
@@ -855,7 +869,9 @@ export default function DarkProfileDashboard() {
                         <span className="px-3 py-1 text-sm bg-yellow-500/20 text-yellow-400 rounded-full border border-yellow-500/30">
                           Pending
                         </span>
-                        <button className="text-gray-400 hover:text-gray-300 text-sm font-medium transition">
+                        <button className="text-gray-400 hover:text-gray-300 text-sm font-medium transition"
+                        onClick={() => {handleCancelDeleteRequest()}}
+                        >
                           Cancel
                         </button>
                       </div>
@@ -863,27 +879,25 @@ export default function DarkProfileDashboard() {
                   </div>
 
                   <PasswordResetForm
-                  status={status}
-                  onClose={() => setStatus(false)}
-                  userId={user._id}
-                  token={localStorage.getItem("token")}
-                />
+                    status={statusPasswordReset}
+                    onClose={() => setStatusPasswordReset(false)}
+                    userId={user._id}
+                    token={localStorage.getItem("token")}
+                  />
 
-                <AddDeleteRequest
-                  status={status}
-                  onClose={() => setStatus(false)}
-                  user={user}
-                  token={localStorage.getItem("token")}
-                  refresh={() => getDeleteRequest()}
-                />
-                
+                  <AddDeleteRequest
+                    status={statusDeleteReq}
+                    onClose={() => setStatusDeleteReq(false)}
+                    user={user}
+                    token={localStorage.getItem("token")}
+                    refresh={() => getDeleteRequest()}
+                  />
                 </div>
               </div>
             )}
 
             {activeTab === "logout" && handleLogout()}
-            {activeTab === "back" && navigate('/')}
-
+            {activeTab === "back" && navigate("/")}
           </div>
         </div>
       </div>

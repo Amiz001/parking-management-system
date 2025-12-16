@@ -44,6 +44,7 @@ const getUserByEmail = async (req, res) => {
     const { email } = req.body;
 
     const user = await Users.findOne({ email });
+    console.log(user);
 
     if (!user) {
       return res.status(404).json({ message: "Not found" });
@@ -129,10 +130,14 @@ const addDeleteRequest = async (req, res) => {
   try {
     const { userId, reason } = req.body;
 
+    console.log(userId + "  " + reason);
+
     const existingReq = await DeleteRequests.findOne({ userId });
     if (existingReq) {
       return res.json({ message: "Requests already exists!" });
     }
+
+    console.log("These are already found: " + existingReq);
 
     const deleteReq = new DeleteRequests({
       userId,
@@ -146,6 +151,7 @@ const addDeleteRequest = async (req, res) => {
     }
     res.json({ message: "Delete request sent successfully!" });
   } catch (err) {
+    console.error("Delete request error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -154,6 +160,10 @@ const updateDeleteRequestStatus = async (req, res) => {
   try {
     const requestId = req.params.id;
     const { status } = req.body;
+
+    if (!["accepted", "declined"].includes(status)) {
+      return res.status(400).json({ message: "Invalid status value" });
+    }
 
     const updatedRequest = await DeleteRequests.findByIdAndUpdate(
       requestId,
@@ -165,8 +175,9 @@ const updateDeleteRequestStatus = async (req, res) => {
       return res.status(404).json({ message: "Delete request not found" });
     }
 
-    if (status == "accepted") {
-      await Users.findByIdAndDelete(requestId);
+    // ✅ delete user ONLY if accepted
+    if (status === "accepted") {
+      await Users.findByIdAndDelete(updatedRequest.userId);
     }
 
     return res.status(200).json({
@@ -174,9 +185,11 @@ const updateDeleteRequestStatus = async (req, res) => {
       request: updatedRequest,
     });
   } catch (err) {
-    return res.status(500).json({ message: "Server error" });
+    console.error("Update delete request error:", err);
+    return res.status(500).json({ message: err.message });
   }
 };
+
 
 const deleteDeleteRequest = async (req, res) => {
   try {

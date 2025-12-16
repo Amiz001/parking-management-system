@@ -181,61 +181,108 @@ const Dashboard = () => {
   };
 
   const exportToExcel = () => {
-    const worksheet = XLSX.utils.json_to_sheet(filteredUsers);
+  if (!filteredUsers || filteredUsers.length === 0) {
+    toast.error("No users to export");
+    return;
+  }
 
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Users");
+  const reportData = filteredUsers.map((u, index) => ({
+    "User ID": `US${u._id.slice(0, 5)}`,
+    "First Name": u.fname,
+    "Last Name": u.lname,
+    Email: u.email,
+    Phone: u.phone,
+    Role: u.role,
+    Membership: u.membership?.name || "N/A",
+    Status: u.status,
+    "Joined On": u.createdAt
+      ? new Date(u.createdAt).toLocaleDateString()
+      : "-",
+  }));
 
-    const excelBuffer = XLSX.write(workbook, {
-      bookType: "xlsx",
-      type: "array",
-    });
+  const worksheet = XLSX.utils.json_to_sheet(reportData);
+  const workbook = XLSX.utils.book_new();
 
-    const blob = new Blob([excelBuffer], { type: "application/octet-stream" });
-    saveAs(blob, "users.xlsx");
-  };
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Users");
+
+  const excelBuffer = XLSX.write(workbook, {
+    bookType: "xlsx",
+    type: "array",
+  });
+
+  const blob = new Blob([excelBuffer], {
+    type:
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  });
+
+  saveAs(blob, "users-report.xlsx");
+};
+
 
   const exportToPDF = () => {
-    if (!filteredUsers || filteredUsers.length === 0) {
-      toast.error("No users to export");
-      return;
-    }
+  if (!filteredUsers || filteredUsers.length === 0) {
+    toast.error("No users to export");
+    return;
+  }
 
-    const doc = new jsPDF();
-    doc.text("Parkbay - Users Report", 14, 10);
+  const doc = new jsPDF("landscape"); // landscape = more space
 
-    AutoTable(doc, {
-      startY: 20,
-      head: [
-        [
-          "First Name",
-          "Last Name",
-          "Email",
-          "Phone",
-          "Role",
-          "Membership",
-          "Joined on",
-          "Status",
-          "ProfilePhoto",
-        ],
+  doc.setFontSize(14);
+  doc.text("Parkbay - Users Report", 14, 15);
+
+  const tableData = filteredUsers.map((u) => [
+    `US${u._id.slice(0, 5)}`,
+    u.fname,
+    u.lname,
+    u.email,
+    u.phone,
+    u.role,
+    u.membership?.name || "N/A",
+    u.status,
+    u.createdAt ? new Date(u.createdAt).toLocaleDateString() : "-",
+  ]);
+
+  AutoTable(doc, {
+    startY: 22,
+    head: [
+      [
+        "User ID",
+        "First Name",
+        "Last Name",
+        "Email",
+        "Phone",
+        "Role",
+        "Membership",
+        "Status",
+        "Joined On",
       ],
-      body: filteredUsers.map((u) => [
-        u.fname,
-        u.lname,
-        u.email,
-        u.phone,
-        u.role,
-        u.membership,
-        u.createdAt ? new Date(u.createdAt).toLocaleDateString() : "-",
-        u.status,
-        u.profilePhoto,
-      ]),
-      theme: "striped",
-      headStyles: { fillColor: [41, 128, 185] },
-    });
+    ],
+    body: tableData,
+    styles: {
+      fontSize: 8,
+      cellPadding: 2,
+    },
+    headStyles: {
+      fillColor: [79, 70, 229], // indigo
+      textColor: 255,
+    },
+    columnStyles: {
+      0: { cellWidth: 25 },
+      1: { cellWidth: 30 },
+      2: { cellWidth: 30 },
+      3: { cellWidth: 55 },
+      4: { cellWidth: 30 },
+      5: { cellWidth: 25 },
+      6: { cellWidth: 30 },
+      7: { cellWidth: 25 },
+      8: { cellWidth: 30 },
+    },
+    theme: "striped",
+  });
 
-    doc.save("users.pdf");
-  };
+  doc.save("users-report.pdf");
+};
+
 
   const handleDownloadMenu = () => {
     if (menuOpen) setMenuOpen(false);
@@ -334,7 +381,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* User Profile */}
+        {/* User Profile 
         <div className="mt-6 flex items-center gap-3 p-3 bg-[#222735] light:bg-gray-100 light:shadow-lg light:backdrop-blur-sm border-gray-400 rounded-lg ">
           <div className="w-12 h-8 bg-blue-500 light:text-white flex items-center justify-center overflow-hidden rounded-full">
             <img
@@ -358,7 +405,7 @@ const Dashboard = () => {
             size={16}
             className="text-gray-400 light:text-gray-950"
           />
-        </div>
+        </div>*/}
       </div>
 
       {/* Main Content */}
@@ -437,7 +484,7 @@ const Dashboard = () => {
                 <option>Silver</option>
                 <option>Gold</option>
                 <option>Platinum</option>
-              </select>*/}
+              </select>
               <div>
                 <button
                   className="px-4 py-2 bg-[#151821] text-white light:text-black light:bg-white border border-gray-900 light:border-gray-200 light: rounded-lg hover:bg-gray-800 cursor-pointer flex gap-3 items-center overflow-hidden"
@@ -447,9 +494,9 @@ const Dashboard = () => {
                   <div className="px-[7px] py-[1px] font-bold rounded-full bg-red-700 text-white text-sm">
                     0
                   </div>{" "}
-                  {/*<UserRoundX size={17} color={"red"} /> */}
+                  {/*<UserRoundX size={17} color={"red"} />
                 </button>
-              </div>
+              </div>*/}
 
               <DeleteRequestsForm
                 status={isReqOpen}
